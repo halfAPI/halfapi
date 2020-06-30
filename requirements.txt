@@ -1,0 +1,3 @@
+starlette
+uvicorn
+apidb @ git+ssh://git@gite.lirmm.fr/newsi/db/hop_api.git
