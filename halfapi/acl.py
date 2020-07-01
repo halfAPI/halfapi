@@ -5,7 +5,7 @@ class BaseACL:
     def connected(req, func):
         """ Decorator that checks if the user object of the request has been set
         """
-        def caller()
+        def caller():
             try:
                 getattr(req.user, 'is_authenticated')
                 return func()
