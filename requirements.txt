@@ -1,4 +1,5 @@
 starlette
 uvicorn
+jwt
 half_orm @ git+ssh://git@gite.lirmm.fr/newsi/halfORM.git
 apidb @ git+ssh://git@gite.lirmm.fr/newsi/db/hop_api.git

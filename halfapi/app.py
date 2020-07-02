@@ -9,9 +9,10 @@ from starlette.exceptions import HTTPException
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import Response, JSONResponse
 from starlette.routing import Route, Match, Mount
 from starlette.types import ASGIApp, Receive, Scope, Send
+from starlette.middleware.authentication import AuthenticationMiddleware
 
 # typing
 from typing import Any, Awaitable, Callable, MutableMapping
@@ -26,6 +27,7 @@ from .models.api.view.route import Route as RouteView
 
 # module libraries
 from .lib.responses import ForbiddenResponse, NotFoundResponse
+from .lib.jwt_middleware import JWTAuthenticationBackend
 
 def match_route(app: ASGIApp, scope: Scope):
     """ Checks all routes from "app" and checks if it matches with the one from
@@ -215,7 +217,13 @@ def startup():
         sys.stderr.write(str(e)) 
         sys.exit(1)
 
+async def root(request):
+    return JSONResponse({'payload': request.payload})
+
 app = Starlette(
-    middleware=[Middleware(AclCallerMiddleware)],
-    on_startup=[startup]
+    middleware=[
+        Middleware(AuthenticationMiddleware, backend=JWTAuthenticationBackend(secret_key=open('/etc/half_orm/secret').read())),
+        Middleware(AclCallerMiddleware),
+    ],
+    on_startup=[startup],
 )
