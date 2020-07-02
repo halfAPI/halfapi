@@ -43,7 +43,7 @@ setup(
     long_description_content_type="text/markdown",
     packages=get_packages(module_name),
     package_data={
-        'halfapi': ['lib/*']
+        'halfapi': ['lib/*', 'models/*']
     },
     install_requires=[
         "apidb",
