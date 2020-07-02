@@ -46,8 +46,8 @@ setup(
         'halfapi': ['lib/*', 'models/*']
     },
     install_requires=[
-        "apidb",
         "click",
+        "jwt",
         "starlette",
         "uvicorn"],
     extras_require={
