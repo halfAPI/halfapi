@@ -18,11 +18,11 @@ from typing import Any, Awaitable, Callable, MutableMapping
 RequestResponseEndpoint = Callable[ [Request], Awaitable[Response] ]
 
 # hop-generated classes
-from apidb.api.acl_function import AclFunction
-from apidb.api.domain import Domain
-from apidb.api.route import Route
-from apidb.api.view.acl import Acl as AclView
-from apidb.api.view.route import Route as RouteView
+from .models.api.acl_function import AclFunction
+from .models.api.domain import Domain
+from .models.api.route import Route
+from .models.api.view.acl import Acl as AclView
+from .models.api.view.route import Route as RouteView
 
 # module libraries
 from .lib.responses import ForbiddenResponse, NotFoundResponse
