@@ -118,8 +118,6 @@ def dropdb(dbname, host, port, user, password):
 
     return True
 
-#@click.option('--domain', default='organigramme')
-#@cli.command()
 def delete_domain(domain):
     d = Domain(name=domain)
     if len(d) < 1:
@@ -194,7 +192,7 @@ def dbupdate(dbname, host, port, user, password, domain, drop):
         ROUTES = dom_mod.ROUTES
         add_route_acl(ROUTES)
         add_routes(API_VERSION, domain, dom_mod.ROUTES)
-            
+
         ROUTERS = dom_mod.ROUTERS
 
         for router_name in dom_mod.ROUTERS:
