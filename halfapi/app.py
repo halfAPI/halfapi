@@ -231,6 +231,7 @@ def check_conf():
     if not environ.get('HALFORM_SECRET', False):
         environ['HALFORM_SECRET'] = 'secret'
         print('Missing HALFORM_SECRET variable from configuration, seting to default')
+
     if not environ.get('HALFORM_DSN', False):
         print('Missing HALFORM_DSN variable from configuration')
 
