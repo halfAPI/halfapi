@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+""" Base ACL module that contains generic functions for domains ACL
+"""
+
 def connected(func):
     """ Decorator that checks if the user object of the request has been set
     """
@@ -11,9 +14,6 @@ def connected(func):
 
     return caller
 
-class BaseACL:
-    """ Base ACL class that contains generic methods for domains ACL
-    """
-    def public(self, *args) -> bool:
-        "Unlimited access"
-        return True
+def public(*args, **kwargs) -> bool:
+    "Unlimited access"
+    return True
