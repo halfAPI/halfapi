@@ -138,6 +138,34 @@ def delete_domain(domain):
 
     return True
 
+def add_acl_fct(version, domain_name, fct):
+    acl = Acl()
+    acl.version = version
+    acl.domain = domain_name
+    acl.name = fct.__name__
+    acl.insert()
+
+def add_route(version, domain_name, name, **kwargs):
+    route = Route()
+    route.version = version
+    route.domain = domain_name
+    route.path = kwargs['path']
+    route.insert()
+
+
+def add_routes(version, domain_name, routes):
+    for name, route_params in routes.items():
+        print(f'Adding route {version}/{domain_name}/{function_name}')
+        add_route(version, domain_name, name, **route_params)
+
+
+def add_domain(version, domain_name):
+    domain = Domain(name=domain_name)
+    domain.version = version
+    if len(domain) == 0:
+        print(f'New domain {domain_name}')
+        domain.insert()
+
 @click.option('--dbname', default='api')
 @click.option('--host', default='127.0.0.1')
 @click.option('--port', default=5432)
@@ -151,28 +179,31 @@ def dbupdate(dbname, host, port, user, password, domain, drop):
         dropdb(dbname, host, port, user, password)
 
     delete_domain(domain)
+
+    acl_set = set()
+    add_route_acl = lambda routes: [
+        [ acl_set.add(acl) for acl in route['acl'] ]
+        for route in routes.keys() ]
+
     try:
         dom_mod = importlib.import_module(domain)
-        ROUTES = dom_mod.ROUTES
-        acl_set = set()
-        print(ROUTES)
-        for route in ROUTES.keys():
-            print(route)
-            for acl in ROUTES[route]['acl']:
-                acl_set.add(acl)
 
+        API_VERSION = dom_mod.API_VERSION
+        add_domain(API_VERSION, domain)
+
+        ROUTES = dom_mod.ROUTES
+        add_route_acl(ROUTES)
+        add_routes(API_VERSION, domain, dom_mod.ROUTES)
+            
         ROUTERS = dom_mod.ROUTERS
 
         for router_name in dom_mod.ROUTERS:
-            router_mod = getattr(dom_mod.ROUTERS, router_name) 
+            router_mod = importlib.import_module(f'.routers.{router_name}', domain)
+            add_route_acl(router_mod.ROUTES)
+            add_routes(API_VERSION, domain, router_mod.ROUTES)
 
-        """
-        [
-            map(add_acl_set, ROUTES[route]['acl'])
-            for route in ROUTES.keys()
-        ]
-        """
-        print(acl_set)
+        for acl in acl_set:
+            add_acl_fct(API_VERSION, domain, acl)
 
     except ImportError:
         click.echo(f'The domain {domain} has no *ROUTES* variable', err=True)
