@@ -18,7 +18,7 @@ from .models.api.acl_function import AclFunction
 from .models.api.acl import Acl
 
 # module libraries
-from halfapi.app import check_conf
+from .app import check_conf
 
 HALFORM_DSN=''
 HALFORM_SECRET=''
@@ -36,8 +36,13 @@ def cli(ctx):
 @click.option('--port', default='8000')
 @click.option('--debug', default=False)
 @click.option('--dev', default=True)
+@click.option('--dbname', default='api')
+@click.option('--dbhost', default='127.0.0.1')
+@click.option('--dbport', default=5432)
+@click.option('--dbuser', default='api')
+@click.option('--dbpassword', default='')
 @cli.command()
-def run(host, port, debug, dev):
+def run(host, port, debug, dev, dbname, dbhost, dbport, dbuser, dbpassword):
     if dev:
         debug = True
         reload = True
@@ -45,6 +50,20 @@ def run(host, port, debug, dev):
     else:
         reload = False
         log_level = 'info'
+
+    # Helper function to convert the string-based dsn to a dict
+    dsntodict = lambda dsn: dict(
+        map(lambda x:
+            map(lambda y: y.strip("'\""),
+            x.split('=')
+            ),
+        dsn.split()))
+
+    dicttodsn = lambda dsn_d: (' '.join(
+        [ '{key}={val}'.format(key=key, val=dsn_d[key])
+          for key in dsn_d.keys()
+        ]
+    ))
 
     click.echo('Launching application with default parameters')
     click.echo(f'''Parameters : \n

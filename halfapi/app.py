@@ -2,6 +2,7 @@
 # builtins
 import importlib
 import sys
+from os import environ
 
 # asgi framework
 from starlette.applications import Starlette
@@ -220,9 +221,15 @@ def startup():
 async def root(request):
     return JSONResponse({'payload': request.payload})
 
+def check_conf():
+    if not environ.get('HALFORM_SECRET', False):
+        print('Missing HALFORM_SECRET variable from configuration')
+    if not environ.get('HALFORM_DSN', False):
+        print('Missing HALFORM_DSN variable from configuration')
+
 app = Starlette(
     middleware=[
-        Middleware(AuthenticationMiddleware, backend=JWTAuthenticationBackend(secret_key=open('/etc/half_orm/secret').read())),
+        Middleware(AuthenticationMiddleware, backend=JWTAuthenticationBackend(secret_key=environ.get('HALFORM_DSN'))),
         Middleware(AclCallerMiddleware),
     ],
     on_startup=[startup],

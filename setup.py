@@ -51,7 +51,8 @@ setup(
         "starlette",
         "uvicorn"],
     extras_require={
-        "tests":["pytest", "requests"]
+        "tests":["pytest", "requests"],
+        "domains":["organigramme"]
     },
     entry_points={
         "console_scripts":[
