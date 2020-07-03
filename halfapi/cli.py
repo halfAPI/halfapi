@@ -118,19 +118,19 @@ def dropdb(dbname, host, port, user, password):
 
     return True
 
-@click.option('--domain', default='organigramme')
-@cli.command()
+#@click.option('--domain', default='organigramme')
+#@cli.command()
 def delete_domain(domain):
     d = Domain(name=domain)
     if len(d) < 1:
         return False
-    
+
     acl = Acl(domain=domain)
     acl.delete()
 
     fct = AclFunction(domain=domain)
     fct.delete()
-    
+
     route = Route(domain=domain)
     route.delete()
 
@@ -148,21 +148,36 @@ def delete_domain(domain):
 @cli.command()
 def dbupdate(dbname, host, port, user, password, domain, drop):
     if drop:
-        dropdp(dbname, host, port, user, password)
+        dropdb(dbname, host, port, user, password)
 
     delete_domain(domain)
     try:
-        ROUTES = importlib.import_module('ROUTES', domain)
+        dom_mod = importlib.import_module(domain)
+        ROUTES = dom_mod.ROUTES
         acl_set = set()
-        add_acl_set = lambda x: acl_set.add(i)
+        print(ROUTES)
+        for route in ROUTES.keys():
+            print(route)
+            for acl in ROUTES[route]['acl']:
+                acl_set.add(acl)
+
+        ROUTERS = dom_mod.ROUTERS
+
+        for router_name in dom_mod.ROUTERS:
+            router_mod = getattr(dom_mod.ROUTERS, router_name) 
+
+        """
         [
             map(add_acl_set, ROUTES[route]['acl'])
             for route in ROUTES.keys()
         ]
+        """
         print(acl_set)
 
     except ImportError:
         click.echo(f'The domain {domain} has no *ROUTES* variable', err=True)
+    except Exception as e:
+        click.echo(e, err=True)
 
 
 
