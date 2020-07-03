@@ -1,8 +1,9 @@
 [tool.poetry]
 name = "halfapi"
 version = "0.1.0"
-description = ""
+description = "The core module for an halfORM API"
 authors = ["Joël Maizi <joel.maizi@lirmm.fr>", "Maxime Alves <maxime.alves@lirmm.fr>"]
+homepage = "https://gite.lirmm.fr/newsi/api/halfapi"
 
 [tool.poetry.dependencies]
 click = "^7.0.0"
@@ -10,7 +11,7 @@ half-orm = { git = "git@gite.lirmm.fr:newsi/halfORM.git" }
 PyJWT = "^1.7.0"
 python = "^3.7"
 starlette = "^0.13.0"
-uvicorn = "^0.11.0"
+uvicorn = { version = "^0.11.0", optional = True }
 fastapi = { version = "*", optional = true }
 organigramme = { git = "git@gite.lirmm.fr:newsi/api/organigramme.git", optional = true }
 
