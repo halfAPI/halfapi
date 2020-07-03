@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from starlette.exceptions import HTTPException
-from .responses import CSVResponse
+from halfapi.lib.responses import CSVResponse
 
 """
 This is the *query* library that contains all the useful functions to treat our
