@@ -223,13 +223,14 @@ async def root(request):
 
 def check_conf():
     if not environ.get('HALFORM_SECRET', False):
-        print('Missing HALFORM_SECRET variable from configuration')
+        environ['HALFORM_SECRET'] = 'secret'
+        print('Missing HALFORM_SECRET variable from configuration, seting to default')
     if not environ.get('HALFORM_DSN', False):
         print('Missing HALFORM_DSN variable from configuration')
 
 app = Starlette(
     middleware=[
-        Middleware(AuthenticationMiddleware, backend=JWTAuthenticationBackend(secret_key=environ.get('HALFORM_DSN'))),
+        Middleware(AuthenticationMiddleware, backend=JWTAuthenticationBackend(secret_key=environ.get('HALFORM_SECRET'))),
         Middleware(AclCallerMiddleware),
     ],
     on_startup=[startup],
