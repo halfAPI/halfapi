@@ -1,5 +1,5 @@
 import jwt
-from halfapi import app
+from ..halfapi.app import app
 
 def coucou():
     return 
