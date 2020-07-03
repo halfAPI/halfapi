@@ -17,7 +17,11 @@ from .models.api.route import Route
 from .models.api.acl_function import AclFunction
 from .models.api.acl import Acl
 
+# module libraries
+from halfapi.app import check_conf
 
+HALFORM_DSN=''
+HALFORM_SECRET=''
 CONTEXT_SETTINGS={
     'default_map':{'run': {'port': 8000}} 
 }
@@ -48,7 +52,24 @@ def run(host, port, debug, dev):
     Port : {port}
     Debug : {debug}
     Dev : {dev}''')
-    
+
+    HALFORM_DSN=os.environ.get('HALFORM_DSN', '')
+    db_params = dsntodict(HALFORM_DSN)
+    if not hasattr(db_params, 'dbname'):
+        db_params['dbname'] = dbname
+    if not hasattr(db_params, 'host'):
+        db_params['host'] = dbhost
+    if not hasattr(db_params, 'port'):
+        db_params['port'] = dbport
+    if not hasattr(db_params, 'user'):
+        db_params['user'] = dbuser
+    if not hasattr(db_params, 'password'):
+        db_params['password'] = dbpassword
+
+    os.environ['HALFORM_DSN'] = dicttodsn(db_params)
+
+    check_conf()
+
     sys.path.insert(0, os.getcwd())
     click.echo(sys.path)
     uvicorn.run('halfapi.app:app',

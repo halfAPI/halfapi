@@ -56,7 +56,7 @@ def parse_query(q: str = ""):
             >>> parse_query('limit=10')
             Traceback (most recent call last):
                 ...
-            fastapi.exceptions.HTTPException: 400
+            starlette.exceptions.HTTPException: 400
 
 
     """
