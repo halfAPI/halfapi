@@ -53,7 +53,6 @@ class JWTUser(BaseUser):
 
 
 class JWTAuthenticationBackend(AuthenticationBackend):
-
     def __init__(self, secret_key: str, algorithm: str = 'HS256', prefix: str = 'JWT', name: str = 'name'):
         self.secret_key = secret_key
         self.algorithm = algorithm
