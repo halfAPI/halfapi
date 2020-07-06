@@ -36,7 +36,7 @@ def match_route(app: ASGIApp, scope: Scope):
 
         Parameters:
 
-            - app (ASGIApp): The Starlette object
+            - app (ASGIApp): The Starlette instance
             - scope (MutableMapping[str, Any]): The requests scope
 
         Returns:
@@ -165,12 +165,12 @@ class AclCallerMiddleware(BaseHTTPMiddleware):
         return await self.app(scope, receive, send)
 
 
-def mount_domains(app: Starlette, domains: list):
+def mount_domains(app: ASGIApp, domains: list):
     """ Procedure to mount the registered domains on their prefixes
 
         Parameters:
 
-            - app (FastAPI): The FastAPI object
+            - app (ASGIApp): The Starlette instance
             - domains (list): The domains to mount, retrieved from the database
               with their attributes "version", "name"
 
@@ -203,8 +203,8 @@ def mount_domains(app: Starlette, domains: list):
 
 
         # Alter the openapi_url so the /docs page doesn't try to get
-        # /{name}/openapi.json (@TODO : retport the bug to FastAPI)
-        # domain_app.openapi_url = '/../api/{version}/{name}/openapi.json'.format(**domain)
+        # /openapi.json (@TODO : report the bug to FastAPI)
+        domain_app.openapi_url = '/api/{version}/{name}/openapi.json'.format(**domain)
 
         # Mount the domain app on the prefix
         # e.g. : /v4/organigramme
