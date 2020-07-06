@@ -74,16 +74,11 @@ def run(host, port, debug, dev, dbname, dbhost, dbport, dbuser, dbpassword):
 
     HALFORM_DSN=os.environ.get('HALFORM_DSN', '')
     db_params = dsntodict(HALFORM_DSN)
-    if not hasattr(db_params, 'dbname'):
-        db_params['dbname'] = dbname
-    if not hasattr(db_params, 'host'):
-        db_params['host'] = dbhost
-    if not hasattr(db_params, 'port'):
-        db_params['port'] = dbport
-    if not hasattr(db_params, 'user'):
-        db_params['user'] = dbuser
-    if not hasattr(db_params, 'password'):
-        db_params['password'] = dbpassword
+    db_params['dbname'] = db_params.get('dbname', dbname)
+    db_params['host'] = db_params.get('host', dbhost)
+    db_params['port'] = db_params.get('port', dbport)
+    db_params['user'] = db_params.get('user', dbuser)
+    db_params['password'] = db_params.get('password', dbpassword)
 
     os.environ['HALFORM_DSN'] = dicttodsn(db_params)
 
