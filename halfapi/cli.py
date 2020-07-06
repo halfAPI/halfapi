@@ -62,7 +62,7 @@ def run(envfile, host, port):
     check_conf()
 
     sys.path.insert(0, os.getcwd())
-    click.echo(f'Current PYTHON_PATH : {sys.path}')
+    click.echo(f'current python_path : {sys.path}')
 
     uvicorn.run('halfapi.app:app',
         env_file=envfile,
@@ -77,13 +77,13 @@ def run(envfile, host, port):
 @click.option('--user', default='api')
 @click.option('--password', default='')
 @click.option('--domain', default='organigramme')
-@click.option('--drop', is_flag=True, default=False)
+@click.option('--drop', is_flag=true, default=false)
 @cli.command()
 def dbupdate(dbname, host, port, user, password, domain, drop):
 
     def dropdb():
-        if not click.confirm(f'Will now drop database {dbname}', default=True):
-            return False
+        if not click.confirm(f'will now drop database {dbname}', default=true):
+            return false
 
         conn = psycopg2.connect({
             'dbname': dbname,
@@ -95,15 +95,15 @@ def dbupdate(dbname, host, port, user, password, domain, drop):
 
         cur = conn.cursor()
 
-        cur.execute(f'DROP DATABASE {dbname};')
+        cur.execute(f'drop database {dbname};')
         conn.commit()
         cur.close()
         conn.close()
 
-        return True
+        return true
 
     def delete_domain():
-        d = Domain(name=domain)
+        d = domain(name=domain)
         if len(d) < 1:
             return False
 
