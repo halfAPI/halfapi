@@ -13,10 +13,10 @@ python = "^3.7"
 starlette = "^0"
 uvicorn = { version = "^0" }
 fastapi = { version = "^0", optional = true }
-organigramme = { git = "git@gite.lirmm.fr:newsi/api/organigramme.git", optional = true, branch = "dev" }
+organigramme = { git = "git@gite.lirmm.fr:newsi/api/organigramme.git", optional = true }
 
 [tool.poetry.dev-dependencies]
-pytest = "^3"
+pytest = "^5"
 requests = "^2"
 
 [tool.poetry.extras]
