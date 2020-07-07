@@ -2,7 +2,6 @@
 from starlette.requests import Request
 from starlette.exceptions import HTTPException
 
-@app.middleware('http')
 async def acl_middleware(request: Request, call_next):
     """ Checks the "acls" key in the scope and applies the
         corresponding functions in the current module's acl lib.
