@@ -4,6 +4,10 @@ from starlette.exceptions import HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 
 class AclMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, acl_module):
+        super().__init__(app)
+        self.acl_module = acl_module
+
     async def dispatch(self, request: Request, call_next):
         """ Checks the "acls" key in the scope and applies the
             corresponding functions in the current module's acl lib.
@@ -12,10 +16,10 @@ class AclMiddleware(BaseHTTPMiddleware):
         """
         print(f'Hit acl {__name__} middleware')
 
-        for acl_fnct_name in request.scope['acls']:
-            print(f'Will apply {acl_fnct_name}')
+        for acl_fct_name in request.scope['acls']:
+            print(f'Will apply {acl_fct_name}')
             try:
-                fct = getattr(acl, acl_fct_name)
+                fct = getattr(self.acl_module, acl_fct_name)
                 if fct(request) is True:
                     print(f'{fct} : {fct(request)}\n')
 
