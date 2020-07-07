@@ -8,11 +8,9 @@ def connected(func):
     """
     @wraps(func)
     def caller(req, *args, **kwargs):
-        try:
-            getattr(req.user, 'is_authenticated')
-            return func(req, **kwargs)
-        except AttributeError:
+        if not hasattr(req.user, 'is_authenticated'):
             return False
+        return func(req, **kwargs)
 
     return caller
 
