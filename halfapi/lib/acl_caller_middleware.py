@@ -4,7 +4,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.routing import Match, Mount
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-from .models.api.view.acl import Acl as AclView
+from halfapi.models.api.view.acl import Acl as AclView
 
 def match_route(scope: Scope):
     """ Checks all routes from "app" and checks if it matches with the one from

@@ -9,6 +9,7 @@ from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.requests import Request
 from starlette.responses import Response, JSONResponse
+from starlette.routing import Route
 from starlette.types import ASGIApp
 from starlette.middleware.authentication import AuthenticationMiddleware
 
@@ -102,9 +103,9 @@ def check_conf():
 DEBUG = True
 
 debug_routes = [
-    AppRoute('/', lambda request: PlainTextResponse('It Works!')),
-    AppRoute('/user', lambda request: JSONResponse({'user':request.user})),
-    AppRoute('/payload', lambda request: JSONResponse({'payload':request.payload}))
+    Route('/', lambda request: PlainTextResponse('It Works!')),
+    Route('/user', lambda request: JSONResponse({'user':request.user})),
+    Route('/payload', lambda request: JSONResponse({'payload':request.payload}))
 ] if DEBUG is True else []
 
 app = Starlette(
