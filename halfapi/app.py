@@ -45,7 +45,8 @@ def mount_domains(app: ASGIApp, domains: list):
         # Retrieve domain app according to domain details
         try:
             print(f'Will import {domain["name"]}.app:app')
-            #@TODO let the configuration come from the domain module - (or apidb)
+            # @TODO 4-configuration
+            # Store domain-specific information in a configuration file
             environ["HALFORM_DSN"] = "dbname=si user=si"
             domain_mod = importlib.import_module(
                 f'{domain["name"]}.app')
@@ -76,6 +77,8 @@ def mount_domains(app: ASGIApp, domains: list):
 
 
 def startup():
+    # This function is called at the instanciation of *app*
+
     global app
     # Mount the registered domains
     try:
@@ -96,7 +99,17 @@ def check_conf():
     if not environ.get('HALFORM_DSN', False):
         print('Missing HALFORM_DSN variable from configuration')
 
+DEBUG = True
+
+debug_routes = [
+    AppRoute('/', lambda request: PlainTextResponse('It Works!')),
+    AppRoute('/user', lambda request: JSONResponse({'user':request.user})),
+    AppRoute('/payload', lambda request: JSONResponse({'payload':request.payload}))
+] if DEBUG is True else []
+
 app = Starlette(
+    debug=DEBUG,
+    routes=debug_routes,
     middleware=[
         Middleware(AuthenticationMiddleware, backend=JWTAuthenticationBackend(secret_key=environ.get('HALFORM_SECRET'))),
         Middleware(AclCallerMiddleware),
