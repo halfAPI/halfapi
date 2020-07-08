@@ -3,11 +3,11 @@ from starlette.requests import Request
 from starlette.exceptions import HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 
+
 class AclMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, acl_module):
         super().__init__(app)
         self.acl_module = acl_module
-
     async def dispatch(self, request: Request, call_next):
         """ Checks the "acls" key in the scope and applies the
             corresponding functions in the current module's acl lib.
@@ -21,8 +21,6 @@ class AclMiddleware(BaseHTTPMiddleware):
             try:
                 fct = getattr(self.acl_module, acl_fct_name)
                 if fct(request) is True:
-                    print(f'{fct} : {fct(request)}\n')
-
                     return await call_next(request)
 
             except AttributeError as e:

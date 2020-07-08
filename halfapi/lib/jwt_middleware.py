@@ -43,13 +43,18 @@ class JWTUser(BaseUser):
         self.token = token
         self.payload = payload
 
+    def __str__(self):
+        if len(self.__id) > 0:
+            return self.__id
+        else:
+            return 'no id'
     @property
     def is_authenticated(self) -> bool:
         return True
 
     @property
     def id(self) -> str:
-        return self.id
+        return self.__id
 
 
 class JWTAuthenticationBackend(AuthenticationBackend):
@@ -68,6 +73,9 @@ class JWTAuthenticationBackend(AuthenticationBackend):
             payload = jwt.decode(token, key=self.secret_key, algorithms=self.algorithm)
         except jwt.InvalidTokenError as e:
             raise AuthenticationError(str(e))
+        except Exception as e:
+            print(e)
+
 
         return AuthCredentials(["authenticated"]), JWTUser(
             id=payload['id'], token=token, payload=payload)
