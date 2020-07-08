@@ -7,17 +7,11 @@ from io import TextIOBase, StringIO
 # asgi framework
 from starlette.responses import Response
 
-class NotFoundResponse(Response):
-    """ The 404 Not Found default Response  
-    """
-    def __init__(self):
-        super().__init__(status_code=404)
-
-class ForbiddenResponse(Response):
-    """ The 401 Not Found default Response  
-    """
-    def __init__(self):
-        super().__init__(status_code = 401)
+__all__ = ['CSVResponse',
+    'InternalServerErrorResponse',
+    'NotFoundResponse',
+    'NotImplementedResponse',
+    'UnauthorizedResponse']
 
 class CSVResponse(Response):
     def __init__(self, obj):
@@ -33,3 +27,32 @@ class CSVResponse(Response):
                     'Content-Type': 'text/csv; charset=UTF-8',
                     'Content-Disposition': f'attachment; filename="{filename}"'},
                 status_code = 200)
+
+
+class InternalServerErrorResponse(Response):
+    """ The 500 Internal Server Error default Response  
+    """
+    def __init__(self):
+        super().__init__(status_code=500)
+
+
+class NotFoundResponse(Response):
+    """ The 404 Not Found default Response  
+    """
+    def __init__(self):
+        super().__init__(status_code=404)
+
+
+class NotImplementedResponse(Response):
+    """ The 501 Not Implemented default Response  
+    """
+    def __init__(self):
+        super().__init__(status_code=501)
+
+
+class UnauthorizedResponse(Response):
+    """ The 401 Not Found default Response  
+    """
+    def __init__(self):
+        super().__init__(status_code = 401)
+

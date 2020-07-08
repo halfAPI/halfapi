@@ -20,9 +20,10 @@ RequestResponseEndpoint = Callable[ [Request], Awaitable[Response] ]
 from .models.api.domain import Domain
 
 # module libraries
-from .lib.responses import *
 from .lib.jwt_middleware import JWTAuthenticationBackend
 from .lib.acl_caller_middleware import AclCallerMiddleware
+
+from .lib.responses import *
 
 
 def mount_domains(app: ASGIApp, domains: list):
@@ -89,7 +90,7 @@ async def root(request):
 
 def check_conf():
     if not environ.get('HALFORM_SECRET', False):
-        environ['HALFORM_SECRET'] = 'secret'
+        environ['HALFORM_SECRET'] = open('/etc/half_orm/secret').read()
         print('Missing HALFORM_SECRET variable from configuration, seting to default')
 
     if not environ.get('HALFORM_DSN', False):
@@ -100,5 +101,11 @@ app = Starlette(
         Middleware(AuthenticationMiddleware, backend=JWTAuthenticationBackend(secret_key=environ.get('HALFORM_SECRET'))),
         Middleware(AclCallerMiddleware),
     ],
-    on_startup=[startup]
+    exception_handlers={
+        401: UnauthorizedResponse,
+        404: NotFoundResponse,
+        500: InternalServerErrorResponse,
+        501: NotImplementedResponse
+    },
+    on_startup=[startup],
 )
