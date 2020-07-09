@@ -44,11 +44,16 @@ class JWTUser(BaseUser):
         self.payload = payload
 
     def __str__(self):
-        return str({
+        return str(self.json)
+
+    @property
+    def json(self):
+        return {
             'id' : str(self.__id),
             'token': self.token,
             'payload': self.payload
-        })
+        }
+
     @property
     def is_authenticated(self) -> bool:
         return True
@@ -60,6 +65,8 @@ class JWTUser(BaseUser):
 
 class JWTAuthenticationBackend(AuthenticationBackend):
     def __init__(self, secret_key: str, algorithm: str = 'HS256', prefix: str = 'JWT', name: str = 'name'):
+        if secret_key is None:
+            raise Exception('Missing secret_key argument for JWTAuthenticationBackend') 
         self.secret_key = secret_key
         self.algorithm = algorithm
         self.prefix = prefix
@@ -76,6 +83,7 @@ class JWTAuthenticationBackend(AuthenticationBackend):
             raise AuthenticationError(str(e))
         except Exception as e:
             print(e)
+            raise e
 
 
         return AuthCredentials(["authenticated"]), JWTUser(

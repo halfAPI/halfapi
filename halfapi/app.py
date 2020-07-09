@@ -48,7 +48,7 @@ def mount_domains(app: ASGIApp, domains: list):
             print(f'Will import {domain["name"]}.app:app')
             # @TODO 4-configuration
             # Store domain-specific information in a configuration file
-            environ["HALFORM_DSN"] = "dbname=si user=si"
+
             domain_mod = importlib.import_module(
                 f'{domain["name"]}.app')
             domain_app = domain_mod.app
@@ -89,29 +89,41 @@ def startup():
         sys.stderr.write('Error in the *domains* retrieval\n') 
         raise e
 
-async def root(request):
-    return JSONResponse({'payload': request.payload})
 
-def check_conf():
-    if not environ.get('HALFORM_SECRET', False):
-        environ['HALFORM_SECRET'] = open('/etc/half_orm/secret').read()
-        print('Missing HALFORM_SECRET variable from configuration, seting to default')
+# Configuration
+CONFIG={}
+CONFIG['DEBUG'] = environ.get('DEBUG', False)
+CONFIG['DEBUG_ACL'] = environ.get('DEBUG_ACL', False)
+CONFIG['HALFORM_SECRET'] = environ.get('HALFORM_SECRET', False)
 
-CONFIG={
-    'DEBUG' : 'DEBUG' in environ.keys()
-}
+if not CONFIG['HALFORM_SECRET']:
+    try:
+        CONFIG['HALFORM_SECRET'] = open('/etc/half_orm/secret').read()
+        print('Missing HALFORM_SECRET variable from configuration, \
+            read it from /etc/half_orm/secret')
+    except FileNotFoundError:
+        print('No HALFORM_SECRET variable set, and /etc/half_orm/secret \
+            inaccessible.')
+        sys.exit(1)
+    except PermissionError:
+        print("You don't have the right to read /etc/half_orm/secret")
+        sys.exit(1)
+
 
 debug_routes = [
     Route('/', lambda request, *args, **kwargs: PlainTextResponse('It Works!')),
-    Route('/user', lambda request, *args, **kwargs: JSONResponse({'user':str(request.user)})),
+    Route('/user', lambda request, *args, **kwargs:
+        JSONResponse({'user':request.user.json})),
     Route('/payload', lambda request, *args, **kwargs: JSONResponse({'payload':str(request.payload)}))
-] if CONFIG['DEBUG'] is True else []
+] if CONFIG['DEBUG'] else []
+
 
 app = Starlette(
     debug=CONFIG['DEBUG'],
     routes=debug_routes,
     middleware=[
-        Middleware(AuthenticationMiddleware, backend=JWTAuthenticationBackend(secret_key=environ.get('HALFORM_SECRET'))),
+        Middleware(AuthenticationMiddleware,
+            backend=JWTAuthenticationBackend(secret_key=CONFIG['HALFORM_SECRET'])),
         Middleware(AclCallerMiddleware),
     ],
     exception_handlers={

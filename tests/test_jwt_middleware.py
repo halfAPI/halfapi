@@ -50,7 +50,6 @@ def test_token(token):
         raise Exception('Malformed response from /user request')
 
     assert 'user' in res.keys()
-    print(res['user'])
     assert 'id' in res['user'].keys()
     assert 'token' in res['user'].keys()
     assert 'payload' in res['user'].keys()

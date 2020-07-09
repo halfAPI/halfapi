@@ -17,8 +17,6 @@ from .models.api.route import Route
 from .models.api.acl_function import AclFunction
 from .models.api.acl import Acl
 
-# module libraries
-from .app import check_conf
 
 HALFORM_DSN=''
 HALFORM_SECRET=''
@@ -58,8 +56,6 @@ def run(envfile, host, port):
         log_level = 'info'
 
     click.echo('Launching application')
-
-    check_conf()
 
     sys.path.insert(0, os.getcwd())
     click.echo(f'current python_path : {sys.path}')
