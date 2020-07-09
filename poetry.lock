@@ -56,14 +56,6 @@ version = "0.4.3"
 
 [[package]]
 category = "main"
-description = "Handle .env files"
-name = "dotenv"
-optional = false
-python-versions = "*"
-version = "0.0.5"
-
-[[package]]
-category = "main"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
 name = "fastapi"
 optional = true
@@ -158,15 +150,15 @@ python-versions = "^3.7"
 version = "0.1.0"
 
 [package.dependencies]
-fastapi = "*"
+fastapi = "^0"
 half-orm = "branch master"
 halfapi = "branch master"
 sidb = "branch master"
-starlette = "^0.13.0"
-uvicorn = "*"
+starlette = "^0"
+uvicorn = "^0"
 
 [package.source]
-reference = "4f9cf92253b2ee526a528724877840c8ec158d3a"
+reference = "f26fc6dcde165bfbb88d4664f842de33aacfb1f8"
 type = "git"
 url = "git@gite.lirmm.fr:newsi/api/organigramme.git"
 
@@ -273,6 +265,28 @@ version = ">=0.12"
 [package.extras]
 checkqa-mypy = ["mypy (v0.761)"]
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xmlschema"]
+
+[[package]]
+category = "dev"
+description = "py.test plugin that allows you to add environment variables."
+name = "pytest-env"
+optional = false
+python-versions = "*"
+version = "0.6.2"
+
+[package.dependencies]
+pytest = ">=2.6.0"
+
+[[package]]
+category = "main"
+description = "Add .env support to your django/flask apps in development and deployments"
+name = "python-dotenv"
+optional = false
+python-versions = "*"
+version = "0.14.0"
+
+[package.extras]
+cli = ["click (>=5.0)"]
 
 [[package]]
 category = "main"
@@ -408,7 +422,7 @@ testing = ["jaraco.itertools", "func-timeout"]
 organigramme = ["fastapi", "organigramme"]
 
 [metadata]
-content-hash = "56e1f269ca07039fa6898fa427261f61cab9ef871c5a82edb592cbfb197c2d03"
+content-hash = "b801de5aea1ab2defb9265cc25773b55f7c00e36e7206e19173cef5a0ee99eb4"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -435,9 +449,6 @@ click = [
 colorama = [
     {file = "colorama-0.4.3-py2.py3-none-any.whl", hash = "sha256:7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff"},
     {file = "colorama-0.4.3.tar.gz", hash = "sha256:e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1"},
-]
-dotenv = [
-    {file = "dotenv-0.0.5.tar.gz", hash = "sha256:b58d2ab3f83dbd4f8a362b21158a606bee87317a9444485566b3c8f0af847091"},
 ]
 fastapi = [
     {file = "fastapi-0.58.1-py3-none-any.whl", hash = "sha256:d7499761d5ca901cdf5b6b73018d14729593f8ab1ea22d241f82fa574fc406ad"},
@@ -549,6 +560,13 @@ pyparsing = [
 pytest = [
     {file = "pytest-5.4.3-py3-none-any.whl", hash = "sha256:5c0db86b698e8f170ba4582a492248919255fcd4c79b1ee64ace34301fb589a1"},
     {file = "pytest-5.4.3.tar.gz", hash = "sha256:7979331bfcba207414f5e1263b5a0f8f521d0f457318836a7355531ed1a4c7d8"},
+]
+pytest-env = [
+    {file = "pytest-env-0.6.2.tar.gz", hash = "sha256:7e94956aef7f2764f3c147d216ce066bf6c42948bb9e293169b1b1c880a580c2"},
+]
+python-dotenv = [
+    {file = "python-dotenv-0.14.0.tar.gz", hash = "sha256:8c10c99a1b25d9a68058a1ad6f90381a62ba68230ca93966882a4dbc3bc9c33d"},
+    {file = "python_dotenv-0.14.0-py2.py3-none-any.whl", hash = "sha256:c10863aee750ad720f4f43436565e4c1698798d763b63234fb5021b6c616e423"},
 ]
 pyyaml = [
     {file = "PyYAML-5.3.1-cp27-cp27m-win32.whl", hash = "sha256:74809a57b329d6cc0fdccee6318f44b9b8649961fa73144a98735b0aaf029f1f"},

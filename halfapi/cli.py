@@ -35,26 +35,21 @@ def cli(ctx):
 @click.option('--envfile', default=None)
 @click.option('--host', default='127.0.0.1')
 @click.option('--port', default='8000')
-@click.option('--debug', default=False)
-@click.option('--dev', default=True)
-@click.option('--dbname', default='api')
-@click.option('--dbhost', default='127.0.0.1')
-@click.option('--dbport', default=5432)
-@click.option('--dbuser', default='api')
-@click.option('--dbpassword', default='')
 @cli.command()
-def run(envfile, host, port, debug, dev, dbname, dbhost, dbport, dbuser, dbpassword):
+def run(envfile, host, port):
+    local_env = {}
     if envfile:
         try:
             with open(envfile) as f:
-                print('Will use the following env parameters')
-                print(f.readlines())
-                pass
+                print('Will use the following env parameters :')
+                local_env = dict([ tuple(line.strip().split('=', 1))
+                    for line in f.readlines() ])
+                print(local_env)
         except FileNotFoundError:
             print(f'No file named {envfile}')
             envfile = None
 
-    if dev:
+    if 'DEV' in local_env.keys():
         debug = True
         reload = True
         log_level = 'debug'
@@ -62,41 +57,13 @@ def run(envfile, host, port, debug, dev, dbname, dbhost, dbport, dbuser, dbpassw
         reload = False
         log_level = 'info'
 
-    # Helper function to convert the string-based dsn to a dict
-    dsntodict = lambda dsn: dict(
-        map(lambda x:
-            map(lambda y: y.strip("'\""),
-            x.split('=')
-            ),
-        dsn.split()))
-
-    dicttodsn = lambda dsn_d: (' '.join(
-        [ '{key}={val}'.format(key=key, val=dsn_d[key])
-          for key in dsn_d.keys()
-        ]
-    ))
-
-    click.echo('Launching application with default parameters')
-    click.echo(f'''Parameters : \n
-    Host : {host}
-    Port : {port}
-    Debug : {debug}
-    Dev : {dev}''')
-
-    HALFORM_DSN=os.environ.get('HALFORM_DSN', '')
-    db_params = dsntodict(HALFORM_DSN)
-    db_params['dbname'] = db_params.get('dbname', dbname)
-    db_params['host'] = db_params.get('host', dbhost)
-    db_params['port'] = db_params.get('port', dbport)
-    db_params['user'] = db_params.get('user', dbuser)
-    db_params['password'] = db_params.get('password', dbpassword)
-
-    os.environ['HALFORM_DSN'] = dicttodsn(db_params)
+    click.echo('Launching application')
 
     check_conf()
 
     sys.path.insert(0, os.getcwd())
-    click.echo(sys.path)
+    click.echo(f'Current PYTHON_PATH : {sys.path}')
+
     uvicorn.run('halfapi.app:app',
         env_file=envfile,
         host=host,

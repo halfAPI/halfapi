@@ -79,8 +79,8 @@ def mount_domains(app: ASGIApp, domains: list):
 
 def startup():
     # This function is called at the instanciation of *app*
-
     global app
+
     # Mount the registered domains
     try:
         domains_list = [elt for elt in Domain().select()]
@@ -96,9 +96,6 @@ def check_conf():
     if not environ.get('HALFORM_SECRET', False):
         environ['HALFORM_SECRET'] = open('/etc/half_orm/secret').read()
         print('Missing HALFORM_SECRET variable from configuration, seting to default')
-
-    if not environ.get('HALFORM_DSN', False):
-        print('Missing HALFORM_DSN variable from configuration')
 
 CONFIG={
     'DEBUG' : 'DEBUG' in environ.keys()
