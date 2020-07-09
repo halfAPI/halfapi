@@ -100,16 +100,18 @@ def check_conf():
     if not environ.get('HALFORM_DSN', False):
         print('Missing HALFORM_DSN variable from configuration')
 
-DEBUG = True
+CONFIG={
+    'DEBUG' : 'DEBUG' in environ.keys()
+}
 
 debug_routes = [
-    Route('/', lambda request: PlainTextResponse('It Works!')),
-    Route('/user', lambda request: JSONResponse({'user':request.user})),
-    Route('/payload', lambda request: JSONResponse({'payload':request.payload}))
-] if DEBUG is True else []
+    Route('/', lambda request, *args, **kwargs: PlainTextResponse('It Works!')),
+    Route('/user', lambda request, *args, **kwargs: JSONResponse({'user':str(request.user)})),
+    Route('/payload', lambda request, *args, **kwargs: JSONResponse({'payload':str(request.payload)}))
+] if CONFIG['DEBUG'] is True else []
 
 app = Starlette(
-    debug=DEBUG,
+    debug=CONFIG['DEBUG'],
     routes=debug_routes,
     middleware=[
         Middleware(AuthenticationMiddleware, backend=JWTAuthenticationBackend(secret_key=environ.get('HALFORM_SECRET'))),

@@ -22,9 +22,9 @@ requests = "^2"
 [tool.poetry.extras]
 organigramme = [ "fastapi", "organigramme" ]
 
+[tool.poetry.scripts]
+halfapi = 'halfapi.cli:cli'
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
 
-[tool.poetry.scripts]
-halfapi = 'halfapi.cli:cli'

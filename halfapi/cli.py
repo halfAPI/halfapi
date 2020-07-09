@@ -32,6 +32,7 @@ def cli(ctx):
     if ctx.invoked_subcommand is None: 
         return run()
 
+@click.option('--envfile', default=None)
 @click.option('--host', default='127.0.0.1')
 @click.option('--port', default='8000')
 @click.option('--debug', default=False)
@@ -42,7 +43,17 @@ def cli(ctx):
 @click.option('--dbuser', default='api')
 @click.option('--dbpassword', default='')
 @cli.command()
-def run(host, port, debug, dev, dbname, dbhost, dbport, dbuser, dbpassword):
+def run(envfile, host, port, debug, dev, dbname, dbhost, dbport, dbuser, dbpassword):
+    if envfile:
+        try:
+            with open(envfile) as f:
+                print('Will use the following env parameters')
+                print(f.readlines())
+                pass
+        except FileNotFoundError:
+            print(f'No file named {envfile}')
+            envfile = None
+
     if dev:
         debug = True
         reload = True
@@ -87,6 +98,7 @@ def run(host, port, debug, dev, dbname, dbhost, dbport, dbuser, dbpassword):
     sys.path.insert(0, os.getcwd())
     click.echo(sys.path)
     uvicorn.run('halfapi.app:app',
+        env_file=envfile,
         host=host,
         port=int(port),
         log_level=log_level,

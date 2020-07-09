@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from os import environ
+
 from starlette.exceptions import HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.routing import Match, Mount
@@ -6,7 +8,11 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 
 from halfapi.models.api.view.acl import Acl as AclView
 
-def match_route(scope: Scope):
+class DebugRouteException(Exception):
+    def __init__(self, *args, **kwargs):
+        super().__init__(self)
+
+def match_route(app: ASGIApp, scope: Scope):
     """ Checks all routes from "app" and checks if it matches with the one from
         scope
 
@@ -30,7 +36,10 @@ def match_route(scope: Scope):
         Refer to the database documentation for more details on the api.route
         table.
     """
-    from halfapi.app import app
+
+    print('3')
+    from ..app import CONFIG
+    print(CONFIG)
 
     result = {
         'domain': None,
@@ -38,6 +47,9 @@ def match_route(scope: Scope):
         'http_verb': None,
         'version': None
     }
+
+    if 'DEBUG' in CONFIG.keys() and len(scope['path'].split('/')) <= 3:
+        raise DebugRouteException()
 
     try:
         """ Identification of the parts of the path
@@ -51,7 +63,6 @@ def match_route(scope: Scope):
     except ValueError as e:
         #404 Not found
         raise HTTPException(404)
-
     # Prefix the path with "/"
     path = f'/{path}'
 
@@ -111,13 +122,18 @@ class AclCallerMiddleware(BaseHTTPMiddleware):
             await self.app(scope, receive, send)
             return
 
+        app = self.app
+        while True:
+            if not hasattr(app, 'app'):
+                break
+            app = app.app
 
         if scope['path'].split('/')[-1] not in ['docs','openapi.json','redoc']:
             # routes in the the database, the others being
             # docs/openapi.json/redoc
-            d_match, path_params = match_route(scope)
 
             try:
+                d_match, path_params = match_route(app, scope)
                 scope['acls'] = []
                 for acl in AclView(**d_match).select():
                     # retrieve related ACLs
@@ -132,5 +148,11 @@ class AclCallerMiddleware(BaseHTTPMiddleware):
                 # TODO : No ACL sur une route existante, prevenir l'admin?
                 print("No ACL")
                 pass
+            except DebugRouteException:
+                print("Debug route")
+                if 'DEBUG_ACL' in environ.keys():
+                    scope['acls'] = environ['DEBUG_ACL'].split(':')
+                else:
+                    scope['acls'] = []
 
         return await self.app(scope, receive, send)
