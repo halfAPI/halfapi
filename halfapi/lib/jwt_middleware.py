@@ -44,10 +44,11 @@ class JWTUser(BaseUser):
         self.payload = payload
 
     def __str__(self):
-        if len(self.__id) > 0:
-            return self.__id
-        else:
-            return 'no id'
+        return str({
+            'id' : str(self.__id),
+            'token': self.token,
+            'payload': self.payload
+        })
     @property
     def is_authenticated(self) -> bool:
         return True
