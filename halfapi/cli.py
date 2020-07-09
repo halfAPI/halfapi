@@ -77,13 +77,13 @@ def run(envfile, host, port):
 @click.option('--user', default='api')
 @click.option('--password', default='')
 @click.option('--domain', default='organigramme')
-@click.option('--drop', is_flag=true, default=false)
+@click.option('--drop', is_flag=True, default=False)
 @cli.command()
 def dbupdate(dbname, host, port, user, password, domain, drop):
 
     def dropdb():
-        if not click.confirm(f'will now drop database {dbname}', default=true):
-            return false
+        if not click.confirm(f'will now drop database {dbname}', default=True):
+            return False
 
         conn = psycopg2.connect({
             'dbname': dbname,
