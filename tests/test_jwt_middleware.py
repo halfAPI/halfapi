@@ -12,11 +12,6 @@ from halfapi.app import app
 from halfapi.lib.jwt_middleware import (JWTUser, JWTAuthenticationBackend,
     JWTWebSocketAuthenticationBackend)
 
-def coucou():
-    return 
-def test_connected():
-    app.route('/', coucou)
-
 @pytest.fixture
 def token():
     # This fixture needs to have a running auth-lirmm on 127.0.0.1:3000
@@ -24,6 +19,27 @@ def token():
 
     r = requests.post('http://127.0.0.1:3000/',
         data={'email':'maizi', 'password':'a'})
+
+    if len(r.text) <= 0:
+        raise Exception('No result in token retrieval')
+
+    try:
+        res = json.loads(r.text)
+    except JSONDecodeError:
+        raise Exception('Malformed response from token retrieval')
+
+    if 'token' not in res.keys():
+        raise Exception('Missing token in token request')
+
+    return res['token']
+
+@pytest.fixture
+def token_dirser():
+    # This fixture needs to have a running auth-lirmm on 127.0.0.1:3000
+    # Sets a valid token
+
+    r = requests.post('http://127.0.0.1:3000/',
+        data={'email':'dhenaut', 'password':'a'})
 
     if len(r.text) <= 0:
         raise Exception('No result in token retrieval')
@@ -53,3 +69,24 @@ def test_token(token):
     assert 'id' in res['user'].keys()
     assert 'token' in res['user'].keys()
     assert 'payload' in res['user'].keys()
+
+def test_labopers(token, token_dirser):
+    res = requests.get('http://127.0.0.1:8080/api/v4/organigramme/laboratoire/personnel',
+        params={
+            'q': 'limit:10|format:csv'
+        },
+        headers={
+            'Authorization': token
+        })
+
+    assert res.status_code == 401
+
+    res = requests.get('http://127.0.0.1:8080/api/v4/organigramme/laboratoire/personnel',
+        params={
+            'q': 'limit:10|format:csv'
+        },
+        headers={
+            'Authorization': token_dirser
+        })
+
+    assert res.status_code == 200

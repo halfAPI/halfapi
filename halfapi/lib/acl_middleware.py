@@ -16,6 +16,16 @@ class AclMiddleware(BaseHTTPMiddleware):
         """
         print(f'Hit acl {__name__} middleware')
 
+        if 'dev_route' in request.scope.keys():
+            print('[DEBUG] Dev route, no ACL')
+            return await call_next(request)
+
+        if not('acls' in request.scope.keys()
+            and type(request.scope['acls']) == list):
+
+            print('BUG : scope["acls"] does not exist or is not a list')
+            raise HTTPException(500)
+
         for acl_fct_name in request.scope['acls']:
             print(f'Will apply {acl_fct_name}')
             try:
