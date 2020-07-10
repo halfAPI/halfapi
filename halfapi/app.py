@@ -6,6 +6,7 @@ from os import environ
 
 # asgi framework
 from starlette.applications import Starlette
+from starlette.authentication import UnauthenticatedUser
 from starlette.middleware import Middleware
 from starlette.requests import Request
 from starlette.responses import Response, JSONResponse
@@ -21,6 +22,7 @@ RequestResponseEndpoint = Callable[ [Request], Awaitable[Response] ]
 from .models.api.domain import Domain
 
 # module libraries
+from .config import CONFIG
 from .lib.jwt_middleware import JWTAuthenticationBackend
 from .lib.acl_caller_middleware import AclCallerMiddleware
 
@@ -89,13 +91,6 @@ def startup():
         sys.stderr.write('Error in the *domains* retrieval\n') 
         raise e
 
-
-# Configuration
-CONFIG={}
-CONFIG['DEBUG'] = environ.get('DEBUG', False)
-CONFIG['DEBUG_ACL'] = environ.get('DEBUG_ACL', False)
-CONFIG['HALFORM_SECRET'] = environ.get('HALFORM_SECRET', False)
-
 if not CONFIG['HALFORM_SECRET']:
     try:
         CONFIG['HALFORM_SECRET'] = open('/etc/half_orm/secret').read()
@@ -113,8 +108,11 @@ if not CONFIG['HALFORM_SECRET']:
 debug_routes = [
     Route('/', lambda request, *args, **kwargs: PlainTextResponse('It Works!')),
     Route('/user', lambda request, *args, **kwargs:
-        JSONResponse({'user':request.user.json})),
-    Route('/payload', lambda request, *args, **kwargs: JSONResponse({'payload':str(request.payload)}))
+        JSONResponse({'user':request.user.json})
+        if type(request.user) != UnauthenticatedUser
+        else JSONResponse({'user':False})),
+    Route('/payload', lambda request, *args, **kwargs:
+        JSONResponse({'payload':str(request.payload)}))
 ] if CONFIG['DEBUG'] else []
 
 
