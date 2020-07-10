@@ -6,6 +6,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.routing import Match, Mount
 from starlette.types import ASGIApp, Receive, Scope, Send
 
+from halfapi.config import CONFIG
 from halfapi.models.api.view.acl import Acl as AclView
 
 class DebugRouteException(Exception):
@@ -36,10 +37,6 @@ def match_route(app: ASGIApp, scope: Scope):
         Refer to the database documentation for more details on the api.route
         table.
     """
-
-    print('3')
-    from ..app import CONFIG
-    print(CONFIG)
 
     result = {
         'domain': None,
@@ -118,6 +115,7 @@ class AclCallerMiddleware(BaseHTTPMiddleware):
                 Response
         """
         print('Hit AclCallerMiddleware of API')
+
         if scope['type'] != 'http':
             await self.app(scope, receive, send)
             return
@@ -155,4 +153,7 @@ class AclCallerMiddleware(BaseHTTPMiddleware):
                 else:
                     scope['acls'] = []
 
-        return await self.app(scope, receive, send)
+        elif CONFIG['DEBUG']:
+            scope['dev_route'] = True
+
+        res = await self.app(scope, receive, send)
