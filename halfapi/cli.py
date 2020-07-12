@@ -99,7 +99,7 @@ def dbupdate(dbname, host, port, user, password, domain, drop):
         return True
 
     def delete_domain():
-        d = domain(name=domain)
+        d = Domain(name=domain)
         if len(d) < 1:
             return False
 
