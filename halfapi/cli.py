@@ -11,11 +11,11 @@ import importlib
 import psycopg2
 
 # hop-generated classes
-from .models.api.version import Version
-from .models.api.domain import Domain
-from .models.api.route import Route
-from .models.api.acl_function import AclFunction
-from .models.api.acl import Acl
+from apidb.api.version import Version
+from apidb.api.domain import Domain
+from apidb.api.route import Route
+from apidb.api.acl_function import AclFunction
+from apidb.api.acl import Acl
 
 
 HALFORM_DSN=''
@@ -39,12 +39,12 @@ def run(envfile, host, port):
     if envfile:
         try:
             with open(envfile) as f:
-                print('Will use the following env parameters :')
+                click.echo('Will use the following env parameters :')
                 local_env = dict([ tuple(line.strip().split('=', 1))
                     for line in f.readlines() ])
-                print(local_env)
+                click.echo(local_env)
         except FileNotFoundError:
-            print(f'No file named {envfile}')
+            click.echo(f'No file named {envfile}')
             envfile = None
 
     if 'DEV' in local_env.keys():
@@ -70,12 +70,14 @@ def run(envfile, host, port):
 @click.option('--dbname', default='api')
 @click.option('--host', default='127.0.0.1')
 @click.option('--port', default=5432)
+@click.option('--apihost', default='127.0.0.1')
+@click.option('--apiport', default=8080)
 @click.option('--user', default='api')
 @click.option('--password', default='')
 @click.option('--domain', default='organigramme')
 @click.option('--drop', is_flag=True, default=False)
 @cli.command()
-def dbupdate(dbname, host, port, user, password, domain, drop):
+def dbupdate(dbname, host, port, apihost, apiport, user, password, domain, drop):
 
     def dropdb():
         if not click.confirm(f'will now drop database {dbname}', default=True):
@@ -145,7 +147,7 @@ def dbupdate(dbname, host, port, user, password, domain, drop):
 
 
     def add_route(name, **kwargs):
-        print(f'Adding route {version}/{domain}/{name}')
+        click.echo(f'Adding route {version}/{domain}/{name}')
         route = Route()
         route.version = version
         route.domain = domain
@@ -160,10 +162,15 @@ def dbupdate(dbname, host, port, user, password, domain, drop):
 
 
     def add_domain():
+        new_version = Version(name=version, server=apihost, port=apiport)
+        if len(new_version) == 0:
+            click.echo(f'New version : {version}')
+            new_version.insert()
+
         new_domain = Domain(name=domain)
         new_domain.version = version
         if len(new_domain) == 0:
-            print(f'New domain {domain}')
+            click.echo(f'New domain {domain}')
             new_domain.insert()
 
 
