@@ -96,7 +96,7 @@ def dbupdate(dbname, host, port, user, password, domain, drop):
         cur.close()
         conn.close()
 
-        return true
+        return True
 
     def delete_domain():
         d = domain(name=domain)
