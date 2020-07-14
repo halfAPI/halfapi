@@ -112,3 +112,28 @@ If you need to launch the test suite (only works if you have pytest installed) :
 ### Production
 
 The production server may use different init systems. As our main server is Debian-based, we use systemd services to manage the api server. Find the right service files and configure them properly in order to make your production setup perfect.
+
+
+```
+cp conf/systemd/lirmm_api* /etc/systemd/system/
+systemctl daemon-reload
+systemctl start lirmm_api
+```
+
+
+To make it start at boot :
+
+
+`systemctl enable lirmm_api`
+
+
+
+To get the logs :
+
+
+```
+journalctl -f --unit lirmm_api
+
+```
+
+
