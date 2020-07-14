@@ -28,6 +28,7 @@ With halfORM's "hop" command, we generate the models that describe the database 
 - python3
 - python3-pip
 - python3-virtualenv
+- python3-venv
 
 
 ### pip
@@ -50,7 +51,7 @@ Be sur to include the bin directory of pip in your PATH.
 Then, cd in the halfapi repo, and chose your python version :
 
 
-`POETRY_VIRTUALENV_PATH=$HOME/.pyvenv poetry env use 3.7`
+`POETRY_VIRTUALENVS_PATH=$HOME/.pyvenv poetry env use 3.7`
 
 
 **NOTE : The virtualenv will be automatically be activated each time you run a command with the `poetry` tool. If you want to do it the classical way, or even without virtual environment, it's up to your choice.**
