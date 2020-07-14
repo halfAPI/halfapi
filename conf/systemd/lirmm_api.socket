@@ -1,0 +1,13 @@
+[Unit]
+Description=uvicorn socket
+
+[Socket]
+ListenStream=/var/lib/api/lirmm_api.sock
+User=api
+SocketUser=api
+SocketGroup=www-data
+# Optionally restrict the socket permissions even more.
+# Mode=600
+
+[Install]
+WantedBy=sockets.target

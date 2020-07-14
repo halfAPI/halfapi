@@ -1,0 +1,26 @@
+[Unit]
+Description=LIRMM API daemon
+Requires=lirmm_api.socket
+After=network.target
+
+[Service]
+Type=simple
+# the specific user that our service will run as
+User=api
+Group=www-data
+# another option for an even more restricted service is
+# DynamicUser=yes
+# see http://0pointer.net/blog/dynamic-users-with-systemd.html
+RuntimeDirectory=api
+WorkingDirectory=/var/lib/api/halfapi
+EnvironmentFile=/var/lib/api/halfapi/conf/env.merles-dev
+ExecStart=/var/lib/api/.pyvenv/halfapi-MLzQW5Lp-py3.7/bin/uvicorn \
+	--uds /var/lib/api/lirmm_api.sock \
+	halfapi.app:app
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
