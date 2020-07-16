@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from starlette.exceptions import HTTPException
-from .responses import CSVResponse
 
 """
 This is the *query* library that contains all the useful functions to treat our
@@ -78,9 +77,6 @@ def parse_query(q: str = ""):
 
         if 'offset' in params and int(params['offset']) > 0:
             obj.offset(int(params['offset']))
-
-        if 'format' in params and params['format'] == 'csv':
-            return CSVResponse([elt for elt in obj.select()])
 
         return [elt for elt in obj.select()]
 
