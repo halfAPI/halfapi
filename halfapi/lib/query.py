@@ -70,7 +70,7 @@ def parse_query(q: str = ""):
         split_ = lambda x : x.split(':')
         params = dict(map(split_, q.split('|')))
 
-    def select(obj):
+    def select(obj, fields = []):
 
         if 'limit' in params and int(params['limit']) > 0:
             obj.limit(int(params['limit']))
@@ -78,6 +78,6 @@ def parse_query(q: str = ""):
         if 'offset' in params and int(params['offset']) > 0:
             obj.offset(int(params['offset']))
 
-        return [elt for elt in obj.select()]
+        return [elt for elt in obj.select(*fields)]
 
     return select
