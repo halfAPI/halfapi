@@ -1,0 +1,19 @@
+[Unit]
+Description=HalfAPI - Project : Example API Service 
+Requires=halfapi_example_api.socket
+After=network.target
+
+[Service]
+Type=simple
+User=halfapi
+Group=halfapi
+WorkingDirectory=/var/lib/halfapi/example_api
+EnvironmentFile=/etc/default/gunicorn/halfapi_example_api
+ExecStart=/usr/bin/env gunicorn halfapi
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

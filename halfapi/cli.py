@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+from halfapi import (PROJECT_NAME, HOST, PORT,
+    PRODUCTION,
+    BASE_DIR,
+    Domain,
+    APIRouter,
+    APIRoute,
+    AclFunction,
+    Acl)
 
 # builtins
 import click
@@ -6,22 +14,10 @@ import uvicorn
 import os
 import sys
 import importlib
+from pprint import pprint
 
-# database
-import psycopg2
-
-# hop-generated classes
-from apidb.api.version import Version
-from apidb.api.domain import Domain
-from apidb.api.route import Route
-from apidb.api.acl_function import AclFunction
-from apidb.api.acl import Acl
-
-
-HALFORM_DSN=''
-HALFORM_SECRET=''
 CONTEXT_SETTINGS={
-    'default_map':{'run': {'port': 8000}} 
+    'default_map':{'run': {}} 
 }
 
 @click.group(invoke_without_command=True, context_settings=CONTEXT_SETTINGS)
@@ -30,111 +26,53 @@ def cli(ctx):
     if ctx.invoked_subcommand is None: 
         return run()
 
-@click.option('--envfile', default=None)
-@click.option('--host', default='127.0.0.1')
-@click.option('--port', default='8000')
-@cli.command()
-def run(envfile, host, port):
-    local_env = {}
-    if envfile:
-        try:
-            with open(envfile) as f:
-                click.echo('Will use the following env parameters :')
-                local_env = dict([ tuple(line.strip().split('=', 1))
-                    for line in f.readlines() ])
-                click.echo(local_env)
-        except FileNotFoundError:
-            click.echo(f'No file named {envfile}')
-            envfile = None
 
-    if 'DEV' in local_env.keys():
-        debug = True
-        reload = True
-        log_level = 'debug'
-    else:
-        reload = False
-        log_level = 'info'
+@click.option('--host', default=HOST)
+@click.option('--port', default=PORT)
+@cli.command()
+def run(host, port):
+    debug = reload = not PRODUCTION
+    log_level = 'info' if PRODUCTION else 'debug'
 
     click.echo('Launching application')
 
-    sys.path.insert(0, os.getcwd())
+    sys.path.insert(0, BASE_DIR)
     click.echo(f'current python_path : {sys.path}')
 
     uvicorn.run('halfapi.app:app',
-        env_file=envfile,
         host=host,
         port=int(port),
         log_level=log_level,
         reload=reload)
 
-@click.option('--dbname', default='api')
-@click.option('--host', default='127.0.0.1')
-@click.option('--port', default=5432)
-@click.option('--apihost', default='127.0.0.1')
-@click.option('--apiport', default=8080)
-@click.option('--user', default='api')
-@click.option('--password', default='')
-@click.option('--domain', default='organigramme')
-@click.option('--drop', is_flag=True, default=False)
+
+def delete_domain(domain):
+    d = Domain(name=domain)
+    if len(d) != 1:
+        return False
+
+    d.delete(delete_all=True)
+    return True
+
+
+@click.option('--domain', default=None)
 @cli.command()
-def dbupdate(dbname, host, port, apihost, apiport, user, password, domain, drop):
-
-    def dropdb():
-        if not click.confirm(f'will now drop database {dbname}', default=True):
-            return False
-
-        conn = psycopg2.connect({
-            'dbname': dbname,
-            'host': host,
-            'port': port,
-            'user': user,
-            'password': password
-        })
-
-        cur = conn.cursor()
-
-        cur.execute(f'drop database {dbname};')
-        conn.commit()
-        cur.close()
-        conn.close()
-
-        return True
-
-    def delete_domain():
-        d = Domain(name=domain)
-        if len(d) < 1:
-            return False
-
-        acl = Acl(domain=domain)
-        acl.delete()
-
-        fct = AclFunction(domain=domain)
-        fct.delete()
-
-        route = Route(domain=domain)
-        route.delete()
-
-        d.delete()
-
-        return True
+def dbupdate(domain):
 
     def add_acl_fct(fct):
         acl = AclFunction()
-        acl.version = version
         acl.domain = domain
         acl.name = fct.__name__
         if len(acl) == 0:
             acl.insert()
 
-    def add_acl(name, **kwargs):
-        acl = Acl()
-        acl.version = version
-        acl.domain = domain
-        acl.name = name
-        acl.path = kwargs['path']
-        acl.http_verb = kwargs['verb']
-        for fct in kwargs['acl']:
-            acl.function = fct.__name__
+
+    def add_acls(acls, **route):
+        route.pop('fct_name')
+        acl = Acl(**route)
+
+        for fct in acls:
+            acl.acl_fct_name = fct.__name__
 
             if len(acl) == 0:
                 if fct is not None:
@@ -146,38 +84,55 @@ def dbupdate(dbname, host, port, apihost, apiport, user, password, domain, drop)
                 acl.delete()
 
 
-    def add_route(name, **kwargs):
-        click.echo(f'Adding route {version}/{domain}/{name}')
-        route = Route()
-        route.version = version
+    def get_fct_name(http_verb, path):
+        if path[0] != '/':
+            raise Exception('Malformed path')
+
+        elts = path[1:].split('/')
+
+        fct_name = [http_verb.lower()]
+        for elt in elts:
+            if elt[0] == '{':
+                fct_name.append(elt[1:-1].split(':')[0].upper())
+            else:
+                fct_name.append(elt)
+        
+        return '_'.join(fct_name)
+
+
+    def add_router(name):
+        router = APIRouter()
+        router.name = name
+        router.domain = domain
+
+        if len(router) == 0:
+            router.insert()
+
+
+    def add_route(http_verb, path, router, acls):
+        click.echo(f'Adding route /{domain}/{router}{path}')
+        route = APIRoute()
+        route.http_verb = http_verb
+        route.path = path
+        route.fct_name = get_fct_name(http_verb, path)
+        route.router = router
         route.domain = domain
-        route.path = kwargs['path']
+
         if len(route) == 0:
             route.insert()
-
-    def add_routes_and_acl(routes):
-        for name, route_params in routes.items():
-            add_route(name, **route_params)
-            add_acl(name, **route_params)
+        
+        add_acls(acls, **route.to_dict())
 
 
     def add_domain():
-        new_version = Version(name=version, server=apihost, port=apiport)
-        if len(new_version) == 0:
-            click.echo(f'New version : {version}')
-            new_version.insert()
-
         new_domain = Domain(name=domain)
-        new_domain.version = version
         if len(new_domain) == 0:
             click.echo(f'New domain {domain}')
             new_domain.insert()
 
+    sys.path.insert(0, BASE_DIR)
 
-    if drop:
-        dropdb()
-
-    delete_domain()
+    delete_domain(domain)
 
     acl_set = set()
 
@@ -186,19 +141,20 @@ def dbupdate(dbname, host, port, apihost, apiport, user, password, domain, drop)
         # module retrieval
         dom_mod = importlib.import_module(domain)
 
-        version = dom_mod.API_VERSION
         add_domain()
-
-        # add main routes
-        ROUTES = dom_mod.ROUTES
-        add_routes_and_acl(dom_mod.ROUTES)
 
         # add sub routers
         ROUTERS = dom_mod.ROUTERS
 
         for router_name in dom_mod.ROUTERS:
             router_mod = importlib.import_module(f'.routers.{router_name}', domain)
-            add_routes_and_acl(router_mod.ROUTES)
+            add_router(router_name)
+
+            pprint(router_mod.ROUTES)
+            for route_path, route_params  in router_mod.ROUTES.items():
+                for http_verb, acls in route_params.items():
+                    add_route(http_verb, route_path, router_name, acls)
+
 
     except ImportError:
         click.echo(f'The domain {domain} has no *ROUTES* variable', err=True)
@@ -206,9 +162,5 @@ def dbupdate(dbname, host, port, apihost, apiport, user, password, domain, drop)
         click.echo(e, err=True)
 
 
-
-
-
 if __name__ == '__main__':
     cli()
-

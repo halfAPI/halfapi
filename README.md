@@ -1,7 +1,6 @@
 # HalfAPI
 
 
-
 This Python-based ASGI application aims to provide the core functionality to
 multiple API domains.
 
@@ -13,48 +12,33 @@ The name "halfAPI" comes from the deep relationship between it and
 
 You'll need a database with the API details. You can find the database model in halfapi/models/api.sql
 
-With halfORM's "hop" command, we generate the models that describe the database from the database schema itself. You can find the details in [hop_api](https://gite.lirmm.fr/newsi/db/hop_api) repository.
-
-
 
 **NOTE : The authentication module is deeply linked with [auth_lirmm](https://gite.lirmm.fr/newsi/auth_lirmm), so if you need to use the acl.connected function, you will need a running auth_lirmm server to get a token.**
 
 **TODO :** include a token generation tool for testing purpose.
 
 
-
 ## Dependencies
 
 - python3
 - python3-pip
-- python3-virtualenv
-- python3-venv
-
-
-### pip
-
 - poetry
-
+- uvicorn
 
 
 ## Installing
 
-As the project uses the [poetry]() package manager, you first have to install it globally. It will replace virtualenv, pip, etc...
+`pip install .`
+
+As the project uses the [poetry]() package manager, you first have to install it
+for the current user. Be sur to have pip binary directory ($HOME/.local/bin)
+included in your PATH.
 
 
 `pip3 install poetry`
 
 
 Be sur to include the bin directory of pip in your PATH.
-
-### Virtual Environment (optional)
-Then, cd in the halfapi repo, and chose your python version :
-
-
-`POETRY_VIRTUALENVS_PATH=$HOME/.pyvenv poetry env use 3.7`
-
-
-**NOTE : The virtualenv will be automatically be activated each time you run a command with the `poetry` tool. If you want to do it the classical way, or even without virtual environment, it's up to your choice.**
 
 
 Installation of the deps :

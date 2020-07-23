@@ -1,0 +1,10 @@
+GUNICORN_CMD_ARGS="--daemon \
+    --bind unix:/var/lib/halfapi/example_api.sock \
+    --max-requests 200 \
+    --max-requests-jitter 20 \
+    --workers 4 \
+    --log-syslog-facility daemon \
+    --worker-class uvicorn.workers.UvicornWorker
+
+HALFORM_CONF_DIR=/etc/half_orm
+HALFAPI_CONF_DIR=/etc/half_api

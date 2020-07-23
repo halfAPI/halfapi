@@ -1,10 +1,10 @@
 [Unit]
-Description=uvicorn socket
+Description=HalfAPI - Project : Example API Socket
 
 [Socket]
-ListenStream=/var/lib/api/lirmm_api.sock
-User=api
-SocketUser=api
+ListenStream=/var/lib/halfapi/example_api.sock
+User=halfapi
+SocketUser=halfapi
 SocketGroup=www-data
 # Optionally restrict the socket permissions even more.
 # Mode=600

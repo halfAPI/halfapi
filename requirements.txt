@@ -2,4 +2,3 @@ starlette
 uvicorn
 jwt
 half_orm @ git+ssh://git@gite.lirmm.fr/newsi/halfORM.git
-organigramme @ git+ssh://git@gite.lirmm.fr/api/newsi/halfapi.git
