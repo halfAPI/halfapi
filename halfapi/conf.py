@@ -4,12 +4,6 @@ from os import environ
 import sys
 from configparser import ConfigParser
 
-with open('.halfapiconfig') as f:
-    PROJECT_NAME = f.read()
-
-if len(PROJECT_NAME) == 0:
-    raise Exception('Need a project name as argument')
-
 config = ConfigParser(defaults={
     'project': {
         'host': '127.0.0.1',
@@ -19,6 +13,14 @@ config = ConfigParser(defaults={
         'production': False
     }
 })
+
+config.read(filenames=['.halfapiconfig'])
+
+PROJECT_NAME = config.get('project', 'name')
+
+if len(PROJECT_NAME) == 0:
+    raise Exception('Need a project name as argument')
+
 
 CONF_DIR = environ.get('HALFAPI_CONF_DIR', '/etc/halfapi')
 
