@@ -89,8 +89,8 @@ def dbupdate(domain):
     def get_fct_name(http_verb, path):
         if path[0] != '/':
             raise Exception('Malformed path')
-
-        elts = path[1:].split('/')
+        
+        elts = [] if len(path) == 1 else path[1:].split('/')
 
         fct_name = [http_verb.lower()]
         for elt in elts:
