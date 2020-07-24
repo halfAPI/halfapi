@@ -4,7 +4,9 @@ from os import environ
 import sys
 from configparser import ConfigParser
 
-PROJECT_NAME = sys.argv.pop()
+with open('.halfapiconfig') as f:
+    PROJECT_NAME = f.read()
+
 if len(PROJECT_NAME) == 0:
     raise Exception('Need a project name as argument')
 
