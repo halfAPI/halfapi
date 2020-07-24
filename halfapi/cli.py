@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-from halfapi import (PROJECT_NAME, HOST, PORT,
+from halfapi.conf import (PROJECT_NAME, HOST, PORT,
     PRODUCTION,
-    BASE_DIR,
+    BASE_DIR)
+
+from halfapi.db import (
     Domain,
     APIRouter,
     APIRoute,

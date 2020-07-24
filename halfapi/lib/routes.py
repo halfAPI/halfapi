@@ -3,8 +3,10 @@ from functools import wraps
 import importlib
 import sys
 
-from halfapi import (PROJECT_NAME, HOST, PORT,
-    PRODUCTION,
+from halfapi.conf import (PROJECT_NAME, HOST, PORT,
+    PRODUCTION)
+
+from halfapi.db import (
     Domain,
     APIRouter,
     APIRoute,

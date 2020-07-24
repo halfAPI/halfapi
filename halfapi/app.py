@@ -11,7 +11,7 @@ from starlette.middleware.authentication import AuthenticationMiddleware
 from typing import Any, Awaitable, Callable, MutableMapping
 
 # module libraries
-from halfapi import HOST, PORT, DB_NAME, SECRET, PRODUCTION
+from halfapi.conf import HOST, PORT, DB_NAME, SECRET, PRODUCTION
 
 from halfapi.lib.jwt_middleware import JWTAuthenticationBackend
 
