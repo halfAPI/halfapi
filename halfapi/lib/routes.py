@@ -39,9 +39,9 @@ def get_routes(domains=None):
                     return func(req, *args, **kwargs)
 
             raise HTTPException(401)
-             
+
         return caller
-    
+
     app_routes = []
     for domain in Domain(name=domains).select():
         domain_acl_mod = importlib.import_module(f'{domain["name"]}.acl')
@@ -51,7 +51,7 @@ def get_routes(domains=None):
 
             router_mod = importlib.import_module(
                 '{domain}.routers.{name}'.format(**router))
-            
+
             with APIRoute(domain=domain['name'],
                 router=router['name']) as routes:
                 for route in routes.select():
@@ -67,7 +67,7 @@ def get_routes(domains=None):
                             acls
                         ), methods=[route['http_verb']])
                     )
-            
+
             domain_routes.append(
                 Mount('/{name}'.format(**router), routes=router_routes))
 

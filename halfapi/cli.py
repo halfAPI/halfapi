@@ -89,7 +89,7 @@ def dbupdate(domain):
     def get_fct_name(http_verb, path):
         if path[0] != '/':
             raise Exception('Malformed path')
-        
+
         elts = [] if len(path) == 1 else path[1:].split('/')
 
         fct_name = [http_verb.lower()]
@@ -98,7 +98,7 @@ def dbupdate(domain):
                 fct_name.append(elt[1:-1].split(':')[0].upper())
             else:
                 fct_name.append(elt)
-        
+
         return '_'.join(fct_name)
 
 
@@ -122,7 +122,7 @@ def dbupdate(domain):
 
         if len(route) == 0:
             route.insert()
-        
+
         add_acls(acls, **route.to_dict())
 
 
