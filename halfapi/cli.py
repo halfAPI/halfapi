@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from halfapi.conf import (PROJECT_NAME, HOST, PORT,
-    PRODUCTION,
-    BASE_DIR)
+    PRODUCTION, BASE_DIR, DOMAINS)
 
 from halfapi.db import (
     Domain,
@@ -60,6 +59,21 @@ def delete_domain(domain):
 @click.option('--domain', default=None)
 @cli.command()
 def dbupdate(domain):
+    if domain is None:
+        click.echo('No domain name given, will update all active domains')
+        for domain in DOMAINS:
+            dbupdate_fct(domain)
+        sys.exit(0)
+
+    return dbupdate_fct(domain)
+
+
+def dbupdate_fct(domain=None):
+    if domain is None:
+        click.echo('Missing domain', err=True)
+        sys.exit(1)
+    else:
+        click.echo(f'Will update routes for {domain}')
 
     def add_acl_fct(fct):
         acl = AclFunction()
@@ -90,11 +104,11 @@ def dbupdate(domain):
         if path[0] != '/':
             raise Exception('Malformed path')
 
-        elts = [] if len(path) == 1 else path[1:].split('/')
+        elts = path[1:].split('/')
 
         fct_name = [http_verb.lower()]
         for elt in elts:
-            if elt[0] == '{':
+            if elt and elt[0] == '{':
                 fct_name.append(elt[1:-1].split(':')[0].upper())
             else:
                 fct_name.append(elt)
@@ -139,17 +153,27 @@ def dbupdate(domain):
     acl_set = set()
 
     try:
-
         # module retrieval
         dom_mod = importlib.import_module(domain)
+    except ImportError:
+        click.echo(f"Can't import *{domain}*", err=True)
+        return False
 
+    try:
         add_domain()
 
         # add sub routers
-        ROUTERS = dom_mod.ROUTERS
+        try:
+            ROUTERS = dom_mod.ROUTERS
+        except AttributeError:
+            click.echo(f'The domain {domain} has no *ROUTERS* variable', err=True)
 
         for router_name in dom_mod.ROUTERS:
-            router_mod = importlib.import_module(f'.routers.{router_name}', domain)
+            try:
+                router_mod = importlib.import_module(f'.routers.{router_name}', domain)
+
+            except ImportError:
+                click.echo(f'The domain {domain} has no *{router_name}* router', err=True)
             add_router(router_name)
 
             pprint(router_mod.ROUTES)
@@ -158,8 +182,6 @@ def dbupdate(domain):
                     add_route(http_verb, route_path, router_name, acls)
 
 
-    except ImportError:
-        click.echo(f'The domain {domain} has no *ROUTES* variable', err=True)
     except Exception as e:
         click.echo(e, err=True)
 
