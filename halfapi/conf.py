@@ -4,16 +4,18 @@ from os import environ
 import sys
 from configparser import ConfigParser
 
-config = ConfigParser(defaults={
+default_config = {
     'project': {
         'host': '127.0.0.1',
         'port': '8000',
-        'secret': None,
-        'base_dir': None,
-        'production': False
+        'secret': ''
+        'base_dir': ''
+        'production': ''
     }
-})
+}
 
+config = ConfigParser()
+config.read_dict(default_config)
 config.read(filenames=['.halfapiconfig'])
 
 PROJECT_NAME = config.get('project', 'name')
