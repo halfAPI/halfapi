@@ -8,9 +8,9 @@ default_config = {
     'project': {
         'host': '127.0.0.1',
         'port': '8000',
-        'secret': ''
-        'base_dir': ''
-        'production': ''
+        'secret': '',
+        'base_dir': '',
+        'production': 'no'
     }
 }
 
@@ -41,4 +41,4 @@ with open(config.get('project', 'secret')) as secret_file:
 PRODUCTION = config.getboolean('project', 'production')
 BASE_DIR = config.get('project', 'base_dir')
 
-DOMAINS = [domain for domain in config.get('domains').keys()]
+DOMAINS = [domain for domain, _ in config.items('domains')]
