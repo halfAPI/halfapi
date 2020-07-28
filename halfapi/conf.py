@@ -14,7 +14,7 @@ default_config = {
     }
 }
 
-config = ConfigParser()
+config = ConfigParser(allow_no_value=True)
 config.read_dict(default_config)
 config.read(filenames=['.halfapiconfig'])
 
@@ -40,3 +40,5 @@ with open(config.get('project', 'secret')) as secret_file:
 
 PRODUCTION = config.getboolean('project', 'production')
 BASE_DIR = config.get('project', 'base_dir')
+
+DOMAINS = [domain for domain in config.get('domains').keys()]

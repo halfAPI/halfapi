@@ -3,8 +3,8 @@ from functools import wraps
 import importlib
 import sys
 
-from halfapi.conf import (PROJECT_NAME, HOST, PORT,
-    PRODUCTION)
+from halfapi.conf import (PROJECT_NAME, DB_NAME, HOST, PORT,
+    PRODUCTION, DOMAINS)
 
 from halfapi.db import (
     Domain,
@@ -16,6 +16,9 @@ from halfapi.lib.responses import *
 from starlette.exceptions import HTTPException
 from starlette.routing import Mount, Route
 from starlette.requests import Request
+
+class DomainNotFoundError(Exception):
+    pass
 
 def get_routes(domains=None):
     """ Procedure to mount the registered domains on their prefixes
@@ -43,7 +46,12 @@ def get_routes(domains=None):
         return caller
 
     app_routes = []
-    for domain in Domain(name=domains).select():
+    for domaine_name in DOMAINS:
+        try:
+            domain = next(Domain(name=domain_name).select())
+        except StopIteration:
+            raise DomainNotFoundError(
+                f"Domain '{domain_name}' not found in '{DB_NAME}' database!")
         domain_acl_mod = importlib.import_module(f'{domain["name"]}.acl')
         domain_routes = []
         for router in APIRouter(domain=domain['name']).select():
