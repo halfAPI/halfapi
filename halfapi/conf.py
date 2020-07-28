@@ -24,7 +24,7 @@ if len(PROJECT_NAME) == 0:
     raise Exception('Need a project name as argument')
 
 
-CONF_DIR = environ.get('HALFAPI_CONF_DIR', '/etc/halfapi')
+CONF_DIR = environ.get('HALFAPI_CONF_DIR', '/etc/half_api')
 
 config.read(filenames=[os.path.join(
     CONF_DIR,
@@ -33,8 +33,8 @@ config.read(filenames=[os.path.join(
 
 HOST = config.get('project', 'host')
 PORT = config.getint('project', 'port')
-
 DB_NAME = f'halfapi_{PROJECT_NAME}'
+
 with open(config.get('project', 'secret')) as secret_file:
     SECRET = secret_file.read()
 

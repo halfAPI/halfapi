@@ -41,7 +41,7 @@ def run(host, port):
     sys.path.insert(0, BASE_DIR)
     click.echo(f'current python_path : {sys.path}')
 
-    uvicorn.run('halfapi.app:app',
+    uvicorn.run('halfapi.app:application',
         host=host,
         port=int(port),
         log_level=log_level,

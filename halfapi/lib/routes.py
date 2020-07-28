@@ -46,7 +46,7 @@ def get_routes(domains=None):
         return caller
 
     app_routes = []
-    for domaine_name in DOMAINS:
+    for domain_name in DOMAINS:
         try:
             domain = next(Domain(name=domain_name).select())
         except StopIteration:
