@@ -57,18 +57,28 @@ def delete_domain(domain):
 
 
 @click.option('--domain', default=None)
+@click.option('--update', default=False, is_flag=True)
+@click.option('--list', default=False, is_flag=True)
 @cli.command()
-def dbupdate(domain):
-    if domain is None:
-        click.echo('No domain name given, will update all active domains')
-        for domain in DOMAINS:
-            dbupdate_fct(domain)
-        sys.exit(0)
+def routes(domain, list, update):
+    domains = DOMAINS if domain is None else [domain]
+    if update:
+        if not domain:
+            click.echo('No domain name given, will update all active domains')
+        for domain in domains:
+            update_db(domain)
+    if list:
+        list_routes(domains)
+        
 
-    return dbupdate_fct(domain)
+def list_routes(domains):
+    for domain in domains:
+        print(f'\nDomain {domain}')
+        routes = Acl(domain=domain)
+        for route in routes.select():
+            print('-', route)
 
-
-def dbupdate_fct(domain=None):
+def update_db(domain=None):
     if domain is None:
         click.echo('Missing domain', err=True)
         sys.exit(1)
