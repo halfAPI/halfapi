@@ -27,7 +27,7 @@ def cli(ctx, version):
 @click.option('--port', default=None)
 @cli.command()
 def run(host, port):
-    from halfapi.conf import (PROJECT_NAME, HOST, PORT,
+    from halfapi.conf import (HOST, PORT,
         PRODUCTION, BASE_DIR)
 
     if not host:
@@ -62,28 +62,21 @@ def delete_domain(domain):
     return True
 
 
-@click.option('--domain', default=None)
+@click.option('--domain', '-d', default=None, multiple=True)
 @click.option('--update', default=False, is_flag=True)
 @cli.command()
 def routes(domain, update):
-    domains = DOMAINS if domain is None else [domain]
-    if update:
-        if not domain:
-            click.echo('No domain name given, will update all active domains')
-        for domain in domains:
-            update_db(domain)
-    else:
-        list_routes(domains)
+    """
+    Lists routes for the specified domains, or update them in the database
 
+    Parameters:
+        domain (List[str]|None): The list of the domains to list/update
 
-def list_routes(domains):
-    for domain in domains:
-        print(f'\nDomain {domain}')
-        routes = Acl(domain=domain)
-        for route in routes.select():
-            print('-', route)
+        The parameter has a misleading name as it is a multiple option
+        but this would be strange to use it several times named as "domains"
 
-def update_db(domain=None):
+        update (boolean): If set, update the database for the selected domains
+    """
     from halfapi.db import (
         Domain,
         APIRouter,
@@ -93,25 +86,69 @@ def update_db(domain=None):
 
     global Domain, APIRouter, APIRoute, AclFunction, Acl
 
-    if domain is None:
-        from halfapi.conf import DOMAINS
-
-        click.echo('No domain name given, will update all active domains')
-        for domain in DOMAINS:
-            dbupdate_fct(domain)
-        sys.exit(0)
-
-    return dbupdate_fct(domain)
-
-
-def dbupdate_fct(domain=None):
-    if domain is None:
-        click.echo('Missing domain', err=True)
-        sys.exit(1)
+    from halfapi.conf import DOMAINS
+    if not domain:
+        domain = DOMAINS
     else:
-        click.echo(f'Will update routes for {domain}')
+        for domain_name in domain:
+            if domain_name in DOMAINS:
+                continue
+            click.echo(
+                f'Domain {domain}s is not activated in the configuration')
 
-    def add_acl_fct(fct):
+    if update:
+        update_db(domain)
+    else:
+        list_routes(domain)
+
+
+def list_routes(domains):
+    for domain in domains:
+        print(f'\nDomain {domain}')
+        routes = Acl(domain=domain)
+        for route in routes.select():
+            print('-', route)
+
+
+def update_db(domains):
+    from halfapi.conf import BASE_DIR
+
+    def add_domain(domain):
+        """
+        Inserts Domain into database
+
+        Parameters:
+            - domain (str): The domain's name
+        """
+        new_domain = Domain(name=domain)
+        if len(new_domain) == 0:
+            click.echo(f'New domain {domain}')
+            new_domain.insert()
+
+
+    def add_router(name, domain):
+        """
+        Inserts Router into database
+
+        Parameters:
+            - name (str): The Router's name
+        """
+        router = APIRouter()
+        router.name = name
+        router.domain = domain
+
+        if len(router) == 0:
+            router.insert()
+
+
+    def add_acl_fct(fct, domain):
+        """
+        Inserts ACL function into database
+
+        Parameters:
+            - fct (Callable): The ACL function reference
+            - domain (str): The Domain's name
+        """
         acl = AclFunction()
         acl.domain = domain
         acl.name = fct.__name__
@@ -120,6 +157,13 @@ def dbupdate_fct(domain=None):
 
 
     def add_acls(acls, **route):
+        """
+        Inserts ACL into database
+
+        Parameters:
+            - acls (List[Callable]): List of the Route's ACL's
+            - route (dict): The Route
+        """
         route.pop('fct_name')
         acl = Acl(**route)
 
@@ -128,7 +172,7 @@ def dbupdate_fct(domain=None):
 
             if len(acl) == 0:
                 if fct is not None:
-                    add_acl_fct(fct)
+                    add_acl_fct(fct, route['domain'])
 
                 acl.insert()
 
@@ -137,6 +181,43 @@ def dbupdate_fct(domain=None):
 
 
     def get_fct_name(http_verb, path):
+        """
+        Returns the predictable name of the function for a route
+
+        Parameters:
+            - http_verb (str): The Route's HTTP method (GET, POST, ...)
+            - path (str): A path beginning by '/' for the route
+
+        Returns:
+            str: The *unique* function name for a route and it's verb
+
+
+        Examples:
+
+            >>> get_fct_name('foo', 'bar')
+            Traceback (most recent call last):
+                ...
+            Exception: Malformed path
+
+            >>> get_fct_name('get', '/')
+            'get_'
+
+            >>> get_fct_name('GET', '/')
+            'get_'
+
+            >>> get_fct_name('POST', '/foo')
+            'post_foo'
+
+            >>> get_fct_name('POST', '/foo/bar')
+            'post_foo_bar'
+
+            >>> get_fct_name('DEL', '/foo/{boo}/{far}/bar')
+            'del_foo_BOO_FAR_bar'
+
+            >>> get_fct_name('DEL', '/foo/{boo:zoo}')
+            'del_foo_BOO'
+        """
+
         if path[0] != '/':
             raise Exception('Malformed path')
 
@@ -152,16 +233,18 @@ def dbupdate_fct(domain=None):
         return '_'.join(fct_name)
 
 
-    def add_router(name):
-        router = APIRouter()
-        router.name = name
-        router.domain = domain
+    def add_route(http_verb, path, router, domain, acls):
+        """
+        Inserts Route into database
 
-        if len(router) == 0:
-            router.insert()
+        Parameters:
+            - http_verb (str): The Route's HTTP method (GET, POST, ...)
+            - path (str): A path beginning by '/' for the route
+            - router (str): The Route's Router name
+            - domain (str): The Domain's name
+            - acls (List[Callable]): The list of ACL functions for this Route
+        """
 
-
-    def add_route(http_verb, path, router, acls):
         click.echo(f'Adding route /{domain}/{router}{path}')
         route = APIRoute()
         route.http_verb = http_verb
@@ -176,50 +259,66 @@ def dbupdate_fct(domain=None):
         add_acls(acls, **route.to_dict())
 
 
-    def add_domain():
-        new_domain = Domain(name=domain)
-        if len(new_domain) == 0:
-            click.echo(f'New domain {domain}')
-            new_domain.insert()
-
     sys.path.insert(0, BASE_DIR)
 
-    delete_domain(domain)
+    for domain in domains:
+        # Reset Domain relations
+        delete_domain(domain)
 
-    acl_set = set()
+        acl_set = set()
 
-    try:
-        # module retrieval
-        dom_mod = importlib.import_module(domain)
-    except ImportError:
-        click.echo(f"Can't import *{domain}*", err=True)
-        return False
+        try:
+            # Module retrieval
+            dom_mod = importlib.import_module(domain)
+        except ImportError:
+            # Domain is not available in current PYTHONPATH
+            click.echo(f"Can't import *{domain}*", err=True)
+            continue
 
-    try:
-        add_domain()
+        try:
+            add_domain(domain)
+        except Exception as e:
+            # Could not insert Domain
+            # @TODO : Insertion exception handling
+            print(e)
+            click.echo(f"Could not insert *{domain}*", err=True)
+            continue
 
         # add sub routers
         try:
             ROUTERS = dom_mod.ROUTERS
         except AttributeError:
+            # No ROUTERS variable in current domain, check domain/__init__.py
             click.echo(f'The domain {domain} has no *ROUTERS* variable', err=True)
 
         for router_name in dom_mod.ROUTERS:
             try:
-                router_mod = importlib.import_module(f'.routers.{router_name}', domain)
-
-            except ImportError:
+                router_mod = getattr(dom_mod.routers, router_name)
+            except AttributError:
+                # Missing router, continue 
                 click.echo(f'The domain {domain} has no *{router_name}* router', err=True)
-            add_router(router_name)
+                continue
 
-            pprint(router_mod.ROUTES)
+            try:
+                add_router(router_name, domain)
+            except Exception as e:
+                # Could not insert Router
+                # @TODO : Insertion exception handling
+                print(e)
+                continue
+
+
             for route_path, route_params  in router_mod.ROUTES.items():
                 for http_verb, acls in route_params.items():
-                    add_route(http_verb, route_path, router_name, acls)
+                    try:
+                        # Insert a route and it's ACLS
+                        add_route(http_verb, route_path, router_name, domain, acls)
+                    except Exception as e:
+                        # Could not insert route
+                        # @TODO : Insertion exception handling
+                        print(e)
+                        continue
 
-
-    except Exception as e:
-        click.echo(e, err=True)
 
 @click.argument('project')
 @click.option('--repo', default=None)
