@@ -12,9 +12,6 @@ The name "halfAPI" comes from the deep relationship between it and
 
 You'll need a database with the API details. You can find the database model in halfapi/models/api.sql
 
-
-**NOTE : The authentication module is deeply linked with [auth_lirmm](https://gite.lirmm.fr/newsi/auth_lirmm), so if you need to use the acl.connected function, you will need a running auth_lirmm server to get a token.**
-
 **TODO :** include a token generation tool for testing purpose.
 
 
@@ -22,75 +19,32 @@ You'll need a database with the API details. You can find the database model in 
 
 - python3
 - python3-pip
-- poetry
-- uvicorn
+- libgit2-dev
 
 
 ## Installing
 
-`pip install .`
 
-As the project uses the [poetry]() package manager, you first have to install it
-for the current user. Be sur to have pip binary directory ($HOME/.local/bin)
-included in your PATH.
+With local folder :
 
-
-`pip3 install poetry`
+`pip3 install -r requirements.txt .[cli]`
 
 
-Be sur to include the bin directory of pip in your PATH.
+From the repository :
+
+`pip3 install git+ssh://git@gite.lirmm.fr:malves/halfapi.git[cli]`
 
 
-Installation of the deps :
-
-
-`poetry install`
-
-
-If you need a domain, i.e: organigramme, just add `-E organigramme` to the command.
-
-
-**NOTE : You need to run `poetry install` before installing any domains (that depends on halfapi).**
-
-
-
-## API database
-
-Populate the API database with te server information, the domain's routes, and their ACL by running the following command :
-
-
-`poetry run halfapi dbupdate`
-
-
-**NOTE: You need to have the domain's package installed if you want to populate the api routes module, as it check for the existence of the acl functions.**
-
-
-### Database configuration
-
-The api and domains' databases connection settings are stored by default in `/etc/half_orm`. Check halfORM documentation for more information on how to write these configuration files.
-
-You can set the `HALFORM_SECRET` environment variable if you want to specify an authentication secret.
-
-
-**TODO :** find a modular way to configure the database connection for each mounted domain
-
+## CLI usage
 
 
 ## Running
 
-
 ### Development mode
 
-In the halfapi repository, type :
+In the project's folder :
 
-
-`poetry run halfapi`
-
-
-If you need to launch the test suite (only works if you have pytest installed) :
-
-
-`poetry run pytest`
+`halfapi run`
 
 
 ### Production
@@ -121,3 +75,12 @@ journalctl -f --unit lirmm_api
 ```
 
 
+## Testing
+
+### Installing
+
+pip3 install .[cli][tests]
+
+### Running
+
+pytest -v
