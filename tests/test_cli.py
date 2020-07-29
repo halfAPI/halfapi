@@ -26,10 +26,6 @@ def test_cli(runner):
         assert r.exit_code == 0
 
     with runner.isolated_filesystem():
-        r = runner.invoke(cli, ['dbupdate', '--help'])
-        assert r.exit_code == 0
-
-    with runner.isolated_filesystem():
         r = runner.invoke(cli, ['init-project', '--help'])
         assert r.exit_code == 0
 
