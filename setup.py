@@ -6,6 +6,7 @@ import re
 
 from setuptools import setup, find_packages
 
+import pathlib
 
 def get_version(package):
     """
@@ -19,9 +20,8 @@ def get_long_description():
     """
     Return the README.
     """
-    with open("README.md", encoding="utf8") as f:
-        return f.read()
-
+    here = pathlib.Path(__file__).parent.resolve()
+    long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 def get_packages(package):
     """
@@ -36,23 +36,27 @@ def get_packages(package):
 module_name="halfapi"
 setup(
     name=module_name,
-    python_requires=">=3.7",
     version=get_version(module_name),
-    url="https://gite.lirmm.fr/newsi/api/halfapi",
+    url="https://gite.lirmm.fr/malves/halfapi",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
     packages=get_packages(module_name),
-    package_data={
-        'halfapi': ['lib/*', 'models/*']
-    },
+    python_requires=">=3.7",
     install_requires=[
-        "click",
         "half_orm",
         "jwt",
         "starlette",
-        "uvicorn"],
+    ],
     extras_require={
-        "tests":["pytest", "requests"],
+        "tests":[
+            "pytest",
+            "requests"
+        ],
+        "cli":[
+            "click",
+            "pygit2",
+            "uvicorn"
+        ]
     },
     entry_points={
         "console_scripts":[
