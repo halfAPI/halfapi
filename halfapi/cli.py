@@ -1,19 +1,10 @@
 #!/usr/bin/env python3
-from halfapi.conf import (PROJECT_NAME, HOST, PORT,
-    PRODUCTION, BASE_DIR, DOMAINS)
-
-from halfapi.db import (
-    Domain,
-    APIRouter,
-    APIRoute,
-    AclFunction,
-    Acl)
-
 # builtins
 import click
 import uvicorn
 import os
 import sys
+import re
 import importlib
 from pprint import pprint
 
@@ -22,16 +13,31 @@ CONTEXT_SETTINGS={
 }
 
 @click.group(invoke_without_command=True, context_settings=CONTEXT_SETTINGS)
+@click.option('--version', is_flag=True)
 @click.pass_context
-def cli(ctx):
+def cli(ctx, version):
+    if version:
+        import halfapi
+        return click.echo(halfapi.version())
+
     if ctx.invoked_subcommand is None: 
         return run()
 
-
-@click.option('--host', default=HOST)
-@click.option('--port', default=PORT)
+@click.option('--host', default=None)
+@click.option('--port', default=None)
 @cli.command()
 def run(host, port):
+    from halfapi.conf import (PROJECT_NAME, HOST, PORT,
+        PRODUCTION, BASE_DIR)
+
+    if not host:
+        host = HOST
+
+    if not port:
+        port = PORT
+
+    port = int(port)
+
     debug = reload = not PRODUCTION
     log_level = 'info' if PRODUCTION else 'debug'
 
@@ -58,18 +64,17 @@ def delete_domain(domain):
 
 @click.option('--domain', default=None)
 @click.option('--update', default=False, is_flag=True)
-@click.option('--list', default=False, is_flag=True)
 @cli.command()
-def routes(domain, list, update):
+def routes(domain, update):
     domains = DOMAINS if domain is None else [domain]
     if update:
         if not domain:
             click.echo('No domain name given, will update all active domains')
         for domain in domains:
             update_db(domain)
-    if list:
+    else:
         list_routes(domains)
-        
+
 
 def list_routes(domains):
     for domain in domains:
@@ -79,6 +84,27 @@ def list_routes(domains):
             print('-', route)
 
 def update_db(domain=None):
+    from halfapi.db import (
+        Domain,
+        APIRouter,
+        APIRoute,
+        AclFunction,
+        Acl)
+
+    global Domain, APIRouter, APIRoute, AclFunction, Acl
+
+    if domain is None:
+        from halfapi.conf import DOMAINS
+
+        click.echo('No domain name given, will update all active domains')
+        for domain in DOMAINS:
+            dbupdate_fct(domain)
+        sys.exit(0)
+
+    return dbupdate_fct(domain)
+
+
+def dbupdate_fct(domain=None):
     if domain is None:
         click.echo('Missing domain', err=True)
         sys.exit(1)
@@ -194,6 +220,32 @@ def update_db(domain=None):
 
     except Exception as e:
         click.echo(e, err=True)
+
+@click.argument('project')
+@click.option('--repo', default=None)
+@cli.command()
+def init_project(project, repo):
+    import pygit2
+
+    if not re.match('^[a-z0-9_]+$', project, re.I):
+        click.echo('Project name must match "^[a-z0-9_]+$", retry.', err=True)
+        sys.exit(1)
+
+    if os.path.exists(project):
+        click.echo(f'A file named {project} already exists, abort.', err=True)
+        sys.exit(1)
+
+    if repo is not None:
+        click.echo(f'Clone URL {repo} in directory {project}')
+        pygit2.clone_repository(
+            url=repo,
+            path=project
+        )
+
+    else:
+        click.echo(f'Initialize project repository in directory {project}')
+        pygit2.init_repository(project)
+
 
 
 if __name__ == '__main__':
