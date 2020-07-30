@@ -35,11 +35,11 @@ def get_routes(domains=None):
 
     def route_decorator(fct, acls_mod, acls):
         @wraps(fct)
-        def caller(req: Request, *args, **kwargs):
+        async def caller(req: Request, *args, **kwargs):
             for acl_fct_name in acls:
                 acl_fct = getattr(acls_mod, acl_fct_name)
                 if acl_fct(req, *args, **kwargs):
-                    return fct(req, *args, **kwargs)
+                    return await fct(req, *args, **kwargs)
 
             raise HTTPException(401)
 
