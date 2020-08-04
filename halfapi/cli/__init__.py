@@ -8,6 +8,8 @@ import re
 import importlib
 from pprint import pprint
 
+from halfapi.cli.lib.db import ProjectDB
+
 CONTEXT_SETTINGS={
     'default_map':{'run': {}} 
 }
@@ -344,7 +346,8 @@ def init_project(project, repo):
     else:
         click.echo(f'Initialize project repository in directory {project}')
         pygit2.init_repository(project)
-
+        pdb = ProjectDB(project)
+        pdb.init()
 
 
 if __name__ == '__main__':
