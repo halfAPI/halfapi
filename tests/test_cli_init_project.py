@@ -6,11 +6,13 @@ from click.testing import CliRunner
 
 from halfapi import __version__
 from halfapi.cli import cli
+from configparser import ConfigParser
 
 @pytest.fixture
 def runner():
     return CliRunner()
 
+@pytest.mark.skip
 def test_init_project(runner):
     # Missing argument (project)
     testproject = 'testproject'
@@ -34,6 +36,27 @@ def test_init_project(runner):
         r = runner.invoke(cli, ['init-project', testproject])
         assert r.exit_code == 1
 
+
+    with runner.isolated_filesystem():
+        # Fail : No rights in /etc
+        r = runner.invoke(cli, ['init-project', testproject], env={
+            'HALFORM_CONF_DIR':'/etc/half_orm'
+        })
+        assert r.exit_code == 1
+        assert type(r.exception) is PermissionError
+
+testproject = 'testproject'
+
+import subprocess
+@pytest.fixture
+def dropdb():
+    subprocess.run(['/usr/bin/dropdb', f'halfapi_{testproject}'])
+
+    yield
+
+    return subprocess.run(['/usr/bin/dropdb', f'halfapi_{testproject}'])
+
+def test_init_project_success(runner, dropdb):
     with runner.isolated_filesystem():
         # Success : New repo
         r = runner.invoke(cli, ['init-project', testproject])
@@ -41,8 +64,8 @@ def test_init_project(runner):
         assert os.path.isdir(testproject)
         assert os.path.isdir(f'{testproject}/.git')
         assert os.path.isdir(f'{testproject}/.halfapi')
-        domain_file = 'testproject/.halfapi/domain'
-        assert os.path.isfile(domain_file)
+        domains_file = 'testproject/.halfapi/domains'
+        assert os.path.isfile(domains_file)
         conf_file = 'testproject/.halfapi/config'
         assert os.path.isfile(conf_file)
         config = ConfigParser()
@@ -50,9 +73,11 @@ def test_init_project(runner):
         assert config.has_section('project')
         assert config.has_option('project', 'name')
         assert config.get('project', 'name') == testproject
-        assert config.has_option('project', 'halfapi_version') == __version__
+        assert config.get('project', 'halfapi_version') == __version__
 
 
+@pytest.mark.skip
+def test_init_project_clone_success(runner):
     with runner.isolated_filesystem():
         # Success : Cloned repo
         import pygit2

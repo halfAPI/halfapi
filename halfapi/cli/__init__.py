@@ -6,13 +6,33 @@ import os
 import sys
 import re
 import importlib
+import logging
 from pprint import pprint
+from configparser import ConfigParser
 
+from halfapi import __version__
 from halfapi.cli.lib.db import ProjectDB
 
-CONTEXT_SETTINGS={
+CONTEXT_SETTINGS = {
     'default_map':{'run': {}} 
 }
+
+TMPL_HALFAPI_ETC = """Insert this into the HALFAPI_CONF_DIR/{project} file
+
+[project]
+host = 127.0.0.1 
+port = 8000
+secret = /path/to/secret_file
+production = False
+base_dir = {base_dir}
+"""
+
+TMPL_HALFAPI_CONFIG = """[project]
+name = {name}
+halfapi_version = {halfapi_version}
+"""
+
+logger = logging.getLogger('halfapi')
 
 @click.group(invoke_without_command=True, context_settings=CONTEXT_SETTINGS)
 @click.option('--version', is_flag=True)
@@ -336,19 +356,31 @@ def init_project(project, repo):
         click.echo(f'A file named {project} already exists, abort.', err=True)
         sys.exit(1)
 
-    if repo is not None:
-        click.echo(f'Clone URL {repo} in directory {project}')
-        pygit2.clone_repository(
-            url=repo,
-            path=project
-        )
 
-    else:
-        click.echo(f'Initialize project repository in directory {project}')
-        pygit2.init_repository(project)
+    click.echo(f'Initialize project repository in directory {project}')
+    pygit2.init_repository(project)
+
+    try:
         pdb = ProjectDB(project)
         pdb.init()
+    except Exception as e:
+        logger.warning(e)
+        logger.debug(os.environ.get('HALFORM_CONF_DIR'))
+        raise e
 
+    os.mkdir(os.path.join(project, '.halfapi'))
+    open(os.path.join(project, '.halfapi', 'domains'), 'w').write('')
+    config_file = os.path.join(project, '.halfapi', 'config')
+    with open(config_file, 'w') as f:
+        f.write(TMPL_HALFAPI_CONFIG.format(
+            name=project,
+            halfapi_version=__version__
+        ))
+
+    print(TMPL_HALFAPI_ETC.format(
+        project=project,
+        base_dir=os.path.abspath(project)
+    ))
 
 if __name__ == '__main__':
     cli()

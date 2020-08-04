@@ -111,3 +111,5 @@ class ProjectDB:
         """
         """
         self.__db.execute_query(_DB_SCHEMA)
+        self.__db._connection.close()
+
