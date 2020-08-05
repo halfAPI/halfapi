@@ -53,14 +53,6 @@ class TestCli():
             r = runner.invoke(cli, ['init', '--help'])
             assert r.exit_code == 0
 
-        with runner.isolated_filesystem():
-            r = runner.invoke(cli, ['run', '--help'])
-            assert r.exit_code == 0
-
-        with runner.isolated_filesystem():
-            r = runner.invoke(cli, ['domain', '--help'])
-            assert r.exit_code == 0
-
 
     def test_init_project_fail(self, runner, dropdb):
         # Missing argument (project)
@@ -117,25 +109,46 @@ class TestCli():
             assert res.exit_code == 0
             assert res.exception is None
 
+    def test_run_commands(self, runner, dropdb):
+        with runner.isolated_filesystem():
+            res = runner.invoke(cli, ['init', PROJNAME])
+            res = runner.invoke(cli, ['run', '--help'])
+            assert res.exit_code == 0
+
+        with runner.isolated_filesystem():
+            res = runner.invoke(cli, ['init', PROJNAME])
+            res = runner.invoke(cli, ['run', 'foobar'])
+            assert res.exit_code == 2
+
 
     def test_domain_commands(self, runner, dropdb):
         with runner.isolated_filesystem():
+            res = runner.invoke(cli, ['init', PROJNAME])
             res = runner.invoke(cli, ['domain', 'foobar'])
             assert res.exit_code == 2
 
         with runner.isolated_filesystem():
+            res = runner.invoke(cli, ['init', PROJNAME])
+            res = runner.invoke(cli, ['domain', '--help'])
+            assert r.exit_code == 0
+
+        with runner.isolated_filesystem():
+            res = runner.invoke(cli, ['init', PROJNAME])
             res = runner.invoke(cli, ['domain', 'create', '--help'])
             assert r.exit_code == 0
 
         with runner.isolated_filesystem():
+            res = runner.invoke(cli, ['init', PROJNAME])
             res = runner.invoke(cli, ['domain', 'read', '--help'])
             assert r.exit_code == 0
 
         with runner.isolated_filesystem():
+            res = runner.invoke(cli, ['init', PROJNAME])
             res = runner.invoke(cli, ['domain', 'update', '--help'])
             assert r.exit_code == 0
 
         with runner.isolated_filesystem():
+            res = runner.invoke(cli, ['init', PROJNAME])
             res = runner.invoke(cli, ['domain', 'delete', '--help'])
             assert r.exit_code == 0
 

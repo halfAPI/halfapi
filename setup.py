@@ -57,7 +57,7 @@ setup(
     },
     entry_points={
         "console_scripts":[
-            "halfapi=halfapi.cli:cli"
+            "halfapi=halfapi.cli.cli:cli"
         ]
     }
 )
