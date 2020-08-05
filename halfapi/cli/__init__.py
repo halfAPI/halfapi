@@ -51,34 +51,6 @@ def cli(ctx, version):
     if ctx.invoked_subcommand is None: 
         return run()
 
-@click.option('--host', default=None)
-@click.option('--port', default=None)
-@cli.command()
-def run(host, port):
-    from halfapi.conf import (HOST, PORT,
-        PRODUCTION, BASE_DIR)
-
-    if not host:
-        host = HOST
-
-    if not port:
-        port = PORT
-
-    port = int(port)
-
-    debug = reload = not PRODUCTION
-    log_level = 'info' if PRODUCTION else 'debug'
-
-    click.echo('Launching application')
-
-    sys.path.insert(0, BASE_DIR)
-    list_routes(DOMAINS)
-
-    uvicorn.run('halfapi.app:application',
-        host=host,
-        port=int(port),
-        log_level=log_level,
-        reload=reload)
 
 
 def delete_domain(domain):
@@ -121,12 +93,11 @@ def routes(domain, update):
         list_routes(domain)
 
 
-def list_routes(domains):
-    for domain in domains:
-        print(f'\nDomain {domain}')
-        routes = Acl(domain=domain)
-        for route in routes.select():
-            print('-', route)
+def list_routes(domain):
+    print(f'\nDomain {domain}')
+    routes = Acl(domain=domain)
+    for route in routes.select():
+        print('-', route)
 
 
 def update_db(domains):
