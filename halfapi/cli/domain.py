@@ -53,14 +53,21 @@ def domain(domain, update):
     if update:
         update_db(domain)
     else:
-        list_routes(domain)
+        for domain_name in domain:
+            list_routes(domain)
 
 
 def list_routes(domain):
-    click.echo(f'\nDomain {domain} :')
-    routes = Acl(domain=domain)
-    for route in routes.select():
-        click.echo(f'- {route}')
+    click.echo(f'\nDomain : {domain}')
+    routers = APIRouter(domain=domain)
+    for router in routers.select():
+        routes = APIRoute(domain=domain, router=router['name'])
+        click.echo('# /{name}'.format(**router))
+        for route in routes.select():
+            route.pop('fct_name')
+            acls = ', '.join([ acl['acl_fct_name'] for acl in Acl(**route).select() ])
+            route['acls'] = acls
+            click.echo('- [{http_verb}] {path} ({acls})'.format(**route))
 
 
 def update_db(domains):
