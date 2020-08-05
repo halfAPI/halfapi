@@ -342,7 +342,7 @@ def update_db(domains):
 @click.argument('project')
 @click.option('--repo', default=None)
 @cli.command()
-def init_project(project, repo):
+def init(project, repo):
     if not re.match('^[a-z0-9_]+$', project, re.I):
         click.echo('Project name must match "^[a-z0-9_]+$", retry.', err=True)
         sys.exit(1)
