@@ -43,11 +43,11 @@ setup(
     packages=get_packages(module_name),
     python_requires=">=3.7",
     install_requires=[
-        "jwt",
-        "starlette",
+        "jwt>=1.0,<2",
+        "starlette>=0.13,<1",
         "half_orm @ git+ssh://git@gite.lirmm.fr/maizi/halfORM.git",
-        "click",
-        "uvicorn"
+        "click>=7.1,<8",
+        "uvicorn>=0.11,<1"
     ],
     extras_require={
         "tests":[
