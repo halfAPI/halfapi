@@ -14,7 +14,6 @@ from halfapi import __version__
 from halfapi.cli.lib.db import ProjectDB
 
 CONTEXT_SETTINGS = {
-    'default_map':{'run': {}} 
 }
 
 TMPL_HALFAPI_ETC = """Insert this into the HALFAPI_CONF_DIR/{project} file
@@ -66,7 +65,6 @@ def run(host, port):
     click.echo('Launching application')
 
     sys.path.insert(0, BASE_DIR)
-    click.echo(f'current python_path : {sys.path}')
 
     uvicorn.run('halfapi.app:application',
         host=host,
@@ -367,7 +365,7 @@ def init_project(project, repo):
         raise e
 
     os.mkdir(os.path.join(project, '.halfapi'))
-    open(os.path.join(project, '.halfapi', 'domains'), 'w').write('')
+    open(os.path.join(project, '.halfapi', 'domains'), 'w').write('[domains]\n')
     config_file = os.path.join(project, '.halfapi', 'config')
     with open(config_file, 'w') as f:
         f.write(TMPL_HALFAPI_CONFIG.format(
