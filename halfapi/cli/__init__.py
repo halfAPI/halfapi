@@ -355,7 +355,8 @@ def init_project(project, repo):
         sys.exit(1)
 
 
-    click.echo(f'Initialize project repository in directory {project}')
+    click.echo(f'create directory {project}')
+    os.mkdir(project)
 
     try:
         pdb = ProjectDB(project)
