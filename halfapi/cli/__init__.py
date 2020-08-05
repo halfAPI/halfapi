@@ -12,6 +12,13 @@ from configparser import ConfigParser
 
 from halfapi import __version__
 from halfapi.cli.lib.db import ProjectDB
+from halfapi.conf import DOMAINS
+from halfapi.db import (
+    Domain,
+    APIRouter,
+    APIRoute,
+    AclFunction,
+    Acl)
 
 CONTEXT_SETTINGS = {
 }
@@ -65,6 +72,7 @@ def run(host, port):
     click.echo('Launching application')
 
     sys.path.insert(0, BASE_DIR)
+    list_routes(DOMAINS)
 
     uvicorn.run('halfapi.app:application',
         host=host,
@@ -97,16 +105,7 @@ def routes(domain, update):
 
         update (boolean): If set, update the database for the selected domains
     """
-    from halfapi.db import (
-        Domain,
-        APIRouter,
-        APIRoute,
-        AclFunction,
-        Acl)
 
-    global Domain, APIRouter, APIRoute, AclFunction, Acl
-
-    from halfapi.conf import DOMAINS
     if not domain:
         domain = DOMAINS
     else:
