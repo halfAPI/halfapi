@@ -47,7 +47,6 @@ setup(
         "starlette",
         "half_orm @ git+ssh://git@gite.lirmm.fr/maizi/halfORM.git",
         "click",
-        "pygit2",
         "uvicorn"
     ],
     extras_require={

@@ -346,8 +346,6 @@ def update_db(domains):
 @click.option('--repo', default=None)
 @cli.command()
 def init_project(project, repo):
-    import pygit2
-
     if not re.match('^[a-z0-9_]+$', project, re.I):
         click.echo('Project name must match "^[a-z0-9_]+$", retry.', err=True)
         sys.exit(1)
@@ -358,7 +356,6 @@ def init_project(project, repo):
 
 
     click.echo(f'Initialize project repository in directory {project}')
-    pygit2.init_repository(project)
 
     try:
         pdb = ProjectDB(project)
