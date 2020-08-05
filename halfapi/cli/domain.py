@@ -28,7 +28,7 @@ def delete_domain(domain):
 @click.option('--domain', '-d', default=None, multiple=True)
 @click.option('--update', default=False, is_flag=True)
 @cli.command()
-def routes(domain, update):
+def domain(domain, update):
     """
     Lists routes for the specified domains, or update them in the database
 
@@ -57,10 +57,10 @@ def routes(domain, update):
 
 
 def list_routes(domain):
-    click.echo(f'\nDomain {domain}')
+    click.echo(f'\nDomain {domain} :')
     routes = Acl(domain=domain)
     for route in routes.select():
-        click.echo('-', route)
+        click.echo(f'- {route}')
 
 
 def update_db(domains):
