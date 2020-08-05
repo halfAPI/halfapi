@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import subprocess
+import importlib
 
 import pytest
 from click.testing import CliRunner
@@ -8,6 +9,7 @@ from configparser import ConfigParser
 
 from halfapi import __version__
 from halfapi.cli import cli
+Cli = cli.cli
 
 PROJNAME = os.environ.get('PROJ','tmp_api')
 
@@ -37,47 +39,47 @@ class TestCli():
     def test_options(self, runner, dropdb, createdb):
         # Wrong command
         with runner.isolated_filesystem():
-            r = runner.invoke(cli, ['foobar'])
+            r = runner.invoke(Cli, ['foobar'])
             assert r.exit_code == 2
 
         # Test existing commands
         with runner.isolated_filesystem():
-            r = runner.invoke(cli, ['--help'])
+            r = runner.invoke(Cli, ['--help'])
             assert r.exit_code == 0
 
         with runner.isolated_filesystem():
-            r = runner.invoke(cli, ['--version'])
+            r = runner.invoke(Cli, ['--version'])
             assert r.exit_code == 0
 
         with runner.isolated_filesystem():
-            r = runner.invoke(cli, ['init', '--help'])
+            r = runner.invoke(Cli, ['init', '--help'])
             assert r.exit_code == 0
 
 
     def test_init_project_fail(self, runner, dropdb):
         # Missing argument (project)
         testproject = 'testproject'
-        r = runner.invoke(cli, ['init'])
+        r = runner.invoke(Cli, ['init'])
         assert r.exit_code == 2
 
         with runner.isolated_filesystem():
             # Fail : Wrong project name
-            r = runner.invoke(cli, ['init', 'test*-project'])
+            r = runner.invoke(Cli, ['init', 'test*-project'])
             assert r.exit_code == 1
 
         with runner.isolated_filesystem():
             # Fail : Already existing folder
             os.mkdir(testproject)
-            r = runner.invoke(cli, ['init', testproject])
+            r = runner.invoke(Cli, ['init', testproject])
             assert r.exit_code == 1
 
         with runner.isolated_filesystem():
             # Fail : Already existing nod
             os.mknod(testproject)
-            r = runner.invoke(cli, ['init', testproject])
+            r = runner.invoke(Cli, ['init', testproject])
             assert r.exit_code == 1
 
-    def test_init_project(self, runner, dropdb):
+    def test_init_project(self, runner, dropdb, createdb):
         cp = ConfigParser()
         with runner.isolated_filesystem():
             env = {
@@ -85,7 +87,7 @@ class TestCli():
                 'HALFAPI_CONF_DIR': os.environ.get('HALFAPI_CONF_DIR', os.getcwd()),
             }
 
-            res = runner.invoke(cli, ['init', PROJNAME], env=env)
+            res = runner.invoke(Cli, ['init', PROJNAME], env=env)
             try:
                 assert os.path.isdir(PROJNAME)
                 assert os.path.isdir(os.path.join(PROJNAME, '.halfapi'))
@@ -109,58 +111,73 @@ class TestCli():
             assert res.exit_code == 0
             assert res.exception is None
 
-    def test_run_commands(self, runner, dropdb):
+    def test_run_commands(self, runner, dropdb, createdb):
+        def reloadcli():
+            importlib.reload(cli)
+            return cli.cli
+
         with runner.isolated_filesystem():
-            res = runner.invoke(cli, ['init', PROJNAME])
-            res = runner.invoke(cli, ['run', '--help'])
+            res = runner.invoke(Cli, ['init', PROJNAME])
+            assert res.exit_code == 0
+            os.chdir(PROJNAME)
+            Cli2 = reloadcli()
+            res = runner.invoke(Cli2, ['run', '--help'])
+            assert res.exception is None
             assert res.exit_code == 0
 
         with runner.isolated_filesystem():
-            res = runner.invoke(cli, ['init', PROJNAME])
-            res = runner.invoke(cli, ['run', 'foobar'])
+            res = runner.invoke(Cli, ['init', PROJNAME])
+            os.chdir(PROJNAME)
+            res = runner.invoke(Cli, ['run', 'foobar'])
             assert res.exit_code == 2
 
 
-    def test_domain_commands(self, runner, dropdb):
+    def test_domain_commands(self, runner, dropdb, createdb):
         with runner.isolated_filesystem():
-            res = runner.invoke(cli, ['init', PROJNAME])
-            res = runner.invoke(cli, ['domain', 'foobar'])
+            res = runner.invoke(Cli, ['init', PROJNAME])
+            os.chdir(PROJNAME)
+            res = runner.invoke(Cli, ['domain', 'foobar'])
             assert res.exit_code == 2
 
         with runner.isolated_filesystem():
-            res = runner.invoke(cli, ['init', PROJNAME])
-            res = runner.invoke(cli, ['domain', '--help'])
+            res = runner.invoke(Cli, ['init', PROJNAME])
+            os.chdir(PROJNAME)
+            res = runner.invoke(Cli, ['domain', '--help'])
             assert r.exit_code == 0
 
         with runner.isolated_filesystem():
-            res = runner.invoke(cli, ['init', PROJNAME])
-            res = runner.invoke(cli, ['domain', 'create', '--help'])
+            res = runner.invoke(Cli, ['init', PROJNAME])
+            os.chdir(PROJNAME)
+            res = runner.invoke(Cli, ['domain', 'create', '--help'])
             assert r.exit_code == 0
 
         with runner.isolated_filesystem():
-            res = runner.invoke(cli, ['init', PROJNAME])
-            res = runner.invoke(cli, ['domain', 'read', '--help'])
+            res = runner.invoke(Cli, ['init', PROJNAME])
+            os.chdir(PROJNAME)
+            res = runner.invoke(Cli, ['domain', 'read', '--help'])
             assert r.exit_code == 0
 
         with runner.isolated_filesystem():
-            res = runner.invoke(cli, ['init', PROJNAME])
-            res = runner.invoke(cli, ['domain', 'update', '--help'])
+            res = runner.invoke(Cli, ['init', PROJNAME])
+            os.chdir(PROJNAME)
+            res = runner.invoke(Cli, ['domain', 'update', '--help'])
             assert r.exit_code == 0
 
         with runner.isolated_filesystem():
-            res = runner.invoke(cli, ['init', PROJNAME])
-            res = runner.invoke(cli, ['domain', 'delete', '--help'])
+            res = runner.invoke(Cli, ['init', PROJNAME])
+            os.chdir(PROJNAME)
+            res = runner.invoke(Cli, ['domain', 'delete', '--help'])
             assert r.exit_code == 0
 
     def test_domain_create(self, runner, dropdb):
         with runner.isolated_filesystem():
-            res = runner.invoke(cli, ['init', PROJNAME])
+            res = runner.invoke(Cli, ['init', PROJNAME])
             assert res.exit_code == 0
 
             os.chdir(PROJNAME)
             
             DOMNAME='tmp_domain'
-            res = runner.invoke(cli, ['domain', 'create', DOMNAME])
+            res = runner.invoke(Cli, ['domain', 'create', DOMNAME])
             srcdir = os.path.join('domains', 'src',  DOMNAME)
             assert os.path.isdir(srcdir)
             moddir = os.path.join(srcdir, DOMNAME)
