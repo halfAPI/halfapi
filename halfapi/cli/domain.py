@@ -96,7 +96,7 @@ def update_db(domain):
 
             if len(acl) == 0:
                 if fct is not None:
-                    add_acl_fct(fct, route['domain'])
+                    add_acl_fct(fct)
 
                 acl.insert()
 
