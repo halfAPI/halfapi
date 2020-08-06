@@ -39,7 +39,7 @@ def list_routes(domain):
 #################
 # domain update #
 #################
-def update_db():
+def update_db(domain):
 
     def add_domain():
         """
