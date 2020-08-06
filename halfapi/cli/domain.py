@@ -298,7 +298,6 @@ def domain(domains, delete, update, create, read):  #, domains, read, create, up
 
         domains = domains_
 
-    update = False
     for domain in domains:
         if update:
             update_db(domain)
