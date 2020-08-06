@@ -47,6 +47,8 @@ if IS_PROJECT:
     try:
         with open(config.get('project', 'secret')) as secret_file:
             SECRET = secret_file.read()
+            # Set the secret so we can use it in domains
+            os.environ['HALFAPI_SECRET'] = SECRET
     except FileNotFoundError:
         print('There is no file like {}'.format(config.get('project', 'secret')))
         sys.exit(1)
