@@ -197,7 +197,7 @@ def update_db():
     except ImportError:
         # Domain is not available in current PYTHONPATH
         click.echo(f"Can't import *{domain}*", err=True)
-        continue
+        return False
 
     try:
         add_domain(domain)
@@ -206,7 +206,7 @@ def update_db():
         # @TODO : Insertion exception handling
         click.echo(e)
         click.echo(f"Could not insert *{domain}*", err=True)
-        continue
+        return False
 
     # add sub routers
     try:
