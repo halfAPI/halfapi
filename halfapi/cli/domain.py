@@ -200,7 +200,7 @@ def update_db(domain):
         return False
 
     try:
-        add_domain(domain)
+        add_domain()
     except Exception as e:
         # Could not insert Domain
         # @TODO : Insertion exception handling
@@ -224,7 +224,7 @@ def update_db(domain):
             continue
 
         try:
-            add_router(router_name, domain)
+            add_router(router_name)
         except Exception as e:
             # Could not insert Router
             # @TODO : Insertion exception handling
@@ -236,7 +236,7 @@ def update_db(domain):
             for http_verb, acls in route_params.items():
                 try:
                     # Insert a route and it's ACLS
-                    add_route(http_verb, route_path, router_name, domain, acls)
+                    add_route(http_verb, route_path, router_name, acls)
                 except Exception as e:
                     # Could not insert route
                     # @TODO : Insertion exception handling
