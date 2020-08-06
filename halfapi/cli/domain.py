@@ -39,14 +39,11 @@ def list_routes(domain):
 #################
 # domain update #
 #################
-def update_db(domains):
+def update_db():
 
-    def add_domain(domain):
+    def add_domain():
         """
         Inserts Domain into database
-
-        Parameters:
-            - domain (str): The domain's name
         """
         new_domain = Domain(name=domain)
         if len(new_domain) == 0:
@@ -54,7 +51,7 @@ def update_db(domains):
             new_domain.insert()
 
 
-    def add_router(name, domain):
+    def add_router(name):
         """
         Inserts Router into database
 
@@ -69,13 +66,12 @@ def update_db(domains):
             router.insert()
 
 
-    def add_acl_fct(fct, domain):
+    def add_acl_fct(fct):
         """
         Inserts ACL function into database
 
         Parameters:
             - fct (Callable): The ACL function reference
-            - domain (str): The Domain's name
         """
         acl = AclFunction()
         acl.domain = domain
@@ -161,7 +157,7 @@ def update_db(domains):
         return '_'.join(fct_name)
 
 
-    def add_route(http_verb, path, router, domain, acls):
+    def add_route(http_verb, path, router, acls):
         """
         Inserts Route into database
 
@@ -169,7 +165,6 @@ def update_db(domains):
             - http_verb (str): The Route's HTTP method (GET, POST, ...)
             - path (str): A path beginning by '/' for the route
             - router (str): The Route's Router name
-            - domain (str): The Domain's name
             - acls (List[Callable]): The list of ACL functions for this Route
         """
 
@@ -191,63 +186,62 @@ def update_db(domains):
 
     sys.path.insert(0, BASE_DIR)
 
-    for domain in domains:
-        # Reset Domain relations
-        delete_domain(domain)
+    # Reset Domain relations
+    delete_domain(domain)
 
-        acl_set = set()
+    acl_set = set()
 
+    try:
+        # Module retrieval
+        dom_mod = importlib.import_module(domain)
+    except ImportError:
+        # Domain is not available in current PYTHONPATH
+        click.echo(f"Can't import *{domain}*", err=True)
+        continue
+
+    try:
+        add_domain(domain)
+    except Exception as e:
+        # Could not insert Domain
+        # @TODO : Insertion exception handling
+        click.echo(e)
+        click.echo(f"Could not insert *{domain}*", err=True)
+        continue
+
+    # add sub routers
+    try:
+        ROUTERS = dom_mod.ROUTERS
+    except AttributeError:
+        # No ROUTERS variable in current domain, check domain/__init__.py
+        click.echo(f'The domain {domain} has no *ROUTERS* variable', err=True)
+
+    for router_name in dom_mod.ROUTERS:
         try:
-            # Module retrieval
-            dom_mod = importlib.import_module(domain)
-        except ImportError:
-            # Domain is not available in current PYTHONPATH
-            click.echo(f"Can't import *{domain}*", err=True)
+            router_mod = getattr(dom_mod.routers, router_name)
+        except AttributError:
+            # Missing router, continue 
+            click.echo(f'The domain {domain} has no *{router_name}* router', err=True)
             continue
 
         try:
-            add_domain(domain)
+            add_router(router_name, domain)
         except Exception as e:
-            # Could not insert Domain
+            # Could not insert Router
             # @TODO : Insertion exception handling
-            click.echo(e)
-            click.echo(f"Could not insert *{domain}*", err=True)
+            print(e)
             continue
 
-        # add sub routers
-        try:
-            ROUTERS = dom_mod.ROUTERS
-        except AttributeError:
-            # No ROUTERS variable in current domain, check domain/__init__.py
-            click.echo(f'The domain {domain} has no *ROUTERS* variable', err=True)
 
-        for router_name in dom_mod.ROUTERS:
-            try:
-                router_mod = getattr(dom_mod.routers, router_name)
-            except AttributError:
-                # Missing router, continue 
-                click.echo(f'The domain {domain} has no *{router_name}* router', err=True)
-                continue
-
-            try:
-                add_router(router_name, domain)
-            except Exception as e:
-                # Could not insert Router
-                # @TODO : Insertion exception handling
-                print(e)
-                continue
-
-
-            for route_path, route_params  in router_mod.ROUTES.items():
-                for http_verb, acls in route_params.items():
-                    try:
-                        # Insert a route and it's ACLS
-                        add_route(http_verb, route_path, router_name, domain, acls)
-                    except Exception as e:
-                        # Could not insert route
-                        # @TODO : Insertion exception handling
-                        print(e)
-                        continue
+        for route_path, route_params  in router_mod.ROUTES.items():
+            for http_verb, acls in route_params.items():
+                try:
+                    # Insert a route and it's ACLS
+                    add_route(http_verb, route_path, router_name, domain, acls)
+                except Exception as e:
+                    # Could not insert route
+                    # @TODO : Insertion exception handling
+                    print(e)
+                    continue
 
 
 #################
