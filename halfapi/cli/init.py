@@ -12,15 +12,20 @@ from .cli import cli
 
 logger = logging.getLogger('halfapi')
 
-TMPL_HALFAPI_ETC = """Insert this into the HALFAPI_CONF_DIR/{project} file
-
-[project]
+TMPL_HALFAPI_ETC = """[project]
+name = {project}
 host = 127.0.0.1 
 port = 8000
 secret = /path/to/secret_file
 production = False
 base_dir = {base_dir}
 """
+
+def format_halfapi_etc(project, path):
+    return TMPL_HALFAPI_ETC.format(
+        project=project,
+        base_dir=path
+    )
 
 TMPL_HALFAPI_CONFIG = """[project]
 name = {name}
@@ -59,8 +64,8 @@ def init(project):
             halfapi_version=__version__
         ))
 
-    print(TMPL_HALFAPI_ETC.format(
-        project=project,
-        base_dir=os.path.abspath(project)
-    ))
+    click.echo(f'Insert this into the HALFAPI_CONF_DIR/{project} file')
+    click.echo(format_halfapi_etc(
+        project,
+        os.path.abspath(project)))
 

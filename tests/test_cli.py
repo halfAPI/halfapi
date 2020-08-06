@@ -2,6 +2,8 @@
 import os
 import subprocess
 import importlib
+import tempfile
+from unittest.mock import patch
 
 import pytest
 from click.testing import CliRunner
@@ -12,26 +14,6 @@ from halfapi.cli import cli
 Cli = cli.cli
 
 PROJNAME = os.environ.get('PROJ','tmp_api')
-
-@pytest.fixture
-def runner():
-    return CliRunner()
-
-
-@pytest.fixture
-def dropdb():
-    p = subprocess.Popen(['dropdb', f'halfapi_{PROJNAME}'])
-    p.wait()
-    yield 
-
-    p = subprocess.Popen(['dropdb', f'halfapi_{PROJNAME}'])
-    p.wait()
-
-@pytest.fixture
-def createdb():
-    p = subprocess.Popen(['createdb', f'halfapi_{PROJNAME}'])
-    p.wait()
-    return
 
 
 @pytest.mark.incremental
@@ -79,12 +61,12 @@ class TestCli():
             r = runner.invoke(Cli, ['init', testproject])
             assert r.exit_code == 1
 
-    def test_init_project(self, runner, dropdb, createdb):
+    def test_init_project(self, runner, dropdb, createdb, halform_conf_dir, halfapi_conf_dir):
         cp = ConfigParser()
         with runner.isolated_filesystem():
             env = {
-                'HALFORM_CONF_DIR': os.environ.get('HALFORM_CONF_DIR', os.getcwd()),
-                'HALFAPI_CONF_DIR': os.environ.get('HALFAPI_CONF_DIR', os.getcwd()),
+                'HALFORM_CONF_DIR': halform_conf_dir,
+                'HALFAPI_CONF_DIR': halfapi_conf_dir
             }
 
             res = runner.invoke(Cli, ['init', PROJNAME], env=env)
@@ -105,96 +87,10 @@ class TestCli():
                 assert os.path.isfile(os.path.join(PROJNAME, '.halfapi', 'domains'))
                 cp.read(os.path.join(PROJNAME, '.halfapi', 'domains'))
                 assert cp.has_section('domains')
-            except AssertionError:
+            except AssertionError as e:
                 subprocess.run(['tree', '-a', os.getcwd()])
+                raise e
 
             assert res.exit_code == 0
             assert res.exception is None
 
-    def test_run_commands(self, runner, dropdb, createdb):
-        def reloadcli():
-            importlib.reload(cli)
-            return cli.cli
-
-        with runner.isolated_filesystem():
-            res = runner.invoke(Cli, ['init', PROJNAME])
-            assert res.exit_code == 0
-            os.chdir(PROJNAME)
-            Cli2 = reloadcli()
-            res = runner.invoke(Cli2, ['run', '--help'])
-            assert res.exception is None
-            assert res.exit_code == 0
-
-        with runner.isolated_filesystem():
-            res = runner.invoke(Cli, ['init', PROJNAME])
-            os.chdir(PROJNAME)
-            res = runner.invoke(Cli, ['run', 'foobar'])
-            assert res.exit_code == 2
-
-
-    def test_domain_commands(self, runner, dropdb, createdb):
-        with runner.isolated_filesystem():
-            res = runner.invoke(Cli, ['init', PROJNAME])
-            os.chdir(PROJNAME)
-            res = runner.invoke(Cli, ['domain', 'foobar'])
-            assert res.exit_code == 2
-
-        with runner.isolated_filesystem():
-            res = runner.invoke(Cli, ['init', PROJNAME])
-            os.chdir(PROJNAME)
-            res = runner.invoke(Cli, ['domain', '--help'])
-            assert r.exit_code == 0
-
-        with runner.isolated_filesystem():
-            res = runner.invoke(Cli, ['init', PROJNAME])
-            os.chdir(PROJNAME)
-            res = runner.invoke(Cli, ['domain', 'create', '--help'])
-            assert r.exit_code == 0
-
-        with runner.isolated_filesystem():
-            res = runner.invoke(Cli, ['init', PROJNAME])
-            os.chdir(PROJNAME)
-            res = runner.invoke(Cli, ['domain', 'read', '--help'])
-            assert r.exit_code == 0
-
-        with runner.isolated_filesystem():
-            res = runner.invoke(Cli, ['init', PROJNAME])
-            os.chdir(PROJNAME)
-            res = runner.invoke(Cli, ['domain', 'update', '--help'])
-            assert r.exit_code == 0
-
-        with runner.isolated_filesystem():
-            res = runner.invoke(Cli, ['init', PROJNAME])
-            os.chdir(PROJNAME)
-            res = runner.invoke(Cli, ['domain', 'delete', '--help'])
-            assert r.exit_code == 0
-
-    def test_domain_create(self, runner, dropdb):
-        with runner.isolated_filesystem():
-            res = runner.invoke(Cli, ['init', PROJNAME])
-            assert res.exit_code == 0
-
-            os.chdir(PROJNAME)
-            
-            DOMNAME='tmp_domain'
-            res = runner.invoke(Cli, ['domain', 'create', DOMNAME])
-            srcdir = os.path.join('domains', 'src',  DOMNAME)
-            assert os.path.isdir(srcdir)
-            moddir = os.path.join(srcdir, DOMNAME)
-            assert os.path.isdir(moddir)
-            setup = os.path.join(srcdir, 'setup.py')
-            assert os.path.isfile(setup)
-            initfile = os.path.join(moddir, '__init__.py')
-            assert os.path.isfile(initfile)
-            aclfile = os.path.join(moddir, 'acl.py')
-            assert os.path.isfile(aclfile)
-            aclsdir = os.path.join(moddir, 'acls')
-            assert os.path.isdir(aclsdir)
-            routersdir = os.path.join(moddir, 'routers')
-            assert os.path.isdir(routersdir)
-
-            try:
-                dom_mod = importlib.import_module(DOMNAME, srcdir)
-                assert hasattr(dom_mod, 'ROUTERS')
-            except ImportError:
-                assert False

@@ -15,48 +15,15 @@ from halfapi.db import (
 
 logger = logging.getLogger('halfapi')
 
+#################
+# domain create #
+#################
+def create_domain(name):
+    pass
 
-def delete_domain(domain):
-    d = Domain(name=domain)
-    if len(d) != 1:
-        return False
-
-    d.delete(delete_all=True)
-    return True
-
-
-@click.option('--domain', '-d', default=None, multiple=True)
-@click.option('--update', default=False, is_flag=True)
-@cli.command()
-def domain(domain, update):
-    """
-    Lists routes for the specified domains, or update them in the database
-
-    Parameters:
-        domain (List[str]|None): The list of the domains to list/update
-
-        The parameter has a misleading name as it is a multiple option
-        but this would be strange to use it several times named as "domains"
-
-        update (boolean): If set, update the database for the selected domains
-    """
-
-    if not domain:
-        domain = DOMAINS
-    else:
-        for domain_name in domain:
-            if domain_name in DOMAINS:
-                continue
-            click.echo(
-                f'Domain {domain}s is not activated in the configuration')
-
-    if update:
-        update_db(domain)
-    else:
-        for domain_name in domain:
-            list_routes(domain)
-
-
+###############
+# domain read #
+###############
 def list_routes(domain):
     click.echo(f'\nDomain : {domain}')
     routers = APIRouter(domain=domain)
@@ -69,7 +36,9 @@ def list_routes(domain):
             route['acls'] = acls
             click.echo('- [{http_verb}] {path} ({acls})'.format(**route))
 
-
+#################
+# domain update #
+#################
 def update_db(domains):
 
     def add_domain(domain):
@@ -279,3 +248,63 @@ def update_db(domains):
                         # @TODO : Insertion exception handling
                         print(e)
                         continue
+
+
+#################
+# domain delete #
+#################
+def delete_domain(domain):
+    d = Domain(name=domain)
+    if len(d) != 1:
+        return False
+
+    d.delete(delete_all=True)
+    return True
+
+
+@click.option('--read',default=False, is_flag=True)
+@click.option('--create',default=False, is_flag=True)
+@click.option('--update',default=False, is_flag=True)
+@click.option('--delete',default=False, is_flag=True)
+@click.option('--domains',default=None)
+@cli.command()
+def domain(domains, delete, update, create, read):  #, domains, read, create, update, delete):
+    """
+    Lists routes for the specified domains, or update them in the database
+
+    Parameters:
+        domain (List[str]|None): The list of the domains to list/update
+
+        The parameter has a misleading name as it is a multiple option
+        but this would be strange to use it several times named as "domains"
+
+        update (boolean): If set, update the database for the selected domains
+    """
+
+    if not domains:
+        if create:
+            return create_domain()
+
+        domains = DOMAINS
+    else:
+        domains_ = []
+        for domain_name in domains.split(','):
+            if domain_name in DOMAINS:
+                domains.append(domain_name)
+                continue
+
+            click.echo(
+                f'Domain {domain_name}s is not activated in the configuration')
+
+        domains = domains_
+
+    update = False
+    for domain in domains:
+        if update:
+            update_db(domain)
+        if delete:
+            delete_domain(domain)
+        else:
+            list_routes(domain)
+
+

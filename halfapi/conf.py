@@ -7,6 +7,7 @@ from configparser import ConfigParser
 IS_PROJECT = os.path.isfile('.halfapi/config')
 
 if IS_PROJECT:
+
     default_config = {
         'project': {
             'host': '127.0.0.1',
@@ -35,17 +36,25 @@ if IS_PROJECT:
 
     CONF_DIR = environ.get('HALFAPI_CONF_DIR', '/etc/half_api')
 
-    config.read(filenames=[os.path.join(
+    HALFAPI_CONF_FILE=os.path.join(
         CONF_DIR,
-        PROJECT_NAME 
-    )])
+        PROJECT_NAME
+    )
+    if not os.path.isfile(HALFAPI_CONF_FILE):
+        print(f'Missing {HALFAPI_CONF_FILE}, exiting')
+        sys.exit(1)
+    config.read(filenames=[HALFAPI_CONF_FILE])
 
     HOST = config.get('project', 'host')
     PORT = config.getint('project', 'port')
     DB_NAME = f'halfapi_{PROJECT_NAME}'
 
-    with open(config.get('project', 'secret')) as secret_file:
-        SECRET = secret_file.read()
+    try:
+        with open(config.get('project', 'secret')) as secret_file:
+            SECRET = secret_file.read()
+    except FileNotFoundError:
+        print('There is no file like {}'.format(config.get('project', 'secret')))
+        sys.exit(1)
 
     PRODUCTION = config.getboolean('project', 'production')
     BASE_DIR = config.get('project', 'base_dir')

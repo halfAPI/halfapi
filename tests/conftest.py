@@ -1,7 +1,57 @@
-# content of conftest.py
-
+#!/usr/bin/env python3
+import re
+import os
+import subprocess
+import importlib
+import tempfile
+from unittest.mock import patch
 from typing import Dict, Tuple
 import pytest
+from uuid import uuid1
+from click.testing import CliRunner
+from halfapi import __version__
+from halfapi.cli import cli
+from halfapi.cli.init import format_halfapi_etc
+Cli = cli.cli
+
+PROJNAME = os.environ.get('PROJ','tmp_api')
+
+@pytest.fixture
+def runner():
+    return CliRunner()
+
+
+@pytest.fixture
+def dropdb():
+    p = subprocess.Popen(['dropdb', f'halfapi_{PROJNAME}'])
+    p.wait()
+    yield 
+
+    p = subprocess.Popen(['dropdb', f'halfapi_{PROJNAME}'])
+    p.wait()
+
+@pytest.fixture
+def createdb():
+    p = subprocess.Popen(['createdb', f'halfapi_{PROJNAME}'])
+    p.wait()
+    return
+
+def confdir(dirname):
+    d = os.environ.get(dirname)
+    if not d:
+        os.environ[dirname] = tempfile.mkdtemp(prefix='halfapi_')
+        return os.environ.get(dirname)
+    if not os.path.isdir(d):
+        os.mkdir(d)
+    return d
+
+@pytest.fixture
+def halform_conf_dir():
+    return confdir('HALFORM_CONF_DIR')
+
+@pytest.fixture
+def halfapi_conf_dir():
+    return confdir('HALFAPI_CONF_DIR')
 
 # store history of failures per test class name and per index in parametrize (if
 # parametrize used)
@@ -51,3 +101,28 @@ def pytest_runtest_setup(item):
             # test name
             if test_name is not None:
                 pytest.xfail("previous test failed ({})".format(test_name))
+
+@pytest.fixture
+def project_runner(runner, dropdb, createdb, halform_conf_dir, halfapi_conf_dir):
+    env = {
+        'HALFORM_CONF_DIR': halform_conf_dir,
+        'HALFAPI_CONF_DIR': halfapi_conf_dir
+    }
+    with runner.isolated_filesystem():
+        res = runner.invoke(Cli, ['init', PROJNAME],
+            env=env,
+            catch_exceptions=True)
+        assert res.exit_code == 0
+
+        os.chdir(PROJNAME)
+        secret = tempfile.mkstemp()
+        SECRET_PATH = secret[1]
+        with open(SECRET_PATH, 'w') as f:
+            f.write(str(uuid1()))
+
+        with open(os.path.join(halfapi_conf_dir, PROJNAME), 'w') as f:
+            PROJ_CONFIG = re.sub('secret = .*', f'secret = {SECRET_PATH}',
+                format_halfapi_etc(PROJNAME, os.getcwd()))
+            f.write(PROJ_CONFIG)
+
+        yield lambda args: runner.invoke(Cli, args, env=env)

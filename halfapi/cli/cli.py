@@ -10,11 +10,6 @@ def cli(ctx, version):
     if version:
         import halfapi
         return click.echo(halfapi.version)
-     
-    #if not IS_PROJECT:
-    #    return init()
-    #if ctx.invoked_subcommand is None: 
-    #    return run()
 
 if IS_PROJECT:
     import halfapi.cli.domain
