@@ -27,11 +27,6 @@ if IS_PROJECT:
     if len(PROJECT_NAME) == 0:
         raise Exception('Need a project name as argument')
 
-
-    config = ConfigParser(allow_no_value=True)
-    config.read_dict(default_config)
-    config.read(filenames=['.halfapi/domains'])
-
     DOMAINS = [domain for domain, _ in config.items('domains')]
 
     CONF_DIR = environ.get('HALFAPI_CONF_DIR', '/etc/half_api')
