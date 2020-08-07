@@ -43,7 +43,7 @@ setup(
     packages=get_packages(module_name),
     python_requires=">=3.7",
     install_requires=[
-        "jwt>=1.0,<2",
+        "PyJWT>=1.7.1",
         "starlette>=0.13,<1",
         "half_orm @ git+ssh://git@gite.lirmm.fr/maizi/halfORM.git",
         "click>=7.1,<8",
