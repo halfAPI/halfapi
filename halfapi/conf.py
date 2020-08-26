@@ -54,4 +54,6 @@ if IS_PROJECT:
         sys.exit(1)
 
     PRODUCTION = config.getboolean('project', 'production')
+    os.environ['HALFAPI_PROD'] = str(PRODUCTION)
+
     BASE_DIR = config.get('project', 'base_dir')
