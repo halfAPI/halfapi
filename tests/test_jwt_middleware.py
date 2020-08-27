@@ -1,16 +1,32 @@
+import os
 import jwt
-import requests
+from requests import Request
 import pytest
+from unittest.mock import patch
 import json
 from json.decoder import JSONDecodeError
 import sys
 from hashlib import sha256
 from base64 import b64decode
-from starlette.testclient import TestClient
+from uuid import uuid4, UUID
 
-from halfapi.app import app
-from halfapi.lib.jwt_middleware import (JWTUser, JWTAuthenticationBackend,
+from starlette.testclient import TestClient
+from starlette.authentication import (
+    AuthenticationBackend, AuthenticationError, BaseUser, AuthCredentials,
+    UnauthenticatedUser)
+
+
+#from halfapi.app import app
+os.environ['HALFAPI_PROD'] = 'True'
+os.environ['HALFAPI_SECRET'] = 'randomsecret'
+
+from halfapi.lib.jwt_middleware import (PRODUCTION, SECRET,
+    JWTUser, JWTAuthenticationBackend,
     JWTWebSocketAuthenticationBackend)
+
+def test_constants():
+    assert PRODUCTION == bool(os.environ['HALFAPI_PROD'])
+    assert SECRET == os.environ['HALFAPI_SECRET']
 
 @pytest.fixture
 def token():
@@ -32,6 +48,16 @@ def token():
         raise Exception('Missing token in token request')
 
     return res['token']
+
+
+@pytest.fixture
+def token_builder():
+    yield jwt.encode({
+        'name':'xxx',
+        'id': str(uuid4())},
+        key=SECRET
+    )
+
 
 @pytest.fixture
 def token_dirser():
@@ -55,6 +81,7 @@ def token_dirser():
     return res['token']
 
 
+"""
 def test_token(token):
     client = TestClient(app)
 
@@ -90,3 +117,28 @@ def test_labopers(token, token_dirser):
         })
 
     assert res.status_code == 200
+"""
+
+def test_JWTUser():
+    uid = uuid4()
+    token = '{}'
+    payload = {}
+    user = JWTUser(uid, token, payload)
+    assert user.id == uid
+    assert user.token == token
+    assert user.payload == payload
+    assert user.is_authenticated == True
+
+@pytest.mark.asyncio
+async def test_JWTAuthenticationBackend(token_builder):
+    backend = JWTAuthenticationBackend()
+    assert backend.secret_key == SECRET
+
+    req = Request(
+        headers={
+            'Authorization': token_builder
+        })
+
+    credentials, user = await backend.authenticate(req)
+    assert type(user) == JWTUser
+    assert type(credentials) == AuthCredentials

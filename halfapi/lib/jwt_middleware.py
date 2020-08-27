@@ -30,11 +30,33 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+from os import environ
+
 import jwt
 from uuid import UUID
 from starlette.authentication import (
     AuthenticationBackend, AuthenticationError, BaseUser, AuthCredentials,
     UnauthenticatedUser)
+
+import logging
+logger = logging.getLogger('halfapi')
+
+try:
+    from ..conf import PRODUCTION
+except ImportError:
+    logger.warning('Could not import PRODUCTION variable from conf module,'\
+        ' using HALFAPI_PROD environment variable')
+    PRODUCTION = environ.get('HALFAPI_PROD') or False
+
+try:
+    from ..conf import SECRET
+except ImportError:
+    logger.warning('Could not import SECRET variable from conf module,'\
+        ' using HALFAPI_SECRET environment variable')
+    SECRET  = environ.get('HALFAPI_SECRET', False)
+    if not SECRET:
+        raise Exception('Missing HALFAPI_SECRET variable')
+
 
 
 class JWTUser(BaseUser):
@@ -64,13 +86,14 @@ class JWTUser(BaseUser):
 
 
 class JWTAuthenticationBackend(AuthenticationBackend):
-    def __init__(self, secret_key: str, algorithm: str = 'HS256', prefix: str = 'JWT', name: str = 'name'):
+    def __init__(self, secret_key: str = SECRET,
+        algorithm: str = 'HS256', prefix: str = 'JWT'):
+
         if secret_key is None:
             raise Exception('Missing secret_key argument for JWTAuthenticationBackend') 
         self.secret_key = secret_key
         self.algorithm = algorithm
         self.prefix = prefix
-        self.id = id
 
     async def authenticate(self, request):
         if "Authorization" not in request.headers:
@@ -78,7 +101,15 @@ class JWTAuthenticationBackend(AuthenticationBackend):
 
         token = request.headers["Authorization"]
         try:
-            payload = jwt.decode(token, key=self.secret_key, algorithms=self.algorithm)
+            payload = jwt.decode(token,
+                key=self.secret_key,
+                algorithms=self.algorithm,
+                verify=True)
+
+            if PRODUCTION and 'debug' in payload.keys():
+                raise AuthenticationError(
+                    'Trying to connect using *DEBUG* token in *PRODUCTION* mode')
+
         except jwt.InvalidTokenError as e:
             raise AuthenticationError(str(e))
         except Exception as e:
