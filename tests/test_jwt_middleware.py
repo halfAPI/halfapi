@@ -58,6 +58,27 @@ def token_builder():
         key=SECRET
     )
 
+@pytest.fixture
+def token_debug_false_builder():
+    yield jwt.encode({
+        'name':'xxx',
+        'id': str(uuid4()),
+        'debug': False},
+        key=SECRET
+    )
+
+
+@pytest.fixture
+def token_debug_true_builder():
+    yield jwt.encode({
+        'name':'xxx',
+        'id': str(uuid4()),
+        'debug': True},
+        key=SECRET
+    )
+
+
+
 
 @pytest.fixture
 def token_dirser():
@@ -142,3 +163,34 @@ async def test_JWTAuthenticationBackend(token_builder):
     credentials, user = await backend.authenticate(req)
     assert type(user) == JWTUser
     assert type(credentials) == AuthCredentials
+
+
+@pytest.mark.asyncio
+async def test_JWTAuthenticationBackend_DebugFalse(token_debug_false_builder):
+    backend = JWTAuthenticationBackend()
+    assert backend.secret_key == SECRET
+
+    req = Request(
+        headers={
+            'Authorization': token_debug_false_builder
+        })
+
+    credentials, user = await backend.authenticate(req)
+    assert type(user) == JWTUser
+    assert type(credentials) == AuthCredentials
+
+
+@pytest.mark.asyncio
+async def test_JWTAuthenticationBackend_DebugTrue(token_debug_true_builder):
+    backend = JWTAuthenticationBackend()
+    assert backend.secret_key == SECRET
+
+    req = Request(
+        headers={
+            'Authorization': token_debug_true_builder
+        })
+
+    try:
+        await backend.authenticate(req)
+    except Exception as e:
+        assert type(e) == AuthenticationError

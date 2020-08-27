@@ -46,7 +46,7 @@ try:
 except ImportError:
     logger.warning('Could not import PRODUCTION variable from conf module,'\
         ' using HALFAPI_PROD environment variable')
-    PRODUCTION = environ.get('HALFAPI_PROD') or False
+    PRODUCTION = bool(environ.get('HALFAPI_PROD', False))
 
 try:
     from ..conf import SECRET
@@ -106,7 +106,7 @@ class JWTAuthenticationBackend(AuthenticationBackend):
                 algorithms=self.algorithm,
                 verify=True)
 
-            if PRODUCTION and 'debug' in payload.keys():
+            if PRODUCTION and 'debug' in payload.keys() and payload['debug']:
                 raise AuthenticationError(
                     'Trying to connect using *DEBUG* token in *PRODUCTION* mode')
 
