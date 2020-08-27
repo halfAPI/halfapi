@@ -27,7 +27,9 @@ if IS_PROJECT:
     if len(PROJECT_NAME) == 0:
         raise Exception('Need a project name as argument')
 
-    DOMAINS = [domain for domain, _ in config.items('domains')]
+    DOMAINS = [domain for domain, _ in config.items('domains')] \
+        if config.has_section('domains') \
+        else []
 
     CONF_DIR = environ.get('HALFAPI_CONF_DIR', '/etc/half_api')
 
@@ -53,7 +55,7 @@ if IS_PROJECT:
         print('There is no file like {}'.format(config.get('project', 'secret')))
         sys.exit(1)
 
-    PRODUCTION = config.getboolean('project', 'production')
+    PRODUCTION = config.getboolean('project', 'production') or False
     os.environ['HALFAPI_PROD'] = str(PRODUCTION)
 
     BASE_DIR = config.get('project', 'base_dir')

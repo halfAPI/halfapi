@@ -9,10 +9,12 @@ from halfapi.conf import IS_PROJECT
 def cli(ctx, version):
     if version:
         import halfapi
-        return click.echo(halfapi.version)
+        return click.echo(halfapi.version())
 
 if IS_PROJECT:
+    import halfapi.cli.config
     import halfapi.cli.domain
     import halfapi.cli.run
+
 else:
     import halfapi.cli.init

@@ -18,8 +18,8 @@ logger = logging.getLogger('halfapi')
 #################
 # domain create #
 #################
-def create_domain(name):
-    pass
+def create_domain():
+    sys.exit(0)
 
 ###############
 # domain read #
