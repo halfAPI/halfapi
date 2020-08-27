@@ -4,6 +4,9 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pytest = "*"
+requests = "*"
+pytest-asyncio = "*"
 
 [packages]
 click = "*"
@@ -12,4 +15,7 @@ uvicorn = "*"
 jwt = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.7"
+
+[scripts]
+halfapi = "halfapi.cli.cli:cli"
