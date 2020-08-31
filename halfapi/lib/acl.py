@@ -14,7 +14,8 @@ def connected(func):
           or type(req.user) == UnauthenticatedUser
           or not hasattr(req.user, 'is_authenticated')):
             return False
-        return func(req, **kwargs)
+
+        return func(req, **{**kwargs, **req.path_params})
 
     return caller
 
