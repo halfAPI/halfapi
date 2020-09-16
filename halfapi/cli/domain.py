@@ -85,19 +85,21 @@ def update_db(domain):
         Inserts ACL into database
 
         Parameters:
-            - acls (List[Callable]): List of the Route's ACL's
+            - acls [(Callable, [str])]: List of the Route's ACL's
             - route (dict): The Route
         """
         route.pop('fct_name')
         acl = Acl(**route)
 
-        for fct in acls:
+        for fct, keys in acls:
             acl.acl_fct_name = fct.__name__
 
-            if len(acl) == 0:
-                if fct is not None:
-                    add_acl_fct(fct)
-
+            if len(acl) != 0:
+                raise Exception(
+                    'An ACL row for this route with this function already exists. Check your routers')
+            else:
+                acl.keys = keys
+                add_acl_fct(fct)
                 acl.insert()
 
             elif fct is None:
@@ -222,6 +224,7 @@ def update_db(domain):
             # Missing router, continue 
             click.echo(f'The domain {domain} has no *{router_name}* router', err=True)
             continue
+
 
         try:
             add_router(router_name)

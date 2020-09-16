@@ -48,6 +48,7 @@ create table api.acl (
     router text,
     domain text,
     acl_fct_name text,
+    keys text[],
     primary key (http_verb, path, router, domain, acl_fct_name)
 );
 
