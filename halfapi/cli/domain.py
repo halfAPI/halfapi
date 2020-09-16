@@ -102,9 +102,6 @@ def update_db(domain):
                 add_acl_fct(fct)
                 acl.insert()
 
-            elif fct is None:
-                acl.delete()
-
 
     def get_fct_name(http_verb, path):
         """
