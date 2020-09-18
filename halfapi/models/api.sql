@@ -1,6 +1,6 @@
 create schema api;
 
-create type verb as enum ('POST', 'GET', 'PUT', 'DELETE');
+create type verb as enum ('POST', 'GET', 'PUT', 'PATCH', 'DELETE');
 
 create table api.domain (
     name text,

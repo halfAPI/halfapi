@@ -40,7 +40,20 @@ def get_routes(domains=None):
             for acl_fct_name, keys in acls:
                 acl_fct = getattr(acls_mod, acl_fct_name)
                 if acl_fct(req, *args, **kwargs):
-                    return await fct(req, *args, **{ **kwargs, **{'keys': keys} })
+                    """
+                        We the 'acl' and 'keys' kwargs values to let the
+                        decorated function know which ACL function answered
+                        True, and which keys the request will return
+                    """
+                    return await fct(
+                        req, *args,
+                        **{
+                            **kwargs,
+                            **{
+                                'acl': f'{acls_mod.__name__}.{acl_fct_name}',
+                                'keys': keys
+                            }
+                        })
 
             raise HTTPException(401)
 
