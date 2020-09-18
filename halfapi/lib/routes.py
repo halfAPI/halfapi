@@ -2,6 +2,7 @@
 from functools import wraps
 import importlib
 import sys
+from typing import Callable, List, Tuple
 
 from halfapi.conf import (PROJECT_NAME, DB_NAME, HOST, PORT,
     PRODUCTION, DOMAINS)
@@ -33,13 +34,13 @@ def get_routes(domains=None):
     """
 
 
-    def route_decorator(fct, acls_mod, acls):
+    def route_decorator(fct: Callable, acls_mod, acls: List[Tuple]):
         @wraps(fct)
         async def caller(req: Request, *args, **kwargs):
-            for acl_fct_name in acls:
+            for acl_fct_name, keys in acls:
                 acl_fct = getattr(acls_mod, acl_fct_name)
                 if acl_fct(req, *args, **kwargs):
-                    return await fct(req, *args, **kwargs)
+                    return await fct(req, *args, **{ **kwargs, **{'keys': keys} })
 
             raise HTTPException(401)
 
@@ -64,8 +65,8 @@ def get_routes(domains=None):
                 router=router['name']) as routes:
                 for route in routes.select():
                     fct_name = route.pop('fct_name')
-                    acls = [ list(elt.values()).pop() 
-                        for elt in Acl(**route).select('acl_fct_name') ]
+                    acls = [ (elt['acl_fct_name'], elt['keys']) 
+                        for elt in Acl(**route).select('acl_fct_name', 'keys') ]
 
                     router_routes.append(
                         Route(route['path'], 
@@ -81,4 +82,4 @@ def get_routes(domains=None):
 
         app_routes.append(Mount('/{name}'.format(**domain),
             routes=domain_routes))
-    return app_routes
+    return app_routes 
