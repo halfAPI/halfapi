@@ -49,10 +49,8 @@ def get_routes(domains=None):
                         req, *args,
                         **{
                             **kwargs,
-                            **{
-                                'acl': f'{acls_mod.__name__}.{acl_fct_name}',
-                                'keys': keys
-                            }
+                            'acl': f'{acls_mod.__name__}.{acl_fct_name}',
+                            'keys': keys
                         })
 
             raise HTTPException(401)
