@@ -36,6 +36,9 @@ def get_fct_name(http_verb, path: str):
         >>> get_fct_name('DEL', '{boo:zoo}/far')
         'del_BOO_far'
     """
+    if path and path[0] == '/':
+        path = path[1:]
+
     fct_name = [http_verb.lower()]
     for elt in path.split('/'):
         if elt and elt[0] == '{':
