@@ -11,12 +11,13 @@ from starlette.middleware.authentication import AuthenticationMiddleware
 from typing import Any, Awaitable, Callable, MutableMapping
 
 # module libraries
-from halfapi.conf import HOST, PORT, DB_NAME, SECRET, PRODUCTION
+from halfapi.conf import HOST, PORT, DB_NAME, SECRET, PRODUCTION, DOMAINS
 
 from halfapi.lib.jwt_middleware import JWTAuthenticationBackend
 
 from halfapi.lib.responses import *
-from halfapi.lib.routes import get_routes
+from halfapi.lib.routes import get_starlette_routes 
+from halfapi.lib.domain import domain_scanner
 
 
 debug_routes = [
@@ -31,7 +32,8 @@ debug_routes = [
 
 application = Starlette(
     debug=not PRODUCTION,
-    routes=debug_routes + get_routes(),
+    routes=debug_routes + [ route for route in 
+        gen_starlette_routes(domain_scanner()) ],
     middleware=[
         Middleware(AuthenticationMiddleware,
             backend=JWTAuthenticationBackend(secret_key=SECRET))
