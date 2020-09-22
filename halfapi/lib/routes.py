@@ -2,7 +2,7 @@
 from functools import wraps
 import importlib
 import sys
-from typing import Callable, List, Tuple
+from typing import Callable, List, Tuple, Dict
 
 from halfapi.conf import (PROJECT_NAME, DB_NAME, HOST, PORT,
     PRODUCTION, DOMAINS)
@@ -14,6 +14,7 @@ from halfapi.db import (
     AclFunction,
     Acl)
 from halfapi.lib.responses import *
+from halfapi.lib.domain import domain_scanner
 from starlette.exceptions import HTTPException
 from starlette.routing import Mount, Route
 from starlette.requests import Request
@@ -21,76 +22,49 @@ from starlette.requests import Request
 class DomainNotFoundError(Exception):
     pass
 
-def get_routes(domains=None):
-    """ Procedure to mount the registered domains on their prefixes
+def route_decorator(fct: Callable, acls_mod, params: List[Dict]):
+    @wraps(fct)
+    async def caller(req: Request, *args, **kwargs):
+        for param in params:
+            acl_fct = getattr(acls_mod, param['acl'])
+            if acl_fct(req, *args, **kwargs):
+                """
+                    We the 'acl' and 'keys' kwargs values to let the
+                    decorated function know which ACL function answered
+                    True, and which keys the request will return
+                """
+                return await fct(
+                    req, *args,
+                    **{
+                        **kwargs,
+                        **params
+                    })
 
-        Parameters:
+        raise HTTPException(401)
 
-            - app (ASGIApp): The Starlette instance
-            - domains (list): The domains to mount, retrieved from the database
-              with their attributes "name"
+    return caller
 
-        Returns: Nothing
-    """
+def gen_starlette_routes():
+    for domain in DOMAINS:
+        domain_acl_mod = importlib.import_module(
+            f'{domain}.acl')
 
+        ( Route(route['path'],
+            route_decorator(
+                route['fct'],
+                domain_acl_mod,
+                route['params'],
+            ), methods=[route['verb']])
+            for route in domain_scanner(domain)
+        )
 
-    def route_decorator(fct: Callable, acls_mod, acls: List[Tuple]):
-        @wraps(fct)
-        async def caller(req: Request, *args, **kwargs):
-            for acl_fct_name, keys in acls:
-                acl_fct = getattr(acls_mod, acl_fct_name)
-                if acl_fct(req, *args, **kwargs):
-                    """
-                        We the 'acl' and 'keys' kwargs values to let the
-                        decorated function know which ACL function answered
-                        True, and which keys the request will return
-                    """
-                    return await fct(
-                        req, *args,
-                        **{
-                            **kwargs,
-                            'acl': f'{acls_mod.__name__}.{acl_fct_name}',
-                            'keys': keys
-                        })
+        for route in gen_routes(domain):
 
-            raise HTTPException(401)
-
-        return caller
-
-    app_routes = []
-    for domain_name in DOMAINS:
-        try:
-            domain = next(Domain(name=domain_name).select())
-        except StopIteration:
-            raise DomainNotFoundError(
-                f"Domain '{domain_name}' not found in '{DB_NAME}' database!")
-        domain_acl_mod = importlib.import_module(f'{domain["name"]}.acl')
-        domain_routes = []
-        for router in APIRouter(domain=domain['name']).select():
-            router_routes = []
-
-            router_mod = importlib.import_module(
-                '{domain}.routers.{name}'.format(**router))
-
-            with APIRoute(domain=domain['name'],
-                router=router['name']) as routes:
-                for route in routes.select():
-                    fct_name = route.pop('fct_name')
-                    acls = [ (elt['acl_fct_name'], elt['keys']) 
-                        for elt in Acl(**route).select('acl_fct_name', 'keys') ]
-
-                    router_routes.append(
-                        Route(route['path'], 
-                        route_decorator(
-                            getattr(router_mod, fct_name),
-                            domain_acl_mod,
-                            acls
-                        ), methods=[route['http_verb']])
-                    )
-
-            domain_routes.append(
-                Mount('/{name}'.format(**router), routes=router_routes))
-
-        app_routes.append(Mount('/{name}'.format(**domain),
-            routes=domain_routes))
-    return app_routes 
+            yield (
+                Route(route['path'],
+                route_decorator(
+                    route['fct'],
+                    domain_acl_mod,
+                    route['params'],
+                ), methods=[route['verb']])
+            )
