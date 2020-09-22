@@ -103,57 +103,6 @@ def update_db(domain):
                 acl.insert()
 
 
-    def get_fct_name(http_verb, path):
-        """
-        Returns the predictable name of the function for a route
-
-        Parameters:
-            - http_verb (str): The Route's HTTP method (GET, POST, ...)
-            - path (str): A path beginning by '/' for the route
-
-        Returns:
-            str: The *unique* function name for a route and it's verb
-
-
-        Examples:
-
-            >>> get_fct_name('foo', 'bar')
-            Traceback (most recent call last):
-                ...
-            Exception: Malformed path
-
-            >>> get_fct_name('get', '/')
-            'get_'
-
-            >>> get_fct_name('GET', '/')
-            'get_'
-
-            >>> get_fct_name('POST', '/foo')
-            'post_foo'
-
-            >>> get_fct_name('POST', '/foo/bar')
-            'post_foo_bar'
-
-            >>> get_fct_name('DEL', '/foo/{boo}/{far}/bar')
-            'del_foo_BOO_FAR_bar'
-
-            >>> get_fct_name('DEL', '/foo/{boo:zoo}')
-            'del_foo_BOO'
-        """
-
-        if path[0] != '/':
-            raise Exception('Malformed path')
-
-        elts = path[1:].split('/')
-
-        fct_name = [http_verb.lower()]
-        for elt in elts:
-            if elt and elt[0] == '{':
-                fct_name.append(elt[1:-1].split(':')[0].upper())
-            else:
-                fct_name.append(elt)
-
-        return '_'.join(fct_name)
 
 
     def add_route(http_verb, path, router, acls):
@@ -216,8 +165,11 @@ def update_db(domain):
 
     for router_name in dom_mod.ROUTERS:
         try:
-            router_mod = getattr(dom_mod.routers, router_name)
-        except AttributError:
+            router_mod = None
+            for router_subname in router_name.split('.'):
+                router_mod = getattr(router_mod or dom_mod.routers, router_subname)
+
+        except AttributeError:
             # Missing router, continue 
             click.echo(f'The domain {domain} has no *{router_name}* router', err=True)
             continue
@@ -232,7 +184,23 @@ def update_db(domain):
             continue
 
 
-        for route_path, route_params  in router_mod.ROUTES.items():
+        d_routes = {}
+
+        if hasattr(router_mod, 'ROUTES'):
+            d_routes.update(router_mod.ROUTES)
+        else:
+            logger.warning(f'{router_name} is missing a ROUTES variable')
+
+        if hasattr(router_mod, 'ROUTERS'):
+            for router_router in router_mod.ROUTERS:
+                if hasattr(router_router, 'ROUTES'):
+                    d_routes.update(router_routes.ROUTES)
+                else:
+                    logger.warning(f'{router_name}.{router_router.__name__} is missing a ROUTES variable')
+        else:
+            logger.warning(f'{router_mod} is missing a ROUTERS variable')
+            
+        for route_path, route_params  in d_routes.items():
             for http_verb, acls in route_params.items():
                 try:
                     # Insert a route and it's ACLS
@@ -274,6 +242,7 @@ def domain(domains, delete, update, create, read):  #, domains, read, create, up
 
         update (boolean): If set, update the database for the selected domains
     """
+    raise NotImplementedError
 
     if not domains:
         if create:

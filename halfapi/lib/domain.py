@@ -50,7 +50,7 @@ def get_fct_name(http_verb, path: t.List):
 
     return '_'.join(fct_name)
 
-def route_generator(route_params, path, m_router):
+def gen_routes(route_params, path, m_router):
     for verb in VERBS:
         params = route_params.get(verb)
         if params is None:
@@ -67,12 +67,12 @@ def route_generator(route_params, path, m_router):
 
         yield {
             'verb':verb,
-            'path':'/'.join([ elt for elt in path if elt ]), 
+            'path':f"/{'/'.join([ elt for elt in path if elt ])}", 
             'params':params,
             'fct': fct }
-    
-    
-def router_scanner(m_router, path=[]):
+
+
+def gen_router_routes(m_router, path=[]):
     """
     [
         ('path', [acl], fct)
@@ -80,7 +80,7 @@ def router_scanner(m_router, path=[]):
     """
 
     if not hasattr(m_router, 'ROUTES'):
-        print(f'Missing *ROUTES* constant in *{domain}.routers*')
+        print(f'Missing *ROUTES* constant in *{m_router.__name__}*')
 
     routes = m_router.ROUTES
 
@@ -88,14 +88,14 @@ def router_scanner(m_router, path=[]):
     for subpath, route_params in routes.items():
         path.append(subpath)
 
-        for route in route_generator(route_params, path, m_router):
+        for route in gen_routes(route_params, path, m_router):
             yield route
         
         subroutes = route_params.get('SUBROUTES', [])
         for subroute in subroutes:
             path.append(subroute)
             submod = importlib.import_module(f'.{subroute}', m_router.__name__)
-            for route_scan in router_scanner(submod, path):
+            for route_scan in gen_router_routes(submod, path):
                 yield route_scan
 
             path.pop()
@@ -106,7 +106,7 @@ def router_scanner(m_router, path=[]):
 
 
 
-def domain_scanner(domain):
+def gen_domain_routes(domain):
     m_domain = importlib.import_module(domain)
 
     if not hasattr(m_domain, 'routers'):
@@ -114,4 +114,4 @@ def domain_scanner(domain):
 
     m_router = importlib.import_module('.routers', domain)
 
-    return router_scanner(m_router)
+    return gen_router_routes(m_router, [domain])

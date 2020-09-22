@@ -16,11 +16,10 @@ from halfapi.conf import HOST, PORT, DB_NAME, SECRET, PRODUCTION, DOMAINS
 from halfapi.lib.jwt_middleware import JWTAuthenticationBackend
 
 from halfapi.lib.responses import *
-from halfapi.lib.routes import get_starlette_routes 
-from halfapi.lib.domain import domain_scanner
+from halfapi.lib.routes import gen_starlette_routes
 
 
-debug_routes = [
+routes = [
     Route('/', lambda request, *args, **kwargs: PlainTextResponse('It Works!')),
     Route('/user', lambda request, *args, **kwargs:
         JSONResponse({'user':request.user.json})
@@ -30,10 +29,12 @@ debug_routes = [
         JSONResponse({'payload':str(request.payload)}))
 ] if not PRODUCTION else []
 
+for route in gen_starlette_routes():
+    routes.append(route)
+
 application = Starlette(
     debug=not PRODUCTION,
-    routes=debug_routes + [ route for route in 
-        gen_starlette_routes(domain_scanner()) ],
+    routes=routes,
     middleware=[
         Middleware(AuthenticationMiddleware,
             backend=JWTAuthenticationBackend(secret_key=SECRET))
