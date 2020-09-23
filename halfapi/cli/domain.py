@@ -4,6 +4,8 @@ import sys
 import logging
 import click
 import importlib
+
+
 from .cli import cli
 from halfapi.conf import DOMAINS, BASE_DIR
 from halfapi.db import (

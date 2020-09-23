@@ -18,6 +18,11 @@ from halfapi.lib.jwt_middleware import JWTAuthenticationBackend
 from halfapi.lib.responses import *
 from halfapi.lib.routes import gen_starlette_routes
 
+from starlette.schemas import SchemaGenerator
+schemas = SchemaGenerator(
+    {"openapi": "3.0.0", "info": {"title": "HalfAPI", "version": "1.0"}}
+)
+
 
 routes = [
     Route('/', lambda request, *args, **kwargs: PlainTextResponse('It Works!')),
@@ -26,7 +31,9 @@ routes = [
         if type(request.user) != UnauthenticatedUser
         else JSONResponse({'user':False})),
     Route('/payload', lambda request, *args, **kwargs:
-        JSONResponse({'payload':str(request.payload)}))
+        JSONResponse({'payload':str(request.payload)})),
+    Route('/schema', lambda request, *args, **kwargs:
+        schemas.OpenAPIResponse(request=request))
 ] if not PRODUCTION else []
 
 for route in gen_starlette_routes():
