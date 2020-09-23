@@ -8,9 +8,11 @@ from starlette.responses import PlainTextResponse, Response, JSONResponse
 
 
 __all__ = [
+    'HJSONResponse',
     'InternalServerErrorResponse',
     'NotFoundResponse',
     'NotImplementedResponse',
+    'ORJSONResponse',
     'PlainTextResponse',
     'UnauthorizedResponse']
 
