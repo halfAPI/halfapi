@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # builtins
+import typing as typ
 import orjson
 from half_orm.null import NULL
 
