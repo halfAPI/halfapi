@@ -7,7 +7,6 @@ import click
 import logging
 
 from halfapi import __version__
-from halfapi.cli.lib.db import ProjectDB
 from .cli import cli
 
 logger = logging.getLogger('halfapi')
@@ -33,8 +32,9 @@ halfapi_version = {halfapi_version}
 """
 
 @click.argument('project')
+@click.option('--venv', default=None)
 @cli.command()
-def init(project):
+def init(project, venv):
     if not re.match('^[a-z0-9_]+$', project, re.I):
         click.echo('Project name must match "^[a-z0-9_]+$", retry.', err=True)
         sys.exit(1)
@@ -46,26 +46,3 @@ def init(project):
 
     click.echo(f'create directory {project}')
     os.mkdir(project)
-
-    try:
-        pdb = ProjectDB(project)
-        pdb.init()
-    except Exception as e:
-        logger.warning(e)
-        logger.debug(os.environ.get('HALFORM_CONF_DIR'))
-        raise e
-
-    os.mkdir(os.path.join(project, '.halfapi'))
-    open(os.path.join(project, '.halfapi', 'domains'), 'w').write('[domains]\n')
-    config_file = os.path.join(project, '.halfapi', 'config')
-    with open(config_file, 'w') as f:
-        f.write(TMPL_HALFAPI_CONFIG.format(
-            name=project,
-            halfapi_version=__version__
-        ))
-
-    click.echo(f'Insert this into the HALFAPI_CONF_DIR/{project} file')
-    click.echo(format_halfapi_etc(
-        project,
-        os.path.abspath(project)))
-

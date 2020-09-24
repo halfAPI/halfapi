@@ -11,33 +11,38 @@ from starlette.middleware.authentication import AuthenticationMiddleware
 from typing import Any, Awaitable, Callable, MutableMapping
 
 # module libraries
-from halfapi.conf import HOST, PORT, DB_NAME, SECRET, PRODUCTION, DOMAINS
+from halfapi.conf import HOST, PORT, DB_NAME, SECRET, PRODUCTION, DOMAINS, DOMAINSDICT
 
 from halfapi.lib.jwt_middleware import JWTAuthenticationBackend
 
 from halfapi.lib.responses import *
 from halfapi.lib.routes import gen_starlette_routes
-
-from starlette.schemas import SchemaGenerator
-schemas = SchemaGenerator(
-    {"openapi": "3.0.0", "info": {"title": "HalfAPI", "version": "1.0"}}
-)
+from halfapi.lib.schemas import sch_json
 
 
+"""
+Base routes definition
+
+Only debug or doc routes, that should not be available in production
+"""
 routes = [
-    Route('/', lambda request, *args, **kwargs: PlainTextResponse('It Works!')),
+    Route('/', lambda request, *args, **kwargs: ORJSONResponse('It Works!')),
+
     Route('/user', lambda request, *args, **kwargs:
-        JSONResponse({'user':request.user.json})
+        ORJSONResponse({'user':request.user.json})
         if type(request.user) != UnauthenticatedUser
-        else JSONResponse({'user':False})),
+        else ORJSONResponse({'user':False})),
+
     Route('/payload', lambda request, *args, **kwargs:
-        JSONResponse({'payload':str(request.payload)})),
-    Route('/schema', lambda request, *args, **kwargs:
-        schemas.OpenAPIResponse(request=request))
+        ORJSONResponse({'payload':str(request.payload)})),
+
+    Route('/schema', schema_json)
 ] if not PRODUCTION else []
 
-for route in gen_starlette_routes():
-    routes.append(route)
+for domain, m_domain in DOMAINSDICT.items():
+    for route in gen_starlette_routes(m_dom):
+        routes.append(route)
+
 
 application = Starlette(
     debug=not PRODUCTION,

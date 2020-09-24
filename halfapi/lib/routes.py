@@ -22,15 +22,33 @@ from starlette.requests import Request
 class DomainNotFoundError(Exception):
     pass
 
-def route_decorator(fct: Callable, acls_mod, params: List[Dict]):
+def route_acl_decorator(fct: Callable, acls_mod, params: List[Dict]):
+    """
+    Decorator for async functions that calls pre-conditions functions
+    and appends kwargs to the target function
+
+
+    Parameters:
+        fct (Callable):
+            The function to decorate
+        acls_mod (Module):
+            The module that contains the pre-condition functions (acls)
+
+        params List[Dict]:
+            A list of dicts that have an "acl" key that points to a function
+
+    Returns:
+        async function
+    """
+
     @wraps(fct)
     async def caller(req: Request, *args, **kwargs):
         for param in params:
             if param['acl'](req, *args, **kwargs):
                 """
-                    We the 'acl' and 'keys' kwargs values to let the
-                    decorated function know which ACL function answered
-                    True, and which keys the request will return
+                We merge the 'acl' and 'keys' kwargs values to let the
+                decorated function know which ACL function answered
+                True, and other parameters that you'd need
                 """
                 return await fct(
                     req, *args,
@@ -43,17 +61,33 @@ def route_decorator(fct: Callable, acls_mod, params: List[Dict]):
 
     return caller
 
-def gen_starlette_routes():
-    for domain in DOMAINS:
-        domain_acl_mod = importlib.import_module(
-            f'{domain}.acl')
+###
+# testing purpose only
+def acl_mock(fct):
+    return lambda r, *a, **kw: True
+#
+##
 
-        for route in gen_domain_routes(domain):
-            yield (
-                Route(route['path'],
-                route_decorator(
+def gen_starlette_routes(m_dom):
+    """
+    Yields the Route objects for HalfAPI app
+
+    Parameters:
+        m_dom (module): the halfapi module
+
+    Returns:
+        Generator[Route]
+    """
+
+    m_dom_acl = importlib.import_module(m_dom '.acl')
+
+    for route in gen_domain_routes(m_dom):
+        yield (
+            Route(route['path'],
+                route_acl_decorator(
                     route['fct'],
-                    domain_acl_mod,
+                    m_dom_acl,
                     route['params'],
-                ), methods=[route['verb']])
-            )
+                ),
+                methods=[route['verb']])
+        )

@@ -7,13 +7,15 @@ import importlib
 
 
 from .cli import cli
-from halfapi.conf import DOMAINS, BASE_DIR
-from halfapi.db import (
-    Domain,
-    APIRouter,
-    APIRoute,
-    AclFunction,
-    Acl)
+from halfapi.conf import DOMAINS, DOMAINSDICT, BASE_DIR
+
+from halfapi.lib.schemas import schema_dict_dom
+# from halfapi.db import (
+#     Domain,
+#     APIRouter,
+#     APIRoute,
+#     AclFunction,
+#     Acl)
 
 logger = logging.getLogger('halfapi')
 
@@ -28,15 +30,18 @@ def create_domain():
 ###############
 def list_routes(domain):
     click.echo(f'\nDomain : {domain}')
-    routers = APIRouter(domain=domain)
-    for router in routers.select():
-        routes = APIRoute(domain=domain, router=router['name'])
-        click.echo('# /{name}'.format(**router))
-        for route in routes.select():
-            route.pop('fct_name')
-            acls = ', '.join([ acl['acl_fct_name'] for acl in Acl(**route).select() ])
-            route['acls'] = acls
-            click.echo('- [{http_verb}] {path} ({acls})'.format(**route))
+
+    m_dom = DOMAINSDICT[domain]
+    click.echo(schema_dict_dom(m_dom))
+
+    # for router in routers.select():
+    #     routes = APIRoute(domain=domain, router=router['name'])
+    #     click.echo('# /{name}'.format(**router))
+    #     for route in routes.select():
+    #         route.pop('fct_name')
+    #         acls = ', '.join([ acl['acl_fct_name'] for acl in Acl(**route).select() ])
+    #         route['acls'] = acls
+    #         click.echo('- [{http_verb}] {path} ({acls})'.format(**route))
 
 #################
 # domain update #
@@ -244,10 +249,10 @@ def domain(domains, delete, update, create, read):  #, domains, read, create, up
 
         update (boolean): If set, update the database for the selected domains
     """
-    raise NotImplementedError
 
     if not domains:
         if create:
+            raise NotImplementedError
             return create_domain()
 
         domains = DOMAINS
@@ -265,8 +270,10 @@ def domain(domains, delete, update, create, read):  #, domains, read, create, up
 
     for domain in domains:
         if update:
+            raise NotImplementedError
             update_db(domain)
         if delete:
+            raise NotImplementedError
             delete_domain(domain)
         else:
             list_routes(domain)

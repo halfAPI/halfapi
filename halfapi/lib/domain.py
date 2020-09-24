@@ -87,7 +87,7 @@ def gen_router_routes(m_router, path=[]):
 
         for route in gen_routes(route_params, path, m_router):
             yield route
-        
+
         subroutes = route_params.get('SUBROUTES', [])
         for subroute in subroutes:
             path.append(subroute)

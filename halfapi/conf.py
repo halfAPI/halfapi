@@ -4,6 +4,15 @@ from os import environ
 import sys
 from configparser import ConfigParser
 
+PROJECT_NAME = ''
+DOMAINS = []
+DOMAINSDICT = {}
+PRODUCTION = False
+BASE_DIR = None
+HOST='127.0.0.1'
+PORT='3000'
+DB_NAME = None
+
 IS_PROJECT = os.path.isfile('.halfapi/config')
 
 if IS_PROJECT:
@@ -31,6 +40,14 @@ if IS_PROJECT:
         if config.has_section('domains') \
         else []
 
+    try:
+        DOMAINSDICT = {
+            dom, importlib.import_module(dom)
+            for dom in DOMAINS
+        }
+    except ImportError as e:
+        logger.error('Could not load a domain', e)
+
     CONF_DIR = environ.get('HALFAPI_CONF_DIR', '/etc/half_api')
 
     HALFAPI_CONF_FILE=os.path.join(
@@ -51,9 +68,9 @@ if IS_PROJECT:
             SECRET = secret_file.read()
             # Set the secret so we can use it in domains
             os.environ['HALFAPI_SECRET'] = SECRET
-    except FileNotFoundError:
-        print('There is no file like {}'.format(config.get('project', 'secret')))
-        sys.exit(1)
+    except FileNotFoundError as e:
+        logger.error('There is no file like {}'.format(config.get('project', 'secret')))
+        logger.debug(e)
 
     PRODUCTION = config.getboolean('project', 'production') or False
     os.environ['HALFAPI_PROD'] = str(PRODUCTION)
