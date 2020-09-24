@@ -17,7 +17,7 @@ from starlette.authentication import (
 
 
 #from halfapi.app import app
-os.environ['HALFAPI_PROD'] = 'True'
+#os.environ['HALFAPI_PROD'] = 'True'
 os.environ['HALFAPI_SECRET'] = 'randomsecret'
 
 from halfapi.lib.jwt_middleware import (PRODUCTION, SECRET,
@@ -25,8 +25,8 @@ from halfapi.lib.jwt_middleware import (PRODUCTION, SECRET,
     JWTWebSocketAuthenticationBackend)
 
 def test_constants():
-    assert PRODUCTION == bool(os.environ['HALFAPI_PROD'])
-    assert SECRET == os.environ['HALFAPI_SECRET']
+    assert isinstance(PRODUCTION, bool)
+    assert isinstance(SECRET, str)
 
 @pytest.fixture
 def token():

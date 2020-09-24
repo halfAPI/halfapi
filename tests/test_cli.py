@@ -61,11 +61,12 @@ class TestCli():
             r = runner.invoke(Cli, ['init', testproject])
             assert r.exit_code == 1
 
-    def test_init_project(self, runner, dropdb, createdb, halform_conf_dir, halfapi_conf_dir):
+    def test_init_project(self, runner, halfapi_conf_dir):
+        """
+        """
         cp = ConfigParser()
         with runner.isolated_filesystem():
             env = {
-                'HALFORM_CONF_DIR': halform_conf_dir,
                 'HALFAPI_CONF_DIR': halfapi_conf_dir
             }
 
@@ -82,10 +83,6 @@ class TestCli():
                 assert cp.has_option('project', 'name')
                 assert cp.get('project', 'name') == PROJNAME
                 assert cp.get('project', 'halfapi_version') == __version__
-
-                # .halfapi/domains check
-                assert os.path.isfile(os.path.join(PROJNAME, '.halfapi', 'domains'))
-                cp.read(os.path.join(PROJNAME, '.halfapi', 'domains'))
                 assert cp.has_section('domains')
             except AssertionError as e:
                 subprocess.run(['tree', '-a', os.getcwd()])
@@ -93,4 +90,3 @@ class TestCli():
 
             assert res.exit_code == 0
             assert res.exception is None
-

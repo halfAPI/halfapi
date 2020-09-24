@@ -20,6 +20,9 @@ PROJNAME = os.environ.get('PROJ','tmp_api')
 def runner():
     return CliRunner()
 
+def halfapicli(runner):
+    return lambda *args: runner.invoke(Cli, args)
+
 
 @pytest.fixture
 def dropdb():
@@ -103,9 +106,9 @@ def pytest_runtest_setup(item):
                 pytest.xfail("previous test failed ({})".format(test_name))
 
 @pytest.fixture
-def project_runner(runner, dropdb, createdb, halform_conf_dir, halfapi_conf_dir):
+def project_runner(runner, halfapi_conf_dir):
+    global Cli
     env = {
-        'HALFORM_CONF_DIR': halform_conf_dir,
         'HALFAPI_CONF_DIR': halfapi_conf_dir
     }
     with runner.isolated_filesystem():
@@ -125,4 +128,6 @@ def project_runner(runner, dropdb, createdb, halform_conf_dir, halfapi_conf_dir)
                 format_halfapi_etc(PROJNAME, os.getcwd()))
             f.write(PROJ_CONFIG)
 
-        yield lambda args: runner.invoke(Cli, args, env=env)
+        importlib.reload(cli)
+        Cli = cli.cli
+        yield halfapicli(runner)

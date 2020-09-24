@@ -2,14 +2,20 @@
 import pytest
 from starlette.authentication import UnauthenticatedUser
 from starlette.testclient import TestClient
-from halfapi.app import app
+from halfapi.app import application
+import json
 
 def test_itworks():
-    c = TestClient(app)
-    r = c.get('/')
-    assert r.text == 'It Works!'
+    c = TestClient(application)
+    r = json.loads(c.get('/').text)
+    assert r == 'It Works!'
 
 def test_user():
-    c = TestClient(app)
+    c = TestClient(application)
     r = c.get('/user')
+    assert r.status_code == 200
+
+def test_user():
+    c = TestClient(application)
+    r = c.get('/schema')
     assert r.status_code == 200
