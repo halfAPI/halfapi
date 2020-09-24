@@ -7,6 +7,7 @@ import click
 import logging
 
 from halfapi import __version__
+from halfapi.conf import CONF_DIR
 from .cli import cli
 
 logger = logging.getLogger('halfapi')
@@ -29,6 +30,8 @@ def format_halfapi_etc(project, path):
 TMPL_HALFAPI_CONFIG = """[project]
 name = {name}
 halfapi_version = {halfapi_version}
+
+[domains]
 """
 
 @click.argument('project')
@@ -44,5 +47,17 @@ def init(project, venv):
         sys.exit(1)
 
 
-    click.echo(f'create directory {project}')
+    logger.debug(f'Create directory {project}')
     os.mkdir(project)
+
+    logger.debug(f'Create directory {project}/.halfapi')
+    os.mkdir(f'{project}/.halfapi')
+
+    with open(f'{project}/.halfapi/config', 'w') as f:
+        f.write(TMPL_HALFAPI_CONFIG.format(
+            name=project,
+            halfapi_version=__version__))
+
+
+    click.echo(f'Configure halfapi project in {CONF_DIR}/{project}')
+    click.echo(format_halfapi_etc(project, CONF_DIR))

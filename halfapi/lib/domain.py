@@ -103,8 +103,6 @@ def gen_router_routes(m_router, path=[]):
 
 
 def gen_domain_routes(domain):
-    m_domain = importlib.import_module(domain)
-
     m_router = importlib.import_module('.routers', domain)
 
     return gen_router_routes(m_router, [domain])

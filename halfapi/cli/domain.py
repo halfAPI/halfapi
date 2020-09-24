@@ -25,6 +25,7 @@ logger = logging.getLogger('halfapi')
 def create_domain():
     sys.exit(0)
 
+
 ###############
 # domain read #
 ###############
@@ -32,16 +33,10 @@ def list_routes(domain):
     click.echo(f'\nDomain : {domain}')
 
     m_dom = DOMAINSDICT[domain]
-    click.echo(schema_dict_dom(m_dom))
+    for key, item in schema_dict_dom(m_dom).get('paths', {}).items():
+        methods = '|'.join(list(item.keys()))
+        click.echo(f'{key} : {methods}')
 
-    # for router in routers.select():
-    #     routes = APIRoute(domain=domain, router=router['name'])
-    #     click.echo('# /{name}'.format(**router))
-    #     for route in routes.select():
-    #         route.pop('fct_name')
-    #         acls = ', '.join([ acl['acl_fct_name'] for acl in Acl(**route).select() ])
-    #         route['acls'] = acls
-    #         click.echo('- [{http_verb}] {path} ({acls})'.format(**route))
 
 #################
 # domain update #
@@ -206,7 +201,7 @@ def update_db(domain):
                     logger.warning(f'{router_name}.{router_router.__name__} is missing a ROUTES variable')
         else:
             logger.warning(f'{router_mod} is missing a ROUTERS variable')
-            
+
         for route_path, route_params  in d_routes.items():
             for http_verb, acls in route_params.items():
                 try:
@@ -260,7 +255,7 @@ def domain(domains, delete, update, create, read):  #, domains, read, create, up
         domains_ = []
         for domain_name in domains.split(','):
             if domain_name in DOMAINS:
-                domains.append(domain_name)
+                domains_.append(domain_name)
                 continue
 
             click.echo(

@@ -3,15 +3,18 @@ import os
 from os import environ
 import sys
 from configparser import ConfigParser
+import importlib
 
 PROJECT_NAME = ''
 DOMAINS = []
 DOMAINSDICT = {}
 PRODUCTION = False
 BASE_DIR = None
-HOST='127.0.0.1'
-PORT='3000'
+HOST = '127.0.0.1'
+PORT = '3000'
 DB_NAME = None
+CONF_DIR = environ.get('HALFAPI_CONF_DIR', '/etc/half_api')
+SECRET = ''
 
 IS_PROJECT = os.path.isfile('.halfapi/config')
 
@@ -42,13 +45,12 @@ if IS_PROJECT:
 
     try:
         DOMAINSDICT = {
-            dom, importlib.import_module(dom)
+            dom: importlib.import_module(dom)
             for dom in DOMAINS
         }
     except ImportError as e:
         logger.error('Could not load a domain', e)
 
-    CONF_DIR = environ.get('HALFAPI_CONF_DIR', '/etc/half_api')
 
     HALFAPI_CONF_FILE=os.path.join(
         CONF_DIR,

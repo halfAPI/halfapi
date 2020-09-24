@@ -17,7 +17,7 @@ from halfapi.lib.jwt_middleware import JWTAuthenticationBackend
 
 from halfapi.lib.responses import *
 from halfapi.lib.routes import gen_starlette_routes
-from halfapi.lib.schemas import sch_json
+from halfapi.lib.schemas import schema_json
 
 
 """
@@ -40,7 +40,7 @@ routes = [
 ] if not PRODUCTION else []
 
 for domain, m_domain in DOMAINSDICT.items():
-    for route in gen_starlette_routes(m_dom):
+    for route in gen_starlette_routes(m_domain):
         routes.append(route)
 
 

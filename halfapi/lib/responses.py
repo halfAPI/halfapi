@@ -2,7 +2,6 @@
 # builtins
 import typing as typ
 import orjson
-from half_orm.null import NULL
 
 # asgi framework
 from starlette.responses import PlainTextResponse, Response, JSONResponse

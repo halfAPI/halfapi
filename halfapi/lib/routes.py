@@ -7,12 +7,12 @@ from typing import Callable, List, Tuple, Dict
 from halfapi.conf import (PROJECT_NAME, DB_NAME, HOST, PORT,
     PRODUCTION, DOMAINS)
 
-from halfapi.db import (
-    Domain,
-    APIRouter,
-    APIRoute,
-    AclFunction,
-    Acl)
+# from halfapi.db import (
+#     Domain,
+#     APIRouter,
+#     APIRoute,
+#     AclFunction,
+#     Acl)
 from halfapi.lib.responses import *
 from halfapi.lib.domain import gen_domain_routes
 from starlette.exceptions import HTTPException
@@ -79,9 +79,9 @@ def gen_starlette_routes(m_dom):
         Generator[Route]
     """
 
-    m_dom_acl = importlib.import_module(m_dom '.acl')
+    m_dom_acl = importlib.import_module('.acl', m_dom.__name__)
 
-    for route in gen_domain_routes(m_dom):
+    for route in gen_domain_routes(m_dom.__name__):
         yield (
             Route(route['path'],
                 route_acl_decorator(
