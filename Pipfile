@@ -13,6 +13,7 @@ click = "*"
 starlette = "*"
 uvicorn = "*"
 jwt = "*"
+orjson = "*"
 
 [requires]
 python_version = "3"
