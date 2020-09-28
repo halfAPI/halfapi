@@ -91,3 +91,33 @@ def gen_starlette_routes(m_dom):
                 ),
                 methods=[route['verb']])
         )
+
+
+def api_routes(m_dom):
+    """
+    Yields the description objects for HalfAPI app routes
+
+    Parameters:
+        m_dom (module): the halfapi module
+
+    Returns:
+        Generator[Dict]
+    """
+
+    m_dom_acl = importlib.import_module('.acl', m_dom.__name__)
+
+    def pop_acl(r):
+        if 'acl' in r.keys():
+            r.pop('acl')
+        print(r)
+        return r
+
+    return {
+        route['path']: {
+            'params': list(map(pop_acl, route['params'])),
+            'verb': route['verb'],
+            'fqtn': route['fqtn']
+        }
+        for route in gen_domain_routes(m_dom.__name__)
+    }
+    

@@ -17,7 +17,7 @@ from halfapi.lib.jwt_middleware import JWTAuthenticationBackend
 
 from halfapi.lib.responses import *
 from halfapi.lib.routes import gen_starlette_routes
-from halfapi.lib.schemas import schema_json
+from halfapi.lib.schemas import get_api_routes, schema_json
 
 
 """
@@ -25,19 +25,17 @@ Base routes definition
 
 Only debug or doc routes, that should not be available in production
 """
-routes = [
-    Route('/', lambda request, *args, **kwargs: ORJSONResponse('It Works!')),
+routes = [ Route('/', get_api_routes) ]
 
-    Route('/user', lambda request, *args, **kwargs:
-        ORJSONResponse({'user':request.user.json})
-        if type(request.user) != UnauthenticatedUser
-        else ORJSONResponse({'user':False})),
 
-    Route('/payload', lambda request, *args, **kwargs:
-        ORJSONResponse({'payload':str(request.payload)})),
-
-    Route('/schema', schema_json)
-] if not PRODUCTION else []
+if not PRODUCTION:
+    routes += [
+        Route('/halfapi/current_user', lambda request, *args, **kwargs:
+            ORJSONResponse({'user':request.user.json})
+            if type(request.user) != UnauthenticatedUser
+            else ORJSONResponse({'user': None})),
+        Route('/halfapi/schema', schema_json)
+    ]
 
 for domain, m_domain in DOMAINSDICT.items():
     for route in gen_starlette_routes(m_domain):

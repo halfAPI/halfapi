@@ -49,6 +49,8 @@ def get_fct_name(http_verb, path: str):
     return '_'.join(fct_name)
 
 def gen_routes(route_params, path, m_router):
+    fqtn = route_params.get('FQTN')
+
     for verb in VERBS:
         params = route_params.get(verb)
         if params is None:
@@ -67,13 +69,14 @@ def gen_routes(route_params, path, m_router):
             'verb':verb,
             'path':f"/{'/'.join([ elt for elt in path if elt ])}", 
             'params':params,
-            'fct': fct }
+            'fct': fct,
+            'fqtn': fqtn }
 
 
 def gen_router_routes(m_router, path=[]):
     """
     [
-        ('path', [acl], fct)
+        ('path', [acl], fct, fqtn)
     ]
     """
 

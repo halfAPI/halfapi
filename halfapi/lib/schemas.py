@@ -1,4 +1,5 @@
-from .routes import gen_starlette_routes
+from ..conf import DOMAINSDICT
+from .routes import gen_starlette_routes, api_routes
 from .responses import *
 from starlette.schemas import SchemaGenerator
 from starlette.routing import Router
@@ -6,6 +7,11 @@ schemas = SchemaGenerator(
     {"openapi": "3.0.0", "info": {"title": "HalfAPI", "version": "1.0"}}
 )
 
+async def get_api_routes(request, *args, **kwargs):
+    return ORJSONResponse({
+        domain: api_routes(m_domain)
+        for domain, m_domain in DOMAINSDICT.items()
+    })
 
 async def schema_json(request, *args, **kwargs):
     return ORJSONResponse(

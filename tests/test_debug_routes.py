@@ -5,17 +5,14 @@ from starlette.testclient import TestClient
 from halfapi.app import application
 import json
 
-def test_itworks():
+def test_get_api_routes():
     c = TestClient(application)
-    r = json.loads(c.get('/').text)
-    assert r == 'It Works!'
+    r = c.get('/')
+    d_r = r.json()
+    assert isinstance(d_r, dict)
 
-def test_user():
-    c = TestClient(application)
-    r = c.get('/user')
-    assert r.status_code == 200
 
-def test_user():
+def test_current_user():
     c = TestClient(application)
-    r = c.get('/schema')
+    r = c.get('/halfapi/current_user')
     assert r.status_code == 200
