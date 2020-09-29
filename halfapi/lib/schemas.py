@@ -5,10 +5,31 @@ from .routes import gen_starlette_routes, api_routes
 from .responses import *
 from starlette.schemas import SchemaGenerator
 from starlette.routing import Router
-schemas = SchemaGenerator(
+SCHEMAS = SchemaGenerator(
     {"openapi": "3.0.0", "info": {"title": "HalfAPI", "version": "1.0"}}
 )
 
+"""
+example: > {
+"dummy_domain": {
+    "/abc/alphabet/organigramme": {
+        "fqtn": null,
+        "params": [
+            {}
+        ],
+        "verb": "GET"
+    },
+    "/act/personne/": {
+        "fqtn": "acteur.personne",
+        "params": [
+            {}
+
+        "verb": "GET"
+    }
+
+}
+}
+"""
 
 async def get_api_routes(request, *args, **kwargs):
     """
@@ -16,26 +37,6 @@ async def get_api_routes(request, *args, **kwargs):
         200:
             description: Returns the current API routes description (HalfAPI 0.2.1)
                          as a JSON object 
-            example:
-                {
-                   "dummy_domain": {
-                        "/abc/alphabet/organigramme": {
-                            "fqtn": null,
-                            "params": [
-                                {}
-                            ],
-                            "verb": "GET"
-                        },
-                        "/act/personne/": {
-                            "fqtn": "acteur.personne",
-                            "params": [
-                                {}
-
-                            "verb": "GET"
-                        }
-
-                    }
-                }
     """
     #TODO: LADOC
     d_api = {}
@@ -52,7 +53,7 @@ async def schema_json(request, *args, **kwargs):
                          as a JSON object
     """
     return ORJSONResponse(
-        schemas.get_schema(routes=request.app.routes))
+        SCHEMAS.get_schema(routes=request.app.routes))
 
 
 def schema_dict_dom(m_domain: ModuleType) -> Dict:
@@ -71,4 +72,4 @@ def schema_dict_dom(m_domain: ModuleType) -> Dict:
     """
     routes = [
         elt for elt in gen_starlette_routes(m_domain) ]
-    return schemas.get_schema(routes=routes)
+    return SCHEMAS.get_schema(routes=routes)

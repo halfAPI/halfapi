@@ -47,7 +47,8 @@ class UnauthorizedResponse(Response):
 
 class ORJSONResponse(JSONResponse):
     def render(self, content: typ.Any) -> bytes:
-        return orjson.dumps(content)
+        return orjson.dumps(content,
+            option=orjson.OPT_NON_STR_KEYS)
 
 
 class HJSONResponse(ORJSONResponse):
