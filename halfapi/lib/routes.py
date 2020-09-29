@@ -108,11 +108,12 @@ def api_routes(m_dom: ModuleType) -> Generator:
         return r
 
     def str_acl(params):
+        l_params = []
         for param in params:
             if 'acl' not in param.keys():
                 continue
-            param['acl'] = param['acl'].__name__
-        return params
+            l_params.append({'acl': param['acl'].__name__})
+        return l_params
 
     d_res = {}
     for path, d_route in gen_domain_routes(m_dom.__name__):
@@ -123,6 +124,4 @@ def api_routes(m_dom: ModuleType) -> Generator:
                 continue
             d_res[path][verb] = str_acl(d_route[verb]['params'])
 
-    print(d_res)
     return d_res
-
