@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import importlib
-import typing as typ
+from types import ModuleType
+from typing import Generator, Dict, List
 
 VERBS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE')
 
-def get_fct_name(http_verb, path: str):
+def get_fct_name(http_verb: str, path: str) -> str:
     """
     Returns the predictable name of the function for a route
 
@@ -48,15 +49,15 @@ def get_fct_name(http_verb, path: str):
 
     return '_'.join(fct_name)
 
-def gen_routes(route_params, path, m_router):
-    fqtn = route_params.get('FQTN')
+def gen_routes(route_params: Dict, path: List, m_router: ModuleType) -> Generator:
+    d_res = {'fqtn': route_params.get('FQTN')}
 
     for verb in VERBS:
         params = route_params.get(verb)
         if params is None:
             continue
-        if not len(params):
-            print(f'No ACL for route [{verb}] "/".join(path)')
+        if len(params) == 0:
+            print(f'No ACL for route [{verb}] "/".join(path)')
 
         try:
             fct_name = get_fct_name(verb, path[-1])
@@ -65,38 +66,40 @@ def gen_routes(route_params, path, m_router):
             print(f'{fct_name} is not defined in {m_router.__name__}')
             continue
 
-        yield {
-            'verb':verb,
-            'path':f"/{'/'.join([ elt for elt in path if elt ])}", 
-            'params':params,
-            'fct': fct,
-            'fqtn': fqtn }
+        d_res[verb] = {'fct': fct, 'params': params}
+
+    yield f"/{'/'.join([ elt for elt in path if elt ])}", d_res
 
 
-def gen_router_routes(m_router, path=[]):
+def gen_router_routes(m_router, path=None):
     """
-    [
-        ('path', [acl], fct, fqtn)
-    ]
+    {
+        '/truc/toto': {
+        }
+    }
     """
 
     if not hasattr(m_router, 'ROUTES'):
         print(f'Missing *ROUTES* constant in *{m_router.__name__}*')
+
+    if path is None:
+        path = []
 
     routes = m_router.ROUTES
 
     for subpath, route_params in routes.items():
         path.append(subpath)
 
-        for route in gen_routes(route_params, path, m_router):
-            yield route
+        for r_path, d_route in gen_routes(route_params, path, m_router): 
+            yield r_path, d_route
 
         subroutes = route_params.get('SUBROUTES', [])
         for subroute in subroutes:
             path.append(subroute)
             submod = importlib.import_module(f'.{subroute}', m_router.__name__)
-            for route_scan in gen_router_routes(submod, path):
-                yield route_scan
+            for r_path, d_route in gen_router_routes(submod, path):
+                yield r_path, d_route
+
 
             path.pop()
 

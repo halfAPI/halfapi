@@ -2,19 +2,14 @@
 from functools import wraps
 import importlib
 import sys
-from typing import Callable, List, Tuple, Dict
+from typing import Callable, List, Tuple, Dict, Generator
+from types import ModuleType
 
 from halfapi.conf import (PROJECT_NAME, DB_NAME, HOST, PORT,
     PRODUCTION, DOMAINS)
 
-# from halfapi.db import (
-#     Domain,
-#     APIRouter,
-#     APIRoute,
-#     AclFunction,
-#     Acl)
 from halfapi.lib.responses import *
-from halfapi.lib.domain import gen_domain_routes
+from halfapi.lib.domain import gen_domain_routes, VERBS
 from starlette.exceptions import HTTPException
 from starlette.routing import Mount, Route
 from starlette.requests import Request
@@ -22,7 +17,7 @@ from starlette.requests import Request
 class DomainNotFoundError(Exception):
     pass
 
-def route_acl_decorator(fct: Callable, acls_mod, params: List[Dict]):
+def route_acl_decorator(fct: Callable, params: List[Dict]):
     """
     Decorator for async functions that calls pre-conditions functions
     and appends kwargs to the target function
@@ -31,8 +26,6 @@ def route_acl_decorator(fct: Callable, acls_mod, params: List[Dict]):
     Parameters:
         fct (Callable):
             The function to decorate
-        acls_mod (Module):
-            The module that contains the pre-condition functions (acls)
 
         params List[Dict]:
             A list of dicts that have an "acl" key that points to a function
@@ -68,40 +61,43 @@ def acl_mock(fct):
 #
 ##
 
-def gen_starlette_routes(m_dom):
+def gen_starlette_routes(m_dom: ModuleType) -> Generator:
     """
     Yields the Route objects for HalfAPI app
 
     Parameters:
-        m_dom (module): the halfapi module
+        m_dom (ModuleType): the halfapi module
 
     Returns:
-        Generator[Route]
+        Generator(Route)
     """
 
     m_dom_acl = importlib.import_module('.acl', m_dom.__name__)
 
-    for route in gen_domain_routes(m_dom.__name__):
-        yield (
-            Route(route['path'],
-                route_acl_decorator(
-                    route['fct'],
-                    m_dom_acl,
-                    route['params'],
-                ),
-                methods=[route['verb']])
-        )
+    for path, d_route in gen_domain_routes(m_dom.__name__):
+        for verb in VERBS:
+            if verb not in d_route.keys():
+                continue
+
+            yield (
+                Route(path,
+                    route_acl_decorator(
+                        d_route[verb]['fct'],
+                        d_route[verb]['params']
+                    ),
+                    methods=[verb])
+            )
 
 
-def api_routes(m_dom):
+def api_routes(m_dom: ModuleType) -> Generator:
     """
     Yields the description objects for HalfAPI app routes
 
     Parameters:
-        m_dom (module): the halfapi module
+        m_dom (ModuleType): the halfapi module
 
     Returns:
-        Generator[Dict]
+        Generator(Dict)
     """
 
     m_dom_acl = importlib.import_module('.acl', m_dom.__name__)
@@ -109,15 +105,26 @@ def api_routes(m_dom):
     def pop_acl(r):
         if 'acl' in r.keys():
             r.pop('acl')
-        print(r)
         return r
 
-    return {
-        route['path']: {
-            'params': list(map(pop_acl, route['params'])),
-            'verb': route['verb'],
-            'fqtn': route['fqtn']
-        }
-        for route in gen_domain_routes(m_dom.__name__)
-    }
-    
+    def str_acl(params):
+        for param in params:
+            if 'acl' not in param.keys():
+                continue
+            param['acl'] = param['acl'].__name__
+        return params
+
+    d_res = {}
+    for path, d_route in gen_domain_routes(m_dom.__name__):
+        d_res[path] = {'fqtn': d_route['fqtn'] }
+
+        for verb in VERBS:
+            if verb not in d_route.keys():
+                continue
+            d_res[path][verb] = {
+                'params': str_acl(d_route[verb]['params']),
+                'fct': d_route[verb]['fct'].__name__
+            }
+
+        yield path, d_res
+
