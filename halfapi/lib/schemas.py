@@ -38,10 +38,10 @@ async def get_api_routes(request, *args, **kwargs):
                 }
     """
     #TODO: LADOC
-    return ORJSONResponse({
-        domain: { path: route for path, route in api_routes(m_domain) }
-        for domain, m_domain in DOMAINSDICT.items()
-    })
+    d_api = {}
+    for domain, m_domain in DOMAINSDICT.items():
+        d_api[domain] = api_routes(m_domain)
+    return ORJSONResponse(d_api)
 
 
 async def schema_json(request, *args, **kwargs):

@@ -121,10 +121,8 @@ def api_routes(m_dom: ModuleType) -> Generator:
         for verb in VERBS:
             if verb not in d_route.keys():
                 continue
-            d_res[path][verb] = {
-                'params': str_acl(d_route[verb]['params']),
-                'fct': d_route[verb]['fct'].__name__
-            }
+            d_res[path][verb] = str_acl(d_route[verb]['params'])
 
-        yield path, d_res
+    print(d_res)
+    return d_res
 
