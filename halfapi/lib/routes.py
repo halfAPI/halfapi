@@ -3,7 +3,7 @@ from functools import wraps
 import importlib
 import sys
 from typing import Callable, List, Tuple, Dict, Generator
-from types import ModuleType
+from types import ModuleType, FunctionType
 
 from halfapi.conf import (PROJECT_NAME, DB_NAME, HOST, PORT,
     PRODUCTION, DOMAINS)
@@ -137,7 +137,9 @@ def api_acls(request):
     for domain in app.d_acl.keys():
         res[domain] = {}
         for acl_name, fct in app.d_acl[domain].items():
-            print( fct(request) )
-            res[domain][acl_name] = fct(request)
+            ok = fct(request)
+            if isinstance(ok, FunctionType):
+                ok = fct()(request)
+            res[domain][acl_name] = ok
 
     return res
