@@ -28,15 +28,14 @@ Only debug or doc routes, that should not be available in production
 routes = [ Route('/', get_api_routes) ]
 
 
-if not PRODUCTION:
-    routes += [
-        Route('/halfapi/current_user', lambda request, *args, **kwargs:
-            ORJSONResponse({'user':request.user.json})
-            if type(request.user) != UnauthenticatedUser
-            else ORJSONResponse({'user': None})),
-        Route('/halfapi/schema', schema_json),
-        Route('/halfapi/acls', get_acls)
-    ]
+routes += [
+    Route('/halfapi/current_user', lambda request, *args, **kwargs:
+        ORJSONResponse({'user':request.user.json})
+        if type(request.user) != UnauthenticatedUser
+        else ORJSONResponse({'user': None})),
+    Route('/halfapi/schema', schema_json),
+    Route('/halfapi/acls', get_acls)
+]
 
 for domain, m_domain in DOMAINSDICT.items():
     for route in gen_starlette_routes(m_domain):
