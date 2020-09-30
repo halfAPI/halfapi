@@ -14,9 +14,12 @@ def connected(fct=public):
     """
     @wraps(fct)
     def caller(req, *args, **kwargs):
+        print(fct)
+        print(req.user)
         if (not hasattr(req, 'user')
-          or type(req.user) == UnauthenticatedUser
+          or isinstance(req.user, UnauthenticatedUser)
           or not hasattr(req.user, 'is_authenticated')):
+            print('Connected is false')
             return False
 
         return fct(req, **{**kwargs, **req.path_params})

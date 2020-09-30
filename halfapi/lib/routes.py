@@ -37,12 +37,19 @@ def route_acl_decorator(fct: Callable, params: List[Dict]):
     @wraps(fct)
     async def caller(req: Request, *args, **kwargs):
         for param in params:
-            if param.get('acl') and param['acl'](req, *args, **kwargs):
+            if param.get('acl'):
                 """
                 We merge the 'acl' and 'keys' kwargs values to let the
                 decorated function know which ACL function answered
                 True, and other parameters that you'd need
                 """
+                passed = param['acl'](req, *args, **kwargs)
+                if isinstance(passed, FunctionType):
+                    passed = param['acl']()(req, *args, **kwargs)
+
+                if not passed:
+                    continue
+
                 return await fct(
                     req, *args,
                     **{
