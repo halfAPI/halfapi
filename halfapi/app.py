@@ -16,8 +16,8 @@ from halfapi.conf import HOST, PORT, DB_NAME, SECRET, PRODUCTION, DOMAINS, DOMAI
 from halfapi.lib.jwt_middleware import JWTAuthenticationBackend
 
 from halfapi.lib.responses import *
-from halfapi.lib.routes import gen_starlette_routes
-from halfapi.lib.schemas import get_api_routes, schema_json
+from halfapi.lib.routes import gen_starlette_routes, api_routes
+from halfapi.lib.schemas import get_api_routes, schema_json, get_acls
 
 
 """
@@ -34,12 +34,19 @@ if not PRODUCTION:
             ORJSONResponse({'user':request.user.json})
             if type(request.user) != UnauthenticatedUser
             else ORJSONResponse({'user': None})),
-        Route('/halfapi/schema', schema_json)
+        Route('/halfapi/schema', schema_json),
+        Route('/halfapi/acls', get_acls)
     ]
 
 for domain, m_domain in DOMAINSDICT.items():
     for route in gen_starlette_routes(m_domain):
         routes.append(route)
+
+
+d_api = {}
+d_acl = {}
+for domain, m_domain in DOMAINSDICT.items():
+    d_api[domain], d_acl[domain] = api_routes(m_domain)
 
 
 application = Starlette(

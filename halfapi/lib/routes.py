@@ -101,18 +101,22 @@ def api_routes(m_dom: ModuleType) -> Generator:
     """
 
     m_dom_acl = importlib.import_module('.acl', m_dom.__name__)
-
-    def pop_acl(r):
-        if 'acl' in r.keys():
-            r.pop('acl')
-        return r
+    d_acls = {}
 
     def str_acl(params):
         l_params = []
+        access = None
+
         for param in params:
             if 'acl' not in param.keys():
                 continue
-            l_params.append({'acl': param['acl'].__name__})
+
+            l_params.append(param.copy())
+            l_params[-1]['acl'] = param['acl'].__name__
+
+            if param['acl'] not in d_acls.keys():
+                d_acls[param['acl'].__name__] = param['acl']
+
         return l_params
 
     d_res = {}
@@ -124,4 +128,16 @@ def api_routes(m_dom: ModuleType) -> Generator:
                 continue
             d_res[path][verb] = str_acl(d_route[verb]['params'])
 
-    return d_res
+    return d_res, d_acls
+
+
+def api_acls(request):
+    from .. import app
+    res = {}
+    for domain in app.d_acl.keys():
+        res[domain] = {}
+        for acl_name, fct in app.d_acl[domain].items():
+            print( fct(request) )
+            res[domain][acl_name] = fct(request)
+
+    return res
