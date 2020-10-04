@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
+import logging
 import os
 from os import environ
 import sys
 from configparser import ConfigParser
 import importlib
+
+logger = logging.getLogger('halfapi')
 
 PROJECT_NAME = ''
 DOMAINS = []
@@ -49,7 +52,7 @@ if IS_PROJECT:
             for dom in DOMAINS
         }
     except ImportError as e:
-        logger.error('Could not load a domain', e)
+        logger.error('Could not load a domain : %s', e)
 
 
     HALFAPI_CONF_FILE=os.path.join(
