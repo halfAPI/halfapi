@@ -1,18 +1,13 @@
 #!/usr/bin/env python3
 from functools import wraps
-import importlib
-import sys
-from typing import Callable, List, Tuple, Dict, Generator
+from typing import Callable, List, Dict, Generator
 from types import ModuleType, FunctionType
 
-from halfapi.conf import (PROJECT_NAME, DB_NAME, HOST, PORT,
-    PRODUCTION, DOMAINS)
-
-from halfapi.lib.responses import *
-from halfapi.lib.domain import gen_domain_routes, VERBS
 from starlette.exceptions import HTTPException
-from starlette.routing import Mount, Route
+from starlette.routing import Route
 from starlette.requests import Request
+
+from halfapi.lib.domain import gen_domain_routes, VERBS
 
 class DomainNotFoundError(Exception):
     pass
@@ -38,11 +33,6 @@ def route_acl_decorator(fct: Callable, params: List[Dict]):
     async def caller(req: Request, *args, **kwargs):
         for param in params:
             if param.get('acl'):
-                """
-                We merge the 'acl' and 'keys' kwargs values to let the
-                decorated function know which ACL function answered
-                True, and other parameters that you'd need
-                """
                 passed = param['acl'](req, *args, **kwargs)
                 if isinstance(passed, FunctionType):
                     passed = param['acl']()(req, *args, **kwargs)
@@ -61,12 +51,6 @@ def route_acl_decorator(fct: Callable, params: List[Dict]):
 
     return caller
 
-###
-# testing purpose only
-def acl_mock(fct):
-    return lambda r, *a, **kw: True
-#
-##
 
 def gen_starlette_routes(m_dom: ModuleType) -> Generator:
     """
@@ -79,7 +63,6 @@ def gen_starlette_routes(m_dom: ModuleType) -> Generator:
         Generator(Route)
     """
 
-    m_dom_acl = importlib.import_module('.acl', m_dom.__name__)
 
     for path, d_route in gen_domain_routes(m_dom.__name__):
         for verb in VERBS:
@@ -107,12 +90,10 @@ def api_routes(m_dom: ModuleType) -> Generator:
         Generator(Dict)
     """
 
-    m_dom_acl = importlib.import_module('.acl', m_dom.__name__)
     d_acls = {}
 
     def str_acl(params):
         l_params = []
-        access = None
 
         for param in params:
             if 'acl' not in param.keys():
@@ -139,14 +120,14 @@ def api_routes(m_dom: ModuleType) -> Generator:
 
 
 def api_acls(request):
-    from .. import app
+    from .. import app # FIXME: Find a way to get d_acl without having to import
     res = {}
-    for domain in app.d_acl.keys():
+    for domain, d_domain_acl in app.d_acl.items():
         res[domain] = {}
-        for acl_name, fct in app.d_acl[domain].items():
-            ok = fct(request)
-            if isinstance(ok, FunctionType):
-                ok = fct()(request)
-            res[domain][acl_name] = ok
+        for acl_name, fct in d_domain_acl.items():
+            fct_result = fct(request)
+            if isinstance(fct_result, FunctionType):
+                fct_result = fct()(request)
+            res[domain][acl_name] = fct_result
 
     return res

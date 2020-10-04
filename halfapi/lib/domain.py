@@ -90,16 +90,13 @@ def gen_router_routes(m_router, path=None):
     for subpath, route_params in routes.items():
         path.append(subpath)
 
-        for r_path, d_route in gen_routes(route_params, path, m_router): 
-            yield r_path, d_route
+        yield from gen_routes(route_params, path, m_router)
 
         subroutes = route_params.get('SUBROUTES', [])
         for subroute in subroutes:
             path.append(subroute)
             submod = importlib.import_module(f'.{subroute}', m_router.__name__)
-            for r_path, d_route in gen_router_routes(submod, path):
-                yield r_path, d_route
-
+            yield from gen_router_routes(submod, path)
 
             path.pop()
 
