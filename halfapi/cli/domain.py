@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
+"""
+cli/domain.py Defines the "halfapi domain" cli commands
+"""
+
 # builtins
-import sys
 import logging
 import click
-import importlib
 
 
 from .cli import cli
-from halfapi.conf import DOMAINS, DOMAINSDICT, BASE_DIR
+from ..conf import DOMAINS, DOMAINSDICT
 
-from halfapi.lib.schemas import schema_dict_dom
+from ..lib.schemas import schema_dict_dom
 
 
 logger = logging.getLogger('halfapi')
@@ -18,16 +20,23 @@ logger = logging.getLogger('halfapi')
 # domain create #
 #################
 def create_domain():
-    sys.exit(0)
+    """
+    TODO: Implement function to create (add) domain to a project through cli
+    """
+    raise NotImplementedError
 
 
 ###############
 # domain read #
 ###############
-def list_routes(domain):
+def list_routes(domain_name):
+    """
+    Echoes the list of the **domain_name** active routes
+    """
+
     click.echo(f'\nDomain : {domain}')
 
-    m_dom = DOMAINSDICT[domain]
+    m_dom = DOMAINSDICT[domain_name]
     for key, item in schema_dict_dom(m_dom).get('paths', {}).items():
         methods = '|'.join(list(item.keys()))
         click.echo(f'{key} : {methods}')
@@ -54,8 +63,7 @@ def domain(domains, delete, update, create, read):  #, domains, read, create, up
 
     if not domains:
         if create:
-            raise NotImplementedError
-            return create_domain()
+            create_domain()
 
         domains = DOMAINS
     else:
@@ -70,12 +78,11 @@ def domain(domains, delete, update, create, read):  #, domains, read, create, up
 
         domains = domains_
 
-    for domain in domains:
+    for domain_name in domains:
         if update:
             raise NotImplementedError
         if delete:
             raise NotImplementedError
-        else:
-            list_routes(domain)
 
-
+        if read:
+            list_routes(domain_name)
