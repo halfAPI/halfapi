@@ -10,12 +10,7 @@ from .cli import cli
 from halfapi.conf import DOMAINS, DOMAINSDICT, BASE_DIR
 
 from halfapi.lib.schemas import schema_dict_dom
-# from halfapi.db import (
-#     Domain,
-#     APIRouter,
-#     APIRoute,
-#     AclFunction,
-#     Acl)
+
 
 logger = logging.getLogger('halfapi')
 
