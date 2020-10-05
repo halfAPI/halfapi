@@ -8,7 +8,7 @@ import uvicorn
 
 from .cli import cli
 from .domain import list_routes
-from ..conf import (HOST, PORT,
+from ..conf import (PROJECT_NAME, HOST, PORT,
     PRODUCTION, BASE_DIR, DOMAINS)
 
 @click.option('--host', default=None)
@@ -30,7 +30,7 @@ def run(host, port):
     reload = not PRODUCTION
     log_level = 'info' if PRODUCTION else 'debug'
 
-    click.echo('Launching application')
+    click.echo(f'Launching application {PROJECT_NAME}')
 
     sys.path.insert(0, BASE_DIR)
 
