@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
+"""
+Base ACL module that contains generic functions for domains ACL
+"""
+
 from functools import wraps
 from starlette.authentication import UnauthenticatedUser
 
-""" Base ACL module that contains generic functions for domains ACL
-"""
 
 def public(*args, **kwargs) -> bool:
     "Unlimited access"
@@ -25,4 +27,3 @@ def connected(fct=public):
         return fct(req, **{**kwargs, **req.path_params})
 
     return caller
-
