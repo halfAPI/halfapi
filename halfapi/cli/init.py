@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
+"""
+cli/init.py Defines the "halfapi init" cli commands
+
+Helps the user to create a new project
+"""
 # builtins
+import logging
 import os
 import sys
 import re
-import click
-import logging
 
-from halfapi import __version__
-from halfapi.conf import CONF_DIR
+import click
+
+from .. import __version__
+from ..conf import CONF_DIR
 from .cli import cli
 
 logger = logging.getLogger('halfapi')
@@ -22,6 +28,9 @@ base_dir = {base_dir}
 """
 
 def format_halfapi_etc(project, path):
+    """
+    Returns the formatted template for /etc/half_api/PROJECT_NAME
+    """
     return TMPL_HALFAPI_ETC.format(
         project=project,
         base_dir=path
@@ -35,9 +44,11 @@ halfapi_version = {halfapi_version}
 """
 
 @click.argument('project')
-@click.option('--venv', default=None)
 @cli.command()
-def init(project, venv):
+def init(project):
+    """
+    The "halfapi init" command
+    """
     if not re.match('^[a-z0-9_]+$', project, re.I):
         click.echo('Project name must match "^[a-z0-9_]+$", retry.', err=True)
         sys.exit(1)
@@ -47,14 +58,14 @@ def init(project, venv):
         sys.exit(1)
 
 
-    logger.debug(f'Create directory {project}')
+    logger.debug('Create directory %s', project)
     os.mkdir(project)
 
-    logger.debug(f'Create directory {project}/.halfapi')
+    logger.debug('Create directory %s/.halfapi', project)
     os.mkdir(f'{project}/.halfapi')
 
-    with open(f'{project}/.halfapi/config', 'w') as f:
-        f.write(TMPL_HALFAPI_CONFIG.format(
+    with open(f'{project}/.halfapi/config', 'w') as conf_file:
+        conf_file.write(TMPL_HALFAPI_CONFIG.format(
             name=project,
             halfapi_version=__version__))
 
