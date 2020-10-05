@@ -33,7 +33,7 @@ def test_constants():
 def token_debug_builder():
     yield jwt.encode({
         'name':'xxx',
-        'id': str(uuid4()),
+        'user_id': str(uuid4()),
         'debug': True},
         key=SECRET
     )
