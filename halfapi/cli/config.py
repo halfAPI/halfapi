@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
+"""
+cli/config.py Contains the .halfapi/config and HALFAPI_CONF_DIR/project_name templates
+
+Defines the "halfapi config" command
+"""
 import click
 
 from .cli import cli
-from halfapi.conf import (
+from ..conf import (
     PROJECT_NAME,
     DOMAINS,
-    CONF_DIR,
     HOST,
     PORT,
-    DB_NAME,
     PRODUCTION,
     BASE_DIR
 )
