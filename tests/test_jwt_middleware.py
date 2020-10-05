@@ -54,7 +54,7 @@ def token():
 def token_builder():
     yield jwt.encode({
         'name':'xxx',
-        'id': str(uuid4())},
+        'user_id': str(uuid4())},
         key=SECRET
     )
 
@@ -62,7 +62,7 @@ def token_builder():
 def token_debug_false_builder():
     yield jwt.encode({
         'name':'xxx',
-        'id': str(uuid4()),
+        'user_id': str(uuid4()),
         'debug': False},
         key=SECRET
     )
@@ -72,7 +72,7 @@ def token_debug_false_builder():
 def token_debug_true_builder():
     yield jwt.encode({
         'name':'xxx',
-        'id': str(uuid4()),
+        'user_id': str(uuid4()),
         'debug': True},
         key=SECRET
     )
@@ -114,7 +114,7 @@ def test_token(token):
         raise Exception('Malformed response from /user request')
 
     assert 'user' in res.keys()
-    assert 'id' in res['user'].keys()
+    assert 'user_id' in res['user'].keys()
     assert 'token' in res['user'].keys()
     assert 'payload' in res['user'].keys()
 
