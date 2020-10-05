@@ -1,4 +1,39 @@
 #!/usr/bin/env python3
+"""
+conf.py reads the current configuration files
+
+It uses the following environment variables :
+
+    - HALFAPI_CONF_DIR (default: /etc/half_api)
+
+
+It defines the following globals :
+
+    - PROJECT_NAME (str)
+    - DOMAINS ([]) - seems to be unused except in this file
+    - DOMAINSDICT ({domain_name: domain_module})
+    - PRODUCTION (bool)
+    - BASE_DIR (str)
+    - HOST (str)
+    - PORT (int)
+    - CONF_DIR (str)
+    - IS_PROJECT (bool)
+    - config (ConfigParser)
+
+It reads the following ressource :
+
+    - ./.halfapi/config
+
+It follows the following format :
+
+    [project]
+    name = PROJECT_NAME
+    halfapi_version = HALFAPI_VERSION
+
+    [domains]
+    domain_name = requirements-like-url
+"""
+
 import logging
 import os
 from os import environ
@@ -15,26 +50,25 @@ PRODUCTION = False
 BASE_DIR = None
 HOST = '127.0.0.1'
 PORT = '3000'
-DB_NAME = None
 CONF_DIR = environ.get('HALFAPI_CONF_DIR', '/etc/half_api')
 SECRET = ''
 
 IS_PROJECT = os.path.isfile('.halfapi/config')
 
-if IS_PROJECT:
-
-    default_config = {
-        'project': {
-            'host': '127.0.0.1',
-            'port': '8000',
-            'secret': '',
-            'base_dir': '',
-            'production': 'no'
-        }
+default_config = {
+    'project': {
+        'host': '127.0.0.1',
+        'port': '8000',
+        'secret': '',
+        'base_dir': '',
+        'production': 'no'
     }
+}
 
-    config = ConfigParser(allow_no_value=True)
-    config.read_dict(default_config)
+config = ConfigParser(allow_no_value=True)
+config.read_dict(default_config)
+
+if IS_PROJECT:
     config.read(filenames=['.halfapi/config'])
 
     PROJECT_NAME = config.get('project', 'name')
@@ -66,7 +100,6 @@ if IS_PROJECT:
 
     HOST = config.get('project', 'host')
     PORT = config.getint('project', 'port')
-    DB_NAME = f'halfapi_{PROJECT_NAME}'
 
     try:
         with open(config.get('project', 'secret')) as secret_file:
