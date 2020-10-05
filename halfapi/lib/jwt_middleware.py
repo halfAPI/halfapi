@@ -118,7 +118,7 @@ class JWTAuthenticationBackend(AuthenticationBackend):
 
 
         return AuthCredentials(["authenticated"]), JWTUser(
-            id=payload['id'], token=token, payload=payload)
+            id=payload['user_id'], token=token, payload=payload)
 
 
 class JWTWebSocketAuthenticationBackend(AuthenticationBackend):
