@@ -13,7 +13,7 @@ pylint = "*"
 click = "*"
 starlette = "*"
 uvicorn = "*"
-jwt = "*"
+pyjwt = "*"
 orjson = "*"
 
 [requires]
