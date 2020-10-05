@@ -110,10 +110,10 @@ class JWTAuthenticationBackend(AuthenticationBackend):
                 raise AuthenticationError(
                     'Trying to connect using *DEBUG* token in *PRODUCTION* mode')
 
-        except jwt.InvalidTokenError as e:
-            raise AuthenticationError(str(e))
-        except Exception as e:
-            print(e)
+        except jwt.InvalidTokenError as exc:
+            raise AuthenticationError(str(exc))
+        except Exception as exc:
+            logger.error('Authentication error : %s', exc)
             raise e
 
 
@@ -142,8 +142,13 @@ class JWTWebSocketAuthenticationBackend(AuthenticationBackend):
         try:
             payload = jwt.decode(token, key=self.secret_key, algorithms=self.algorithm,
                                  audience=self.audience, options=self.options)
-        except jwt.InvalidTokenError as e:
-            raise AuthenticationError(str(e))
+
+            if PRODUCTION and 'debug' in payload.keys() and payload['debug']:
+                raise AuthenticationError(
+                    'Trying to connect using *DEBUG* token in *PRODUCTION* mode')
+
+        except jwt.InvalidTokenError as exc:
+            raise AuthenticationError(str(exc))
 
         return AuthCredentials(["authenticated"]), JWTUser(id = payload['id'],
                                                            token=token, payload=payload)
