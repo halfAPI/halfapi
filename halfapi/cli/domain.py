@@ -50,7 +50,7 @@ def list_routes(domain_name):
 @cli.command()
 def domain(domains, delete, update, create, read):  #, domains, read, create, update, delete):
     """
-    Lists routes for the specified domains, or update them in the database
+    The "halfapi domain" command
 
     Parameters:
         domain (List[str]|None): The list of the domains to list/update
