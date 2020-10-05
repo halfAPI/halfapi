@@ -192,5 +192,5 @@ async def test_JWTAuthenticationBackend_DebugTrue(token_debug_true_builder):
 
     try:
         await backend.authenticate(req)
-    except Exception as e:
-        assert type(e) == AuthenticationError
+    except Exception as exc:
+        assert type(exc) == AuthenticationError

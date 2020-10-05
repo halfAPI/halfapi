@@ -84,9 +84,9 @@ class TestCli():
                 assert cp.get('project', 'name') == PROJNAME
                 assert cp.get('project', 'halfapi_version') == __version__
                 assert cp.has_section('domains')
-            except AssertionError as e:
+            except AssertionError as exc:
                 subprocess.run(['tree', '-a', os.getcwd()])
-                raise e
+                raise exc
 
             assert res.exit_code == 0
             assert res.exception is None

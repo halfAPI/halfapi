@@ -51,8 +51,8 @@ if IS_PROJECT:
             dom: importlib.import_module(dom)
             for dom in DOMAINS
         }
-    except ImportError as e:
-        logger.error('Could not load a domain : %s', e)
+    except ImportError as exc:
+        logger.error('Could not load a domain : %s', exc)
 
 
     HALFAPI_CONF_FILE=os.path.join(
@@ -73,9 +73,9 @@ if IS_PROJECT:
             SECRET = secret_file.read()
             # Set the secret so we can use it in domains
             os.environ['HALFAPI_SECRET'] = SECRET
-    except FileNotFoundError as e:
-        logger.error('There is no file like {}'.format(config.get('project', 'secret')))
-        logger.debug(e)
+    except FileNotFoundError as exc:
+        logger.error('There is no file like %s : %s',
+            config.get('project', 'secret'), exc)
 
     PRODUCTION = config.getboolean('project', 'production') or False
     os.environ['HALFAPI_PROD'] = str(PRODUCTION)
