@@ -1,3 +1,7 @@
+"""
+DomainMiddleware
+"""
+
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.types import Scope, Send, Receive
@@ -6,6 +10,14 @@ from .routes import api_routes
 from .domain import d_domains
 
 class DomainMiddleware(BaseHTTPMiddleware):
+    """
+    DomainMiddleware adds the api routes and acls to the following scope keys :
+
+        - domains
+        - api
+        - acl
+    """
+
     def __init__(self, app, config):
         super().__init__(app)
         self.config = config
