@@ -1,3 +1,5 @@
+from starlette.responses import PlainTextResponse
+
 ROUTES={
     '': {
         'GET': [{'acl':None, 'in':None}]
@@ -10,3 +12,11 @@ ROUTES={
     }
 
 }
+
+async def get(request, *args, **kwargs):
+    """
+    responses:
+      200:
+        description: dummy abc.alphabet route
+    """
+    return PlainTextResponse('True')

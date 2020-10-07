@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-from starlette.routing import Route
-from halfapi.lib.domain import VERBS, gen_router_routes
+import importlib
+from halfapi.lib.domain import VERBS, gen_domain_routes, gen_router_routes
 
-from halfapi.lib.routes import gen_starlette_routes
 
 def test_gen_router_routes():
     from .dummy_domain import routers
-    for path, d_route in gen_router_routes(routers):
+    for path, d_route in gen_router_routes(routers, ['dummy_domain']):
         assert isinstance(path, str)
         for verb in VERBS:
             if verb not in d_route.keys():
@@ -15,12 +14,12 @@ def test_gen_router_routes():
             print(f'[{verb}] {path} {route["fct"]}')
             assert len(route['params']) > 0
             assert hasattr(route['fct'], '__call__')
-            if hasattr('fqtn', route):
+            if 'fqtn' in route:
                 assert isinstance(route['fqtn'], str)
 
 
-def test_gen_starlette_routes():
+def test_gen_domain_routes():
     from . import dummy_domain
-    for route in gen_starlette_routes(dummy_domain):
-        assert isinstance(route, Route)
-
+    for route in gen_domain_routes(
+            'dummy_domain', dummy_domain):
+        assert isinstance(route, dict)

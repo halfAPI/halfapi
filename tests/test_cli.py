@@ -18,7 +18,7 @@ PROJNAME = os.environ.get('PROJ','tmp_api')
 
 @pytest.mark.incremental
 class TestCli():
-    def test_options(self, runner, dropdb, createdb):
+    def test_options(self, runner):
         # Wrong command
         with runner.isolated_filesystem():
             r = runner.invoke(Cli, ['foobar'])
@@ -38,7 +38,7 @@ class TestCli():
             assert r.exit_code == 0
 
 
-    def test_init_project_fail(self, runner, dropdb):
+    def test_init_project_fail(self, runner):
         # Missing argument (project)
         testproject = 'testproject'
         r = runner.invoke(Cli, ['init'])

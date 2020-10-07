@@ -1,0 +1,1 @@
+public = lambda *args: True
