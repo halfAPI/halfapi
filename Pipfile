@@ -13,8 +13,8 @@ pylint = "*"
 click = "*"
 starlette = "*"
 uvicorn = "*"
-pyjwt = "*"
 orjson = "*"
+pyjwt = "*"
 
 [requires]
 python_version = "3"
