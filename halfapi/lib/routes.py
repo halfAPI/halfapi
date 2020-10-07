@@ -96,7 +96,7 @@ def api_routes(m_dom: ModuleType) -> Generator:
         l_params = []
 
         for param in params:
-            if 'acl' not in param.keys():
+            if 'acl' not in param.keys() or not param['acl']:
                 continue
 
             l_params.append(param.copy())

@@ -39,7 +39,6 @@ async def get_api_routes(request, *args, **kwargs):
             description: Returns the current API routes description (HalfAPI 0.2.1)
                          as a JSON object 
     """
-    assert 'api' in request.scope
     return ORJSONResponse(request.scope['api'])
 
 
