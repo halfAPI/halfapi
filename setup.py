@@ -48,7 +48,8 @@ setup(
         "half_orm @ git+ssh://git@gite.lirmm.fr/maizi/halfORM.git",
         "click>=7.1,<8",
         "uvicorn>=0.11,<1",
-        "orjson>=3.1.1,<4"
+        "orjson>=3.1.1,<4",
+        "pyyaml>=5.3.1,<6"
     ],
     extras_require={
         "tests":[

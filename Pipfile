@@ -15,6 +15,7 @@ starlette = "*"
 uvicorn = "*"
 orjson = "*"
 pyjwt = "*"
+pyyaml = "*"
 
 [requires]
 python_version = "3"
