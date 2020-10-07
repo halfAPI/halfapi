@@ -20,4 +20,4 @@ pyjwt = "*"
 python_version = "3"
 
 [scripts]
-halfapi = "halfapi.cli.cli:cli"
+halfapi = "python -m halfapi"
