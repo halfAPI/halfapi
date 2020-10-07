@@ -100,9 +100,7 @@ def config_dict():
     The config object as a dict
     """
     return {
-            section: {
-                config.items(section)
-            }
+            section: dict(config.items(section))
             for section in config.sections()
     }
 
