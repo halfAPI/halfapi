@@ -1,14 +1,15 @@
 from starlette.responses import PlainTextResponse
+from dummy_domain import acl
 
 ROUTES={
     '': {
-        'GET': [{'acl':None, 'in':None}]
+        'GET': [{'acl':acl.public}]
     },
     '{test:uuid}': {
-        'GET': [{'acl':None, 'in':None}],
-        'POST': [{'acl':None, 'in':None}],
-        'PATCH': [{'acl':None, 'in':None}],
-        'PUT': [{'acl':None, 'in':None}]
+        'GET': [{'acl':None}],
+        'POST': [{'acl':None}],
+        'PATCH': [{'acl':None}],
+        'PUT': [{'acl':None}]
     }
 
 }

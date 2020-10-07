@@ -20,6 +20,7 @@ def test_gen_router_routes():
 
 def test_gen_domain_routes():
     from . import dummy_domain
-    for route in gen_domain_routes(
+    for path, route in gen_domain_routes(
             'dummy_domain', dummy_domain):
+        assert isinstance(path, str)
         assert isinstance(route, dict)

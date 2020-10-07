@@ -8,6 +8,7 @@ pytest = "*"
 requests = "*"
 pytest-asyncio = "*"
 pylint = "*"
+dummy-domain = {path = "./tests"}
 
 [packages]
 click = "*"
