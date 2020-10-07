@@ -93,13 +93,14 @@ def gen_routes(route_params: Dict, path: List, m_router: ModuleType) -> Generato
         if params is None:
             continue
         if len(params) == 0:
-            print(f'No ACL for route [{verb}] "/".join(path)')
+            logger.error(f'No ACL for route [{verb}] "/".join(path)')
 
         try:
             fct_name = get_fct_name(verb, path[-1])
             fct = getattr(m_router, fct_name)
-        except AttributeError:
-            print(f'{fct_name} is not defined in {m_router.__name__}')
+            logger.info('%s defined in %s', fct.__name__, m_router.__name__)
+        except AttributeError as exc:
+            logger.error('%s is not defined in %s', fct_name, m_router.__name__)
             continue
 
         d_res[verb] = {'fct': fct, 'params': params}
@@ -123,7 +124,7 @@ def gen_router_routes(m_router: ModuleType, path: List[str]):
     """
 
     if not hasattr(m_router, 'ROUTES'):
-        print(f'Missing *ROUTES* constant in *{m_router.__name__}*')
+        logger.error(f'Missing *ROUTES* constant in *{m_router.__name__}*')
 
 
     routes = m_router.ROUTES
@@ -157,4 +158,5 @@ def gen_domain_routes(domain: str):
         m_router = importlib.import_module('.routers', domain)
         yield from gen_router_routes(m_router, [domain])
     except ImportError:
-        logger.warning('Domain **%s** has not **routers** module', domain)
+        logger.warning('Domain **%s** has no **routers** module', domain)
+        logger.debug('%s', m_dom)
