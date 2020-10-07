@@ -23,9 +23,9 @@ def cli(ctx, version):
         return click.echo(version())
 
 if IS_PROJECT:
-    import halfapi.cli.config
-    import halfapi.cli.domain
-    import halfapi.cli.run
+    from . import config
+    from . import domain
+    from . import run
 
 else:
-    import halfapi.cli.init
+    from . import init
