@@ -41,26 +41,27 @@ import sys
 from configparser import ConfigParser
 import importlib
 
+from .lib.domain import d_domains
+
 logger = logging.getLogger('halfapi')
 
-PROJECT_NAME = ''
+PROJECT_NAME = os.path.basename(os.getcwd())
 DOMAINS = []
-DOMAINSDICT = {}
+DOMAINSDICT = lambda: {}
 PRODUCTION = False
-BASE_DIR = None
 HOST = '127.0.0.1'
 PORT = '3000'
-CONF_DIR = environ.get('HALFAPI_CONF_DIR', '/etc/half_api')
 SECRET = ''
 
 IS_PROJECT = os.path.isfile('.halfapi/config')
+
+
 
 default_config = {
     'project': {
         'host': '127.0.0.1',
         'port': '8000',
         'secret': '',
-        'base_dir': '',
         'production': 'no'
     }
 }
@@ -68,36 +69,62 @@ default_config = {
 config = ConfigParser(allow_no_value=True)
 config.read_dict(default_config)
 
-if IS_PROJECT:
-    config.read(filenames=['.halfapi/config'])
+CONF_DIR = environ.get('HALFAPI_CONF_DIR', '/etc/half_api')
+HALFAPI_ETC_FILE=os.path.join(
+    CONF_DIR, 'default.ini'
+)
 
-    PROJECT_NAME = config.get('project', 'name')
+HALFAPI_DOT_FILE=os.path.join(
+    os.getcwd(), '.halfapi', 'config')
+
+HALFAPI_CONFIG_FILES = [ HALFAPI_ETC_FILE, HALFAPI_DOT_FILE ]
+
+def conf_files():
+    return [
+        os.path.join(
+            CONF_DIR, 'default.ini'
+        ),
+        os.path.join(
+            os.getcwd(), '.halfapi', 'config')]
+
+
+def write_config():
+    """
+    Writes the current config to the highest priority config file
+    """
+    with open(conf_files()[-1], 'w') as halfapi_config:
+        config.write(halfapi_config)
+
+def config_dict():
+    """
+    The config object as a dict
+    """
+    return {
+            section: {
+                config.items(section)
+            }
+            for section in config.sections()
+    }
+
+def read_config():
+    """
+    The highest index in "filenames" are the highest priorty
+    """
+    config.read(HALFAPI_CONFIG_FILES)
+    return config_dict()
+
+
+
+
+if IS_PROJECT:
+    read_config()
+
+    PROJECT_NAME = config.get('project', 'name', fallback=PROJECT_NAME)
 
     if len(PROJECT_NAME) == 0:
         raise Exception('Need a project name as argument')
 
-    DOMAINS = [domain for domain, _ in config.items('domains')] \
-        if config.has_section('domains') \
-        else []
-
-    try:
-        DOMAINSDICT = {
-            dom: importlib.import_module(dom)
-            for dom in DOMAINS
-        }
-    except ImportError as exc:
-        logger.error('Could not load a domain : %s', exc)
-
-
-    HALFAPI_CONF_FILE=os.path.join(
-        CONF_DIR,
-        PROJECT_NAME
-    )
-    if not os.path.isfile(HALFAPI_CONF_FILE):
-        print(f'Missing {HALFAPI_CONF_FILE}, exiting')
-        sys.exit(1)
-    config.read(filenames=[HALFAPI_CONF_FILE])
-
+    DOMAINSDICT = lambda: d_domains(config)
     HOST = config.get('project', 'host')
     PORT = config.getint('project', 'port')
 
@@ -113,4 +140,4 @@ if IS_PROJECT:
     PRODUCTION = config.getboolean('project', 'production') or False
     os.environ['HALFAPI_PROD'] = str(PRODUCTION)
 
-    BASE_DIR = config.get('project', 'base_dir')
+    BASE_DIR = config.get('project', 'base_dir', fallback='.') #os.getcwd())

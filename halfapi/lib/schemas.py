@@ -39,9 +39,8 @@ async def get_api_routes(request, *args, **kwargs):
             description: Returns the current API routes description (HalfAPI 0.2.1)
                          as a JSON object 
     """
-    from .. import app
-
-    return ORJSONResponse(app.d_api)
+    assert 'api' in request.scope
+    return ORJSONResponse(request.scope['api'])
 
 
 async def schema_json(request, *args, **kwargs):
@@ -55,7 +54,7 @@ async def schema_json(request, *args, **kwargs):
         SCHEMAS.get_schema(routes=request.app.routes))
 
 
-def schema_dict_dom(m_domain: ModuleType) -> Dict:
+def schema_dict_dom(d_domains) -> Dict:
     """
     Returns the API schema of the *m_domain* domain as a python dictionnary
 
@@ -69,9 +68,8 @@ def schema_dict_dom(m_domain: ModuleType) -> Dict:
         Dict: A dictionnary containing the description of the API using the
             | OpenAPI standard 
     """
-    routes = [
-        elt for elt in gen_starlette_routes(m_domain) ]
-    return SCHEMAS.get_schema(routes=routes)
+    return SCHEMAS.get_schema(
+            routes=list(gen_starlette_routes(d_domains)))
 
 
 async def get_acls(request, *args, **kwargs):

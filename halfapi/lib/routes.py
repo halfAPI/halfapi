@@ -52,31 +52,31 @@ def route_acl_decorator(fct: Callable, params: List[Dict]):
     return caller
 
 
-def gen_starlette_routes(m_dom: ModuleType) -> Generator:
+def gen_starlette_routes(d_domains: Dict[str, ModuleType]) -> Generator:
     """
     Yields the Route objects for HalfAPI app
 
     Parameters:
-        m_dom (ModuleType): the halfapi module
+        d_domains (dict[str, ModuleType])
 
     Returns:
         Generator(Route)
     """
 
+    for domain_name, m_domain in d_domains.items():
+        for path, d_route in gen_domain_routes(domain_name, m_domain):
+            for verb in VERBS:
+                if verb not in d_route.keys():
+                    continue
 
-    for path, d_route in gen_domain_routes(m_dom.__name__):
-        for verb in VERBS:
-            if verb not in d_route.keys():
-                continue
-
-            yield (
-                Route(path,
-                    route_acl_decorator(
-                        d_route[verb]['fct'],
-                        d_route[verb]['params']
-                    ),
-                    methods=[verb])
-            )
+                yield (
+                    Route(path,
+                        route_acl_decorator(
+                            d_route[verb]['fct'],
+                            d_route[verb]['params']
+                        ),
+                        methods=[verb])
+                )
 
 
 def api_routes(m_dom: ModuleType) -> Generator:
@@ -108,7 +108,7 @@ def api_routes(m_dom: ModuleType) -> Generator:
         return l_params
 
     d_res = {}
-    for path, d_route in gen_domain_routes(m_dom.__name__):
+    for path, d_route in gen_domain_routes(m_dom.__name__, m_dom):
         d_res[path] = {'fqtn': d_route['fqtn'] }
 
         for verb in VERBS:
@@ -120,9 +120,8 @@ def api_routes(m_dom: ModuleType) -> Generator:
 
 
 def api_acls(request):
-    from .. import app # FIXME: Find a way to get d_acl without having to import
     res = {}
-    for domain, d_domain_acl in app.d_acl.items():
+    for domain, d_domain_acl in request.scope['acl'].items():
         res[domain] = {}
         for acl_name, fct in d_domain_acl.items():
             fct_result = fct(request)

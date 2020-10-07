@@ -146,7 +146,7 @@ def gen_router_routes(m_router: ModuleType, path: List[str]):
 
 
 
-def gen_domain_routes(domain: str):
+def gen_domain_routes(domain: str, m_dom: ModuleType):
     """
     Generator that calls gen_router_routes for a domain
 
@@ -160,3 +160,26 @@ def gen_domain_routes(domain: str):
     except ImportError:
         logger.warning('Domain **%s** has no **routers** module', domain)
         logger.debug('%s', m_dom)
+
+
+def d_domains(config):
+    """
+    Parameters:
+
+        config (ConfigParser): The .halfapi/config based configparser object
+
+    Returns:
+
+        dict[str, ModuleType]
+    """
+    if not config.has_section('domains'):
+        return {}
+
+    try:
+        return {
+            domain: importlib.import_module(domain)
+            for domain, _ in config.items('domains')
+        }
+    except ImportError as exc:
+        logger.error('Could not load a domain : %s', exc)
+        raise exc

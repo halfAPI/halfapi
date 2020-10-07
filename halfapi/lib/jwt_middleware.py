@@ -114,7 +114,7 @@ class JWTAuthenticationBackend(AuthenticationBackend):
             raise AuthenticationError(str(exc))
         except Exception as exc:
             logger.error('Authentication error : %s', exc)
-            raise e
+            raise exc
 
 
         return AuthCredentials(["authenticated"]), JWTUser(

@@ -53,4 +53,4 @@ class ORJSONResponse(JSONResponse):
 
 class HJSONResponse(ORJSONResponse):
     def render(self, content: typ.Generator):
-        return super().render([ elt for elt in content ])
+        return super().render(list(content))

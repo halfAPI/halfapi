@@ -10,7 +10,7 @@ def parse_query(q: str = ""):
     """
     Returns the fitting Response object according to query parameters.
 
-    The parse_query function handles the following arguments in the query 
+    The parse_query function handles the following arguments in the query
     string : format, limit, and offset
     It returns a callable function that returns the desired Response object.
 
@@ -78,6 +78,6 @@ def parse_query(q: str = ""):
         if 'offset' in params and int(params['offset']) > 0:
             obj.offset(int(params['offset']))
 
-        return [elt for elt in obj.select(*fields)]
+        return list(obj.select(*fields))
 
     return select

@@ -7,9 +7,9 @@ import click
 import uvicorn
 
 from .cli import cli
-from .domain import list_routes
+from .domain import list_api_routes
 from ..conf import (PROJECT_NAME, HOST, PORT,
-    PRODUCTION, BASE_DIR, DOMAINS)
+    PRODUCTION, BASE_DIR, DOMAINSDICT)
 
 @click.option('--host', default=None)
 @click.option('--port', default=None)
@@ -34,8 +34,7 @@ def run(host, port):
 
     sys.path.insert(0, BASE_DIR)
 
-    for domain in DOMAINS:
-        list_routes(domain)
+    list_api_routes()
 
     uvicorn.run('halfapi.app:application',
         host=host,

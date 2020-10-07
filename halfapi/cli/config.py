@@ -8,8 +8,9 @@ import click
 
 from .cli import cli
 from ..conf import (
+    read_config,
     PROJECT_NAME,
-    DOMAINS,
+    DOMAINSDICT,
     HOST,
     PORT,
     PRODUCTION,
@@ -26,12 +27,13 @@ base_dir = {BASE_DIR}
 
 [domains]"""
 
-for dom in DOMAINS:
+for dom in DOMAINSDICT():
     CONF_STR = '\n'.join((CONF_STR, dom))
+
 
 @cli.command()
 def config():
     """
     Lists config parameters and their values
     """
-    click.echo(CONF_STR)
+    click.echo(read_config())

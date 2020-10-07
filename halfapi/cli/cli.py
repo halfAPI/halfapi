@@ -20,7 +20,7 @@ def cli(ctx, version):
     """
     if version:
         from halfapi import version
-        return click.echo(version())
+        click.echo(version())
 
 if IS_PROJECT:
     from . import config
