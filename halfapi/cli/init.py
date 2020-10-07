@@ -14,6 +14,7 @@ import click
 
 from .. import __version__
 from ..conf import CONF_DIR
+
 from .cli import cli
 
 logger = logging.getLogger('halfapi')

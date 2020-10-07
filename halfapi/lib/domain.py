@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
+"""
+lib/domain.py The domain-scoped utility functions
+"""
+
 import importlib
+import logging
 from types import ModuleType
 from typing import Generator, Dict, List
+
+logger = logging.getLogger("halfapi")
 
 VERBS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE')
 
@@ -50,6 +57,35 @@ def get_fct_name(http_verb: str, path: str) -> str:
     return '_'.join(fct_name)
 
 def gen_routes(route_params: Dict, path: List, m_router: ModuleType) -> Generator:
+    """
+    Generates a tuple of the following form for a specific path:
+
+    "/path/to/route", {
+        "GET": {
+            "fct": endpoint_fct,
+            "params": [
+                { "acl": acl_fct, [...] }
+            ]
+        },
+        [...]
+    }
+
+    Parameters:
+
+        - route_params (Dict): Contains the following keys :
+            - one or more HTTP VERB (if none, route is not treated)
+            - one or zero FQTN (if none, fqtn is set to None)
+
+        - path (List): The route path, as a list (each item being a level of
+            deepness), from the lowest level (domain) to the highest
+
+        - m_router (ModuleType): The parent router module
+
+    Yields:
+
+        (str, Dict): The path routes description
+
+    """
     d_res = {'fqtn': route_params.get('FQTN')}
 
     for verb in VERBS:
@@ -71,19 +107,24 @@ def gen_routes(route_params: Dict, path: List, m_router: ModuleType) -> Generato
     yield f"/{'/'.join([ elt for elt in path if elt ])}", d_res
 
 
-def gen_router_routes(m_router, path=None):
+def gen_router_routes(m_router: ModuleType, path: List[str]):
     """
-    {
-        '/truc/toto': {
-        }
-    }
+    Recursive generatore that parses a router (or a subrouter)
+    and yields from gen_routes
+
+    Parameters:
+        
+        - m_router (ModuleType): The currently treated router module
+        - path (List[str]): The current path stack
+
+    Yields:
+
+        (str, Dict): The path routes description from **gen_routes**
     """
 
     if not hasattr(m_router, 'ROUTES'):
         print(f'Missing *ROUTES* constant in *{m_router.__name__}*')
 
-    if path is None:
-        path = []
 
     routes = m_router.ROUTES
 
@@ -104,7 +145,16 @@ def gen_router_routes(m_router, path=None):
 
 
 
-def gen_domain_routes(domain):
-    m_router = importlib.import_module('.routers', domain)
+def gen_domain_routes(domain: str):
+    """
+    Generator that calls gen_router_routes for a domain
 
-    return gen_router_routes(m_router, [domain])
+    The domain must have a routers module in it's root-level.
+    If not, it is considered as empty
+    """
+
+    try:
+        m_router = importlib.import_module('.routers', domain)
+        yield from gen_router_routes(m_router, [domain])
+    except ImportError:
+        logger.warning('Domain **%s** has not **routers** module', domain)
