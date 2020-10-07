@@ -108,13 +108,13 @@ def gen_routes(route_params: Dict, path: List, m_router: ModuleType) -> Generato
     yield f"/{'/'.join([ elt for elt in path if elt ])}", d_res
 
 
-def gen_router_routes(m_router: ModuleType, path: List[str]):
+def gen_router_routes(m_router: ModuleType, path: List[str]) -> Generator:
     """
     Recursive generatore that parses a router (or a subrouter)
     and yields from gen_routes
 
     Parameters:
-        
+
         - m_router (ModuleType): The currently treated router module
         - path (List[str]): The current path stack
 
@@ -146,7 +146,7 @@ def gen_router_routes(m_router: ModuleType, path: List[str]):
 
 
 
-def gen_domain_routes(domain: str, m_dom: ModuleType):
+def gen_domain_routes(domain: str, m_dom: ModuleType) -> Generator:
     """
     Generator that calls gen_router_routes for a domain
 
@@ -162,7 +162,7 @@ def gen_domain_routes(domain: str, m_dom: ModuleType):
         logger.debug('%s', m_dom)
 
 
-def d_domains(config):
+def d_domains(config) -> Dict[str, ModuleType]:
     """
     Parameters:
 

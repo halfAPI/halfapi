@@ -23,11 +23,16 @@ class DomainMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, config):
         super().__init__(app)
         self.config = config
-
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        self.domains = d_domains(self.config)
+        self.domains = {}
         self.api = {}
         self.acl = {}
+
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """
+        Scans routes and acls of each domain in config
+        """
+        self.domains = d_domains(self.config)
 
         for domain, m_domain in self.domains.items():
             self.api[domain], self.acl[domain] = api_routes(m_domain)
