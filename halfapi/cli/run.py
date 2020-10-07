@@ -2,6 +2,7 @@
 """
 cli/domain.py Defines the "halfapi run" cli command
 """
+import os
 import sys
 import click
 import uvicorn
@@ -9,7 +10,7 @@ import uvicorn
 from .cli import cli
 from .domain import list_api_routes
 from ..conf import (PROJECT_NAME, HOST, PORT,
-    PRODUCTION, BASE_DIR, DOMAINSDICT)
+    PRODUCTION, DOMAINSDICT)
 
 @click.option('--host', default=None)
 @click.option('--port', default=None)
@@ -32,7 +33,7 @@ def run(host, port):
 
     click.echo(f'Launching application {PROJECT_NAME}')
 
-    sys.path.insert(0, BASE_DIR)
+    sys.path.insert(0, os.getcwd())
 
     list_api_routes()
 

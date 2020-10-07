@@ -14,7 +14,6 @@ from ..conf import (
     HOST,
     PORT,
     PRODUCTION,
-    BASE_DIR
 )
 
 CONF_STR=f"""
@@ -23,7 +22,6 @@ name = {PROJECT_NAME}
 host = {HOST}
 port = {PORT}
 production = {PRODUCTION}
-base_dir = {BASE_DIR}
 
 [domains]"""
 
