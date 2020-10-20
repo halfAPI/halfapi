@@ -10,7 +10,7 @@ import click
 
 
 from .cli import cli
-from ..conf import config, write_config, DOMAINS, DOMAINSDICT
+from ..conf import config, write_config, DOMAINSDICT
 
 from ..lib.schemas import schema_dict_dom
 
@@ -84,11 +84,11 @@ def domain(domains, delete, update, create, read):  #, domains, read, create, up
             # TODO: Connect to the create_domain function
             raise NotImplementedError
 
-        domains = DOMAINS
+        domains = DOMAINSDICT().keys()
     else:
         domains_ = []
         for domain_name in domains.split(','):
-            if domain_name in DOMAINS:
+            if domain_name in DOMAINSDICT().keys():
                 domains_.append(domain_name)
                 continue
 

@@ -10,7 +10,6 @@ It uses the following environment variables :
 It defines the following globals :
 
     - PROJECT_NAME (str)
-    - DOMAINS ([]) - seems to be unused except in this file
     - DOMAINSDICT ({domain_name: domain_module})
     - PRODUCTION (bool)
     - BASE_DIR (str)
@@ -46,7 +45,6 @@ from .lib.domain import d_domains
 logger = logging.getLogger('halfapi')
 
 PROJECT_NAME = os.path.basename(os.getcwd())
-DOMAINS = []
 DOMAINSDICT = lambda: {}
 PRODUCTION = False
 HOST = '127.0.0.1'
