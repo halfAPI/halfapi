@@ -2,5 +2,4 @@ click
 starlette
 uvicorn
 PyJWT
-half_orm @ git+ssh://git@gite.lirmm.fr/newsi/halfORM.git
 pygit2==0.28.2
