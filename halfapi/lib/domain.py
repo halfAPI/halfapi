@@ -137,7 +137,11 @@ def gen_router_routes(m_router: ModuleType, path: List[str]) -> Generator:
         subroutes = route_params.get('SUBROUTES', [])
         for subroute in subroutes:
             path.append(subroute)
-            submod = importlib.import_module(f'.{subroute}', m_router.__name__)
+            try:
+                submod = importlib.import_module(f'.{subroute}', m_router.__name__)
+            except ImportError:
+                continue
+
             yield from gen_router_routes(submod, path)
 
             path.pop()
@@ -156,11 +160,12 @@ def gen_domain_routes(domain: str, m_dom: ModuleType) -> Generator:
 
     try:
         m_router = importlib.import_module('.routers', domain)
-        yield from gen_router_routes(m_router, [domain])
     except ImportError:
         logger.warning('Domain **%s** has no **routers** module', domain)
         logger.debug('%s', m_dom)
 
+    if m_router:
+        yield from gen_router_routes(m_router, [domain])
 
 def d_domains(config) -> Dict[str, ModuleType]:
     """
