@@ -8,7 +8,7 @@ import logging
 from types import ModuleType
 from typing import Generator, Dict, List
 
-logger = logging.getLogger("halfapi")
+logger = logging.getLogger("uvicorn.asgi")
 
 VERBS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE')
 
