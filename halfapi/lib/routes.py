@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from functools import wraps
+import logging
 from typing import Callable, List, Dict, Generator
 from types import ModuleType, FunctionType
 
@@ -8,6 +9,9 @@ from starlette.routing import Route
 from starlette.requests import Request
 
 from halfapi.lib.domain import gen_domain_routes, VERBS
+
+
+logger = logging.getLogger('uvicorn.asgi')
 
 class DomainNotFoundError(Exception):
     pass
@@ -38,7 +42,11 @@ def route_acl_decorator(fct: Callable, params: List[Dict]):
                     passed = param['acl']()(req, *args, **kwargs)
 
                 if not passed:
+                    logger.debug(
+                        f'ACL FAIL for current route ({fct} - {param.get("acl")})')
                     continue
+
+                logger.debug(f'ACL OK for current route ({fct} - {param.get("acl")})')
 
                 return await fct(
                     req, *args,
