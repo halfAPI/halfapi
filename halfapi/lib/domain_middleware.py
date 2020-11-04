@@ -1,6 +1,7 @@
 """
 DomainMiddleware
 """
+import configparser
 import logging
 
 from starlette.datastructures import URL
@@ -53,9 +54,13 @@ class DomainMiddleware(BaseHTTPMiddleware):
         else:
             current_domain = cur_path.split('/')[0]
 
-        if len(current_domain):
+        try:
             config_section = self.config.items(current_domain)
             scope_['config'] = dict(config_section)
+        except configparser.NoSectionError:
+            logger.info(
+                f'No specific configuration for domain **{current_domain}**')
+            scope_['config'] = {}
 
 
         request = Request(scope_, receive)
