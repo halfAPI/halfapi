@@ -158,11 +158,13 @@ def gen_domain_routes(domain: str, m_dom: ModuleType) -> Generator:
     If not, it is considered as empty
     """
 
+    m_router = None
     try:
         m_router = importlib.import_module('.routers', domain)
     except ImportError:
         logger.warning('Domain **%s** has no **routers** module', domain)
         logger.debug('%s', m_dom)
+        m_router = importlib.import_module('.routers', f'.{domain}')
 
     if m_router:
         yield from gen_router_routes(m_router, [domain])

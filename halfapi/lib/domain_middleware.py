@@ -1,7 +1,9 @@
 """
 DomainMiddleware
 """
+import logging
 
+from starlette.datastructures import URL
 from starlette.middleware.base import (BaseHTTPMiddleware,
     RequestResponseEndpoint)
 from starlette.requests import Request
@@ -10,6 +12,9 @@ from starlette.types import Scope, Send, Receive
 
 from .routes import api_routes
 from .domain import d_domains
+from ..conf import config_dict
+
+logger = logging.getLogger('uvicorn.asgi')
 
 class DomainMiddleware(BaseHTTPMiddleware):
     """
@@ -41,6 +46,18 @@ class DomainMiddleware(BaseHTTPMiddleware):
         scope_['domains'] = self.domains
         scope_['api'] = self.api
         scope_['acl'] = self.acl
+
+        cur_path = URL(scope=scope).path
+        if cur_path[0] == '/':
+            current_domain = cur_path[1:].split('/')[0]
+        else:
+            current_domain = cur_path.split('/')[0]
+
+        if len(current_domain):
+            config_section = self.config.items(current_domain)
+            scope_['config'] = dict(config_section)
+
+
         request = Request(scope_, receive)
         response = await self.dispatch(request, self.call_next)
         await response(scope_, receive, send)
