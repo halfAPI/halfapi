@@ -48,6 +48,8 @@ def route_acl_decorator(fct: Callable, params: List[Dict]):
 
                 logger.debug(f'ACL OK for current route ({fct} - {param.get("acl")})')
 
+                req.scope['acl_pass'] = param['acl'].__name__
+
                 return await fct(
                     req, *args,
                     **{

@@ -125,6 +125,7 @@ def gen_router_routes(m_router: ModuleType, path: List[str]) -> Generator:
 
     if not hasattr(m_router, 'ROUTES'):
         logger.error(f'Missing *ROUTES* constant in *{m_router.__name__}*')
+        raise Exception(f'No ROUTES constant for {m_router.__name__}')
 
 
     routes = m_router.ROUTES
