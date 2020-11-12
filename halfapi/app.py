@@ -9,6 +9,8 @@ It defines the following globals :
     - application (the asgi application itself - a starlette object)
 
 """
+import logging
+
 # asgi framework
 from starlette.applications import Starlette
 from starlette.authentication import UnauthenticatedUser
@@ -27,9 +29,10 @@ from halfapi.lib.jwt_middleware import JWTAuthenticationBackend
 from halfapi.lib.responses import (ORJSONResponse, UnauthorizedResponse,
     NotFoundResponse, InternalServerErrorResponse, NotImplementedResponse)
 
-from halfapi.lib.routes import gen_starlette_routes, api_routes
+from halfapi.lib.routes import gen_starlette_routes, api_routes, debug_routes
 from halfapi.lib.schemas import get_api_routes, schema_json, get_acls
 
+logger = logging.getLogger('uvicorn.asgi')
 
 routes = [ Route('/', get_api_routes) ]
 
@@ -42,6 +45,10 @@ routes += [
     Route('/halfapi/schema', schema_json),
     Route('/halfapi/acls', get_acls)
 ]
+
+if not PRODUCTION:
+    for route in debug_routes():
+        routes.append( route )
 
 
 for route in gen_starlette_routes(DOMAINSDICT()):

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from datetime import datetime
 from functools import wraps
 import logging
 from typing import Callable, List, Dict, Generator
@@ -7,6 +8,7 @@ from types import ModuleType, FunctionType
 from starlette.exceptions import HTTPException
 from starlette.routing import Route
 from starlette.requests import Request
+from starlette.responses import Response
 
 from halfapi.lib.domain import gen_domain_routes, VERBS
 
@@ -140,3 +142,14 @@ def api_acls(request):
             res[domain][acl_name] = fct_result
 
     return res
+
+
+def debug_routes():
+    async def debug_log(request: Request, *args, **kwargs):
+        logger.debug('debuglog# %s', {datetime.now().isoformat()})
+        logger.info('debuglog# %s', {datetime.now().isoformat()})
+        logger.warning('debuglog# %s', {datetime.now().isoformat()})
+        logger.error('debuglog# %s', {datetime.now().isoformat()})
+        logger.critical('debuglog# %s', {datetime.now().isoformat()})
+        return Response('')
+    yield Route('/halfapi/log', debug_log)
