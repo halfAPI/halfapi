@@ -58,7 +58,7 @@ class DomainMiddleware(BaseHTTPMiddleware):
             config_section = self.config.items(current_domain)
             scope_['config'] = dict(config_section)
         except configparser.NoSectionError:
-            logger.info(
+            logger.debug(
                 f'No specific configuration for domain **{current_domain}**')
             scope_['config'] = {}
 

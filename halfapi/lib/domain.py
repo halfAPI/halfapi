@@ -98,7 +98,7 @@ def gen_routes(route_params: Dict, path: List, m_router: ModuleType) -> Generato
         try:
             fct_name = get_fct_name(verb, path[-1])
             fct = getattr(m_router, fct_name)
-            logger.info('%s defined in %s', fct.__name__, m_router.__name__)
+            logger.debug('%s defined in %s', fct.__name__, m_router.__name__)
         except AttributeError as exc:
             logger.error('%s is not defined in %s', fct_name, m_router.__name__)
             continue
@@ -137,7 +137,7 @@ def gen_router_routes(m_router: ModuleType, path: List[str]) -> Generator:
 
         subroutes = route_params.get('SUBROUTES', [])
         for subroute in subroutes:
-            logger.info('Processing subroute **%s** - %s', subroute, m_router.__name__)
+            logger.debug('Processing subroute **%s** - %s', subroute, m_router.__name__)
             path.append(subroute)
             try:
                 submod = importlib.import_module(f'.{subroute}', m_router.__name__)
