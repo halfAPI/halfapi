@@ -12,6 +12,7 @@ It defines the following globals :
     - PROJECT_NAME (str)
     - DOMAINSDICT ({domain_name: domain_module})
     - PRODUCTION (bool)
+    - LOGLEVEL (string)
     - BASE_DIR (str)
     - HOST (str)
     - PORT (int)
@@ -47,6 +48,7 @@ logger = logging.getLogger('halfapi')
 PROJECT_NAME = os.path.basename(os.getcwd())
 DOMAINSDICT = lambda: {}
 PRODUCTION = False
+LOGLEVEL = 'info'
 HOST = '127.0.0.1'
 PORT = '3000'
 SECRET = ''
@@ -135,5 +137,7 @@ if IS_PROJECT:
 
     PRODUCTION = config.getboolean('project', 'production') or False
     os.environ['HALFAPI_PROD'] = str(PRODUCTION)
+
+    LOGLEVEL = config.get('project', 'loglevel').lower() or 'info'
 
     BASE_DIR = config.get('project', 'base_dir', fallback='.') #os.getcwd())
