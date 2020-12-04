@@ -10,7 +10,7 @@ import uvicorn
 from .cli import cli
 from .domain import list_api_routes
 from ..conf import (PROJECT_NAME, HOST, PORT,
-    PRODUCTION, DOMAINSDICT)
+    PRODUCTION, LOGLEVEL, DOMAINSDICT)
 
 @click.option('--host', default=None)
 @click.option('--port', default=None)
@@ -29,7 +29,7 @@ def run(host, port):
     port = int(port)
 
     reload = not PRODUCTION
-    log_level = 'info' if PRODUCTION else 'debug'
+    log_level = 'info' if PRODUCTION else LOGLEVEL
 
     click.echo(f'Launching application {PROJECT_NAME}')
 
