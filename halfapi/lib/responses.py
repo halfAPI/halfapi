@@ -58,14 +58,19 @@ class ORJSONResponse(JSONResponse):
 
     @staticmethod
     def default_cast(x):
-        types = {
+        str_types = {
             decimal.Decimal
         }
+        list_types = {
+            type(set)
+        }
 
-        if type(x) not in types:
-            raise TypeError('Type is not handled in ORJSONResponse')
+        if type(x) in str_types:
+            return str(x)
+        if type(x) in list_types:
+            return list(x)
 
-        return str(x)
+        raise TypeError(f'Type {type(x)} is not handled in ORJSONResponse')
 
 
 class HJSONResponse(ORJSONResponse):
