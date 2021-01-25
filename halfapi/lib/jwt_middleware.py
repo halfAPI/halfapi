@@ -103,8 +103,10 @@ class JWTAuthenticationBackend(AuthenticationBackend):
         try:
             payload = jwt.decode(token,
                 key=self.secret_key,
-                algorithms=self.algorithm,
-                verify=True)
+                algorithms=[self.algorithm],
+                options={
+                    'verify_signature': bool(PRODUCTION)
+                })
 
             if PRODUCTION and 'debug' in payload.keys() and payload['debug']:
                 raise AuthenticationError(
@@ -124,13 +126,12 @@ class JWTAuthenticationBackend(AuthenticationBackend):
 class JWTWebSocketAuthenticationBackend(AuthenticationBackend):
 
     def __init__(self, secret_key: str, algorithm: str = 'HS256', query_param_name: str = 'jwt',
-                 id: UUID = None, audience = None, options = {}):
+                 id: UUID = None, audience = None):
         self.secret_key = secret_key
         self.algorithm = algorithm
         self.query_param_name = query_param_name
         self.id = id
         self.audience = audience
-        self.options = options
 
 
     async def authenticate(self, request):
@@ -140,8 +141,14 @@ class JWTWebSocketAuthenticationBackend(AuthenticationBackend):
         token = request.query_params[self.query_param_name]
 
         try:
-            payload = jwt.decode(token, key=self.secret_key, algorithms=self.algorithm,
-                                 audience=self.audience, options=self.options)
+            payload = jwt.decode(
+                token,
+                key=self.secret_key,
+                algorithms=[self.algorithm],
+                audience=self.audience,
+                options={
+                    'verify_signature': bool(PRODUCTION)
+                })
 
             if PRODUCTION and 'debug' in payload.keys() and payload['debug']:
                 raise AuthenticationError(
@@ -150,5 +157,10 @@ class JWTWebSocketAuthenticationBackend(AuthenticationBackend):
         except jwt.InvalidTokenError as exc:
             raise AuthenticationError(str(exc))
 
-        return AuthCredentials(["authenticated"]), JWTUser(id = payload['id'],
-                                                           token=token, payload=payload)
+        return (
+            AuthCredentials(["authenticated"]), 
+            JWTUser(
+                id=payload['id'],
+                token=token,
+                payload=payload)
+        )
