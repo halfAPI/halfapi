@@ -62,7 +62,7 @@ class ORJSONResponse(JSONResponse):
             decimal.Decimal
         }
         list_types = {
-            type(set)
+            set
         }
 
         if type(x) in str_types:
@@ -70,7 +70,7 @@ class ORJSONResponse(JSONResponse):
         if type(x) in list_types:
             return list(x)
 
-        raise TypeError(f'Type {type(x)} is not handled in ORJSONResponse')
+        raise TypeError(f'Type {type(x)} is not handled by ORJSONResponse')
 
 
 class HJSONResponse(ORJSONResponse):

@@ -8,7 +8,7 @@ def test_orjson():
     test_obj = {
         "ok": "ko",
         "dec": decimal.Decimal(42),
-        "set": set([0,4,2])
+        "set": {0, 4, 2}
     }
 
     resp = ORJSONResponse(test_obj)
@@ -18,4 +18,4 @@ def test_orjson():
     assert 'ok' in test_obj_dec.keys()
     assert isinstance(test_obj_dec['ok'], str)
     assert isinstance(test_obj_dec['dec'], str)
-    assert isinstance(test_obj_dec['set'], liststr)
+    assert isinstance(test_obj_dec['set'], list)
