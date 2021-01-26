@@ -43,11 +43,11 @@ setup(
     packages=get_packages(module_name),
     python_requires=">=3.7",
     install_requires=[
-        "PyJWT>=1.7.1",
-        "starlette>=0.13,<1",
+        "PyJWT>=2.0.1",
+        "starlette>=0.14,<1",
         "click>=7.1,<8",
-        "uvicorn>=0.11,<1",
-        "orjson>=3.1.1,<4",
+        "uvicorn>=0.13,<1",
+        "orjson>=3.4.7,<4",
         "pyyaml>=5.3.1,<6"
     ],
     extras_require={

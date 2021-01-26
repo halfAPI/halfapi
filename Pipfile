@@ -11,15 +11,15 @@ pylint = "*"
 dummy-domain = {path = "./tests"}
 
 [packages]
-click = "*"
-starlette = "*"
-uvicorn = "*"
-orjson = "*"
-pyjwt = "*"
-pyyaml = "*"
+click = ">=7.1,<8"
+starlette = ">=0.14,<1"
+uvicorn = ">=0.13,<1"
+orjson = ">=3.4.7,<4"
+pyjwt = ">=2.0.1,<3"
+pyyaml = ">=5.3.1,<6"
 
 [requires]
-python_version = "3"
+python_version = ">=3.7"
 
 [scripts]
 halfapi = "python -m halfapi"
