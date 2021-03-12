@@ -153,3 +153,14 @@ def debug_routes():
         logger.critical('debuglog# %s', {datetime.now().isoformat()})
         return Response('')
     yield Route('/halfapi/log', debug_log)
+
+    async def error_code(request: Request, *args, **kwargs):
+        code = request.path_params.get('code')
+        raise HTTPException(code)
+
+    yield Route('/halfapi/error/{code:int}', error_code)
+
+    async def exception(request: Request, *args, **kwargs):
+        raise Exception('Test exception')
+
+    yield Route('/halfapi/exception', exception)

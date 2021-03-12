@@ -16,3 +16,25 @@ def test_current_user():
     c = TestClient(application)
     r = c.get('/halfapi/current_user')
     assert r.status_code == 200
+
+def test_log():
+    c = TestClient(application)
+    r = c.get('/halfapi/log')
+    assert r.status_code == 200
+
+def test_error():
+    c = TestClient(application)
+    r = c.get('/halfapi/error/400')
+    assert r.status_code == 400
+    r = c.get('/halfapi/error/404')
+    assert r.status_code == 404
+    r = c.get('/halfapi/error/500')
+    assert r.status_code == 500
+
+def test_exception():
+    c = TestClient(application)
+    try:
+        r = c.get('/halfapi/exception')
+        assert r.status_code == 500
+    except Exception:
+        print('exception')
