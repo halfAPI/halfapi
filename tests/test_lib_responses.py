@@ -1,5 +1,6 @@
 import json
 import decimal
+import datetime
 
 from halfapi.lib.responses import ORJSONResponse
 
@@ -8,7 +9,9 @@ def test_orjson():
     test_obj = {
         "ok": "ko",
         "dec": decimal.Decimal(42),
-        "set": {0, 4, 2}
+        "set": {0, 4, 2},
+        "date": datetime.date(1,1,1),
+        "datetime": datetime.datetime(1,1,1),
     }
 
     resp = ORJSONResponse(test_obj)
@@ -19,3 +22,6 @@ def test_orjson():
     assert isinstance(test_obj_dec['ok'], str)
     assert isinstance(test_obj_dec['dec'], str)
     assert isinstance(test_obj_dec['set'], list)
+    assert isinstance(test_obj_dec['date'], str)
+    assert test_obj_dec['date'] == '0001-01-01'
+    assert test_obj_dec['datetime'] == '0001-01-01T00:00:00'
