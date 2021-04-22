@@ -48,7 +48,8 @@ setup(
         "click>=7.1,<8",
         "uvicorn>=0.13,<1",
         "orjson>=3.4.7,<4",
-        "pyyaml>=5.3.1,<6"
+        "pyyaml>=5.3.1,<6",
+        "timing-asgi>=0.2.1,<1"
     ],
     extras_require={
         "tests":[

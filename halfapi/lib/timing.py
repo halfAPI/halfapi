@@ -1,0 +1,17 @@
+import logging
+
+from timing_asgi import TimingClient
+
+logger = logging.getLogger('uvicorn.asgi')
+
+class HTimingClient(TimingClient):
+    def timing(self, metric_name, timing, tags):
+        tags_d = {
+            key: val
+            for key, val in map(
+            lambda elt: elt.split(':'), tags)
+        }
+        logger.debug('[TIME:%s][%s] %s %s - %sms',
+            tags_d['time'], metric_name,
+            tags_d['http_method'], tags_d['http_status'],
+            round(timing*1000, 2))

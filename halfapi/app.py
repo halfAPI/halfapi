@@ -18,11 +18,14 @@ from starlette.middleware import Middleware
 from starlette.routing import Route
 from starlette.middleware.authentication import AuthenticationMiddleware
 
+from timing_asgi import TimingMiddleware
+from timing_asgi.integrations import StarletteScopeToName
 
 # module libraries
 from halfapi.conf import config, SECRET, PRODUCTION, DOMAINSDICT
 
 from .lib.domain_middleware import DomainMiddleware
+from .lib.timing import HTimingClient
 
 from halfapi.lib.jwt_middleware import JWTAuthenticationBackend
 
@@ -70,3 +73,11 @@ application = Starlette(
         501: NotImplementedResponse
     }
 )
+
+if not PRODUCTION:
+    application.add_middleware(
+        TimingMiddleware,
+        client=HTimingClient(),
+        metric_namer=StarletteScopeToName(prefix="halfapi",
+        starlette_app=application)
+    )
