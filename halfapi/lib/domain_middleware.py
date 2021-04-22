@@ -32,6 +32,7 @@ class DomainMiddleware(BaseHTTPMiddleware):
         self.domains = {}
         self.api = {}
         self.acl = {}
+        self.request = None
 
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
@@ -63,13 +64,21 @@ class DomainMiddleware(BaseHTTPMiddleware):
             scope_['config'] = {}
 
 
-        request = Request(scope_, receive)
-        response = await self.dispatch(request, self.call_next)
+        self.request = Request(scope_, receive)
+        response = await self.dispatch(self.request, self.call_next)
         await response(scope_, receive, send)
 
 
     async def dispatch(self, request: Request,
         call_next: RequestResponseEndpoint) -> Response:
+        """
+        Call of the route fonction (decorated or not)
+        """
 
         response = await call_next(request)
+
+        if 'acl_pass' in self.request.scope:
+            # Set the http header "x-acl" if an acl was used on the route
+            response.headers['x-acl'] = self.request.scope['acl_pass']
+
         return response
