@@ -51,6 +51,8 @@ def route_acl_decorator(fct: Callable, params: List[Dict]):
                 logger.debug(f'ACL OK for current route ({fct} - {param.get("acl")})')
 
                 req.scope['acl_pass'] = param['acl'].__name__
+                if 'args' in param:
+                    req.scope['args'] = param['args']
 
                 if 'check' in req.query_params:
                     return PlainTextResponse(param['acl'].__name__)

@@ -81,4 +81,13 @@ class DomainMiddleware(BaseHTTPMiddleware):
             # Set the http header "x-acl" if an acl was used on the route
             response.headers['x-acl'] = self.request.scope['acl_pass']
 
+        if 'args' in self.request.scope:
+            # Set the http headers "x-args-required" and "x-args-optional"
+
+            if 'required' in self.request.scope['args']:
+                response.headers['x-args-required'] = \
+                    ','.join(self.request.scope['args']['required'])
+            if 'optional' in self.request.scope['args']:
+                response.headers['x-args-optional'] = \
+                    ','.join(self.request.scope['args']['optional'])
         return response
