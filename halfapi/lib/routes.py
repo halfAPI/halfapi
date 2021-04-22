@@ -133,10 +133,11 @@ def api_routes(m_dom: ModuleType) -> Generator:
 
 def api_acls(request):
     res = {}
+    doc = 'doc' in request.query_params
     for domain, d_domain_acl in request.scope['acl'].items():
         res[domain] = {}
         for acl_name, fct in d_domain_acl.items():
-            fct_result = fct(request)
+            fct_result = fct.__doc__.strip() if doc and fct.__doc__ else fct(request)
             if isinstance(fct_result, FunctionType):
                 fct_result = fct()(request)
             res[domain][acl_name] = fct_result
