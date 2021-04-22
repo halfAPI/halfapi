@@ -8,7 +8,7 @@ from types import ModuleType, FunctionType
 from starlette.exceptions import HTTPException
 from starlette.routing import Route
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import Response, PlainTextResponse
 
 from halfapi.lib.domain import gen_domain_routes, VERBS
 
@@ -51,6 +51,9 @@ def route_acl_decorator(fct: Callable, params: List[Dict]):
                 logger.debug(f'ACL OK for current route ({fct} - {param.get("acl")})')
 
                 req.scope['acl_pass'] = param['acl'].__name__
+
+                if 'check' in req.query_params:
+                    return PlainTextResponse(param['acl'].__name__)
 
                 return await fct(
                     req, *args,
