@@ -10,6 +10,7 @@ It defines the following globals :
 
 """
 import logging
+import time
 
 # asgi framework
 from starlette.applications import Starlette
@@ -32,7 +33,7 @@ from halfapi.lib.jwt_middleware import JWTAuthenticationBackend
 from halfapi.lib.responses import (ORJSONResponse, UnauthorizedResponse,
     NotFoundResponse, InternalServerErrorResponse, NotImplementedResponse)
 
-from halfapi.lib.routes import gen_starlette_routes, api_routes, debug_routes
+from halfapi.lib.routes import gen_starlette_routes, debug_routes
 from halfapi.lib.schemas import get_api_routes, schema_json, get_acls
 
 logger = logging.getLogger('uvicorn.asgi')

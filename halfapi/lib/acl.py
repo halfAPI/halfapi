@@ -33,6 +33,8 @@ def args_check(fct):
     @wraps(fct)
     async def caller(req, *args, **kwargs):
         if 'check' in req.query_params:
+            """ Check query param should not read the "args"
+            """
             return await fct(req, *args, **kwargs)
 
         if req.method == 'GET':

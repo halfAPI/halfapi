@@ -5,6 +5,7 @@ lib/domain.py The domain-scoped utility functions
 
 import importlib
 import logging
+import time
 from types import ModuleType
 from typing import Generator, Dict, List
 
@@ -160,7 +161,6 @@ def gen_domain_routes(domain: str, m_dom: ModuleType) -> Generator:
     The domain must have a routers module in it's root-level.
     If not, it is considered as empty
     """
-
     m_router = None
     try:
         m_router = importlib.import_module('.routers', domain)
@@ -170,6 +170,7 @@ def gen_domain_routes(domain: str, m_dom: ModuleType) -> Generator:
 
     if m_router:
         yield from gen_router_routes(m_router, [domain])
+
 
 def d_domains(config) -> Dict[str, ModuleType]:
     """

@@ -37,12 +37,14 @@ class DomainMiddleware(BaseHTTPMiddleware):
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         """
-        Scans routes and acls of each domain in config
+        Scans routes and acls of the domain in the first part of the path
         """
+        domain = scope['path'].split('/')[1]
+
         self.domains = d_domains(self.config)
 
-        for domain, m_domain in self.domains.items():
-            self.api[domain], self.acl[domain] = api_routes(m_domain)
+        if domain in self.domains:
+            self.api[domain], self.acl[domain] = api_routes(self.domains[domain])
 
         scope_ = scope.copy()
         scope_['domains'] = self.domains
