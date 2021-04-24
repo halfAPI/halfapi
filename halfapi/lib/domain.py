@@ -3,6 +3,7 @@
 lib/domain.py The domain-scoped utility functions
 """
 
+import sys
 import importlib
 import logging
 from types import ModuleType
@@ -185,6 +186,7 @@ def d_domains(config) -> Dict[str, ModuleType]:
         return {}
 
     try:
+        sys.path.append('.')
         return {
             domain: importlib.import_module(domain)
             for domain, _ in config.items('domains')
