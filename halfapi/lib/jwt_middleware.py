@@ -1,44 +1,26 @@
-__LICENSE__ = """
-BSD 3-Clause License
+"""
+JWT Middleware module
 
-Copyright (c) 2018, Amit Ripshtos
-All rights reserved.
+Classes:
+    - JWTUser : goes in request.user
+    - JWTAuthenticationBackend
+    - JWTWebSocketAuthenticationBackend
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-
-* Neither the name of the copyright holder nor the names of its
-  contributors may be used to endorse or promote products derived from
-  this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+Raises:
+    Exception: If configuration has no SECRET or HALFAPI_SECRET is not set
 """
 
 from os import environ
+import typing
+import logging
+from uuid import UUID
 
 import jwt
-from uuid import UUID
 from starlette.authentication import (
     AuthenticationBackend, AuthenticationError, BaseUser, AuthCredentials,
     UnauthenticatedUser)
+from starlette.requests import HTTPConnection
 
-import logging
 logger = logging.getLogger('halfapi')
 
 try:
@@ -50,18 +32,22 @@ except ImportError:
 
 try:
     from ..conf import SECRET
-except ImportError:
+except ImportError as exc:
     logger.warning('Could not import SECRET variable from conf module,'\
         ' using HALFAPI_SECRET environment variable')
     SECRET  = environ.get('HALFAPI_SECRET', False)
     if not SECRET:
-        raise Exception('Missing HALFAPI_SECRET variable')
+        raise Exception('Missing HALFAPI_SECRET variable') from exc
 
 
 
 class JWTUser(BaseUser):
-    def __init__(self, id: UUID, token: str, payload: dict) -> None:
-        self.__id = id
+    """ JWTUser class
+
+    Is used to store authentication informations
+    """
+    def __init__(self, user_id: UUID, token: str, payload: dict) -> None:
+        self.__id = user_id
         self.token = token
         self.payload = payload
 
@@ -81,8 +67,14 @@ class JWTUser(BaseUser):
         return True
 
     @property
-    def id(self) -> str:
+    def display_name(self) -> str:
+        return ' '.join(
+            (self.payload.get('name'), self.payload.get('firstname')))
+
+    @property
+    def identity(self) -> str:
         return self.__id
+
 
 
 class JWTAuthenticationBackend(AuthenticationBackend):
@@ -90,16 +82,19 @@ class JWTAuthenticationBackend(AuthenticationBackend):
         algorithm: str = 'HS256', prefix: str = 'JWT'):
 
         if secret_key is None:
-            raise Exception('Missing secret_key argument for JWTAuthenticationBackend') 
+            raise Exception('Missing secret_key argument for JWTAuthenticationBackend')
         self.secret_key = secret_key
         self.algorithm = algorithm
         self.prefix = prefix
 
-    async def authenticate(self, request):
-        if "Authorization" not in request.headers:
+    async def authenticate(
+        self, conn: HTTPConnection
+    ) -> typing.Optional[typing.Tuple["AuthCredentials", "BaseUser"]]:
+
+        if "Authorization" not in conn.headers:
             return None
 
-        token = request.headers["Authorization"]
+        token = conn.headers["Authorization"]
         try:
             payload = jwt.decode(token,
                 key=self.secret_key,
@@ -113,32 +108,36 @@ class JWTAuthenticationBackend(AuthenticationBackend):
                     'Trying to connect using *DEBUG* token in *PRODUCTION* mode')
 
         except jwt.InvalidTokenError as exc:
-            raise AuthenticationError(str(exc))
+            raise AuthenticationError(str(exc)) from exc
         except Exception as exc:
             logger.error('Authentication error : %s', exc)
             raise exc
 
 
         return AuthCredentials(["authenticated"]), JWTUser(
-            id=payload['user_id'], token=token, payload=payload)
+            user_id=payload['user_id'], token=token, payload=payload)
+
 
 
 class JWTWebSocketAuthenticationBackend(AuthenticationBackend):
 
     def __init__(self, secret_key: str, algorithm: str = 'HS256', query_param_name: str = 'jwt',
-                 id: UUID = None, audience = None):
+                 user_id: UUID = None, audience = None):
         self.secret_key = secret_key
         self.algorithm = algorithm
         self.query_param_name = query_param_name
-        self.id = id
+        self.__id = user_id
         self.audience = audience
 
 
-    async def authenticate(self, request):
-        if self.query_param_name not in request.query_params:
+    async def authenticate(
+        self, conn: HTTPConnection
+    ) -> typing.Optional[typing.Tuple["AuthCredentials", "BaseUser"]]:
+
+        if self.query_param_name not in conn.query_params:
             return AuthCredentials(), UnauthenticatedUser()
 
-        token = request.query_params[self.query_param_name]
+        token = conn.query_params[self.query_param_name]
 
         try:
             payload = jwt.decode(
@@ -155,12 +154,12 @@ class JWTWebSocketAuthenticationBackend(AuthenticationBackend):
                     'Trying to connect using *DEBUG* token in *PRODUCTION* mode')
 
         except jwt.InvalidTokenError as exc:
-            raise AuthenticationError(str(exc))
+            raise AuthenticationError(str(exc)) from exc
 
         return (
-            AuthCredentials(["authenticated"]), 
+            AuthCredentials(["authenticated"]),
             JWTUser(
-                id=payload['id'],
+                user_id=payload['id'],
                 token=token,
                 payload=payload)
         )

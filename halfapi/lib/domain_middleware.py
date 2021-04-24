@@ -13,7 +13,6 @@ from starlette.types import Scope, Send, Receive
 
 from .routes import api_routes
 from .domain import d_domains
-from ..conf import config_dict
 
 logger = logging.getLogger('uvicorn.asgi')
 
@@ -62,7 +61,7 @@ class DomainMiddleware(BaseHTTPMiddleware):
             scope_['config'] = dict(config_section)
         except configparser.NoSectionError:
             logger.debug(
-                f'No specific configuration for domain **{current_domain}**')
+                'No specific configuration for domain **%s**', current_domain)
             scope_['config'] = {}
 
 

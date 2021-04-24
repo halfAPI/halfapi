@@ -3,11 +3,11 @@
 Base ACL module that contains generic functions for domains ACL
 """
 import logging
-
 from functools import wraps
-from starlette.authentication import UnauthenticatedUser
-
 from json import JSONDecodeError
+from starlette.authentication import UnauthenticatedUser
+from starlette.exceptions import HTTPException
+
 
 logger = logging.getLogger('uvicorn.asgi')
 
@@ -30,11 +30,20 @@ def connected(fct=public):
     return caller
 
 def args_check(fct):
+    """ Decorator that puts required and optional arguments in scope
+
+    For GET requests it uses the query_params
+
+    For POST requests it uses the body as JSON
+
+    If "check" is present in the query params, nothing is done.
+
+    If some required arguments are missing, a 400 status code is sent.
+    """
     @wraps(fct)
     async def caller(req, *args, **kwargs):
         if 'check' in req.query_params:
-            """ Check query param should not read the "args"
-            """
+            # Check query param should not read the "args"
             return await fct(req, *args, **kwargs)
 
         if req.method == 'GET':
@@ -47,7 +56,7 @@ def args_check(fct):
                 data_ = {}
 
         def plural(array: list) -> str:
-            return len(array) > 1 and 's' or ''
+            return 's' if len(array) > 1 else ''
         def comma_list(array: list) -> str:
             return ', '.join(array)
 

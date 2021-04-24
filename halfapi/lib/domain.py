@@ -5,7 +5,6 @@ lib/domain.py The domain-scoped utility functions
 
 import importlib
 import logging
-import time
 from types import ModuleType
 from typing import Generator, Dict, List
 
@@ -94,7 +93,7 @@ def gen_routes(route_params: Dict, path: List, m_router: ModuleType) -> Generato
         if params is None:
             continue
         if len(params) == 0:
-            logger.error(f'No ACL for route [{verb}] "/".join(path)')
+            logger.error('No ACL for route [{%s}] %s', verb, "/".join(path))
 
         try:
             fct_name = get_fct_name(verb, path[-1])
@@ -125,7 +124,7 @@ def gen_router_routes(m_router: ModuleType, path: List[str]) -> Generator:
     """
 
     if not hasattr(m_router, 'ROUTES'):
-        logger.error(f'Missing *ROUTES* constant in *{m_router.__name__}*')
+        logger.error('Missing *ROUTES* constant in *%s*', m_router.__name__)
         raise Exception(f'No ROUTES constant for {m_router.__name__}')
 
 

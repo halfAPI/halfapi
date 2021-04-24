@@ -1,3 +1,10 @@
+"""
+Timing module
+
+Helpers to gathers stats on requests timing
+
+class HTimingClient
+"""
 import logging
 
 from timing_asgi import TimingClient
@@ -5,12 +12,11 @@ from timing_asgi import TimingClient
 logger = logging.getLogger('uvicorn.asgi')
 
 class HTimingClient(TimingClient):
+    """ Used to redefine TimingClient.timing
+    """
     def timing(self, metric_name, timing, tags):
-        tags_d = {
-            key: val
-            for key, val in map(
-            lambda elt: elt.split(':'), tags)
-        }
+        tags_d = dict(map(lambda elt: elt.split(':'), tags))
+
         logger.debug('[TIME:%s][%s] %s %s - %sms',
             tags_d['time'], metric_name,
             tags_d['http_method'], tags_d['http_status'],

@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
-import time
+"""
+Routes module
+
+Fonctions :
+    - route_acl_decorator
+    - gen_starlette_routes
+    - api_routes
+    - api_acls
+    - debug_routes
+
+Exception :
+    - DomainNotFoundError
+
+"""
 from datetime import datetime
 from functools import wraps
 import logging
@@ -17,7 +30,8 @@ from halfapi.lib.domain import gen_domain_routes, VERBS
 logger = logging.getLogger('uvicorn.asgi')
 
 class DomainNotFoundError(Exception):
-    pass
+    """ Exception when a domain is not importable
+    """
 
 def route_acl_decorator(fct: Callable, params: List[Dict]):
     """
@@ -46,10 +60,11 @@ def route_acl_decorator(fct: Callable, params: List[Dict]):
 
                 if not passed:
                     logger.debug(
-                        f'ACL FAIL for current route ({fct} - {param.get("acl")})')
+                        'ACL FAIL for current route (%s - %s)', fct, param.get('acl'))
                     continue
 
-                logger.debug(f'ACL OK for current route ({fct} - {param.get("acl")})')
+                logger.debug(
+                    'ACL OK for current route (%s - %s)', fct, param.get('acl'))
 
                 req.scope['acl_pass'] = param['acl'].__name__
                 if 'args' in param:
@@ -138,6 +153,8 @@ def api_routes(m_dom: ModuleType) -> Generator:
 
 
 def api_acls(request):
+    """ Returns the list of possible ACLs
+    """
     res = {}
     doc = 'doc' in request.query_params
     for domain, d_domain_acl in request.scope['acl'].items():
@@ -152,6 +169,8 @@ def api_acls(request):
 
 
 def debug_routes():
+    """ Halfapi debug routes definition
+    """
     async def debug_log(request: Request, *args, **kwargs):
         logger.debug('debuglog# %s', {datetime.now().isoformat()})
         logger.info('debuglog# %s', {datetime.now().isoformat()})

@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
-from starlette.exceptions import HTTPException
-
 """
 This is the *query* library that contains all the useful functions to treat our
 queries
+
+Fonction:
+    - parse_query
 """
 
-def parse_query(q: str = ""):
+from starlette.exceptions import HTTPException
+
+
+def parse_query(q_string: str = ""):
     """
     Returns the fitting Response object according to query parameters.
 
@@ -15,7 +19,7 @@ def parse_query(q: str = ""):
     It returns a callable function that returns the desired Response object.
 
         Parameters:
-            q (str): The query string "q" parameter, in the format
+            q_string (str): The query string "q" parameter, in the format
                 key0:value0|...|keyN:valueN
 
         Returns:
@@ -61,16 +65,16 @@ def parse_query(q: str = ""):
     """
 
     params = {}
-    if len(q) > 0:
+    if len(q_string) > 0:
         try:
             split_ = lambda x : x.split(':')
-            params = dict(map(split_, q.split('|')))
-        except ValueError:
-            raise HTTPException(400)
+            params = dict(map(split_, q_string.split('|')))
+        except ValueError as exc:
+            raise HTTPException(400) from exc
         split_ = lambda x : x.split(':')
-        params = dict(map(split_, q.split('|')))
+        params = dict(map(split_, q_string.split('|')))
 
-    def select(obj, fields = []):
+    def select(obj, fields):
 
         if 'limit' in params and int(params['limit']) > 0:
             obj.limit(int(params['limit']))
