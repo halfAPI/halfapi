@@ -42,31 +42,29 @@ routes = [ Route('/', get_api_routes) ]
 
 
 routes += [
-    Route('/halfapi/current_user', lambda request, *args, **kwargs:
-        ORJSONResponse({'user':request.user.json})
-        if not isinstance(request.user, UnauthenticatedUser)
-        else ORJSONResponse({'user': None})),
     Route('/halfapi/schema', schema_json),
     Route('/halfapi/acls', get_acls)
 ]
+
+routes += Route('/halfapi/current_user', lambda request, *args, **kwargs:
+    ORJSONResponse({'user':request.user.json})
+    if SECRET and not isinstance(request.user, UnauthenticatedUser)
+    else ORJSONResponse({'user': None})),
+
 
 if not PRODUCTION:
     for route in debug_routes():
         routes.append( route )
 
 
-for route in gen_starlette_routes(DOMAINSDICT()):
-    routes.append(route)
+if DOMAINSDICT:
+    for route in gen_starlette_routes(DOMAINSDICT()):
+        routes.append(route)
 
 
 application = Starlette(
     debug=not PRODUCTION,
     routes=routes,
-    middleware=[
-        Middleware(DomainMiddleware, config=config),
-        Middleware(AuthenticationMiddleware,
-            backend=JWTAuthenticationBackend(secret_key=SECRET))
-    ],
     exception_handlers={
         401: UnauthorizedResponse,
         404: NotFoundResponse,
@@ -74,6 +72,18 @@ application = Starlette(
         501: NotImplementedResponse
     }
 )
+
+if DOMAINSDICT:
+    application.add_middleware(
+        DomainMiddleware,
+        config=config
+    )
+
+if SECRET:
+    application.add_middleware(
+        AuthenticationMiddleware,
+        backend=JWTAuthenticationBackend(secret_key=SECRET)
+    )
 
 if not PRODUCTION:
     application.add_middleware(

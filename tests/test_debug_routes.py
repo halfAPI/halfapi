@@ -12,7 +12,10 @@ def test_get_api_routes():
     assert isinstance(d_r, dict)
 
 
-def test_current_user():
+def test_current_user(project_runner):
+    """
+    Missing HALFAPI_SECRET to give current user route
+    """
     c = TestClient(application)
     r = c.get('/halfapi/current_user')
     assert r.status_code == 200
