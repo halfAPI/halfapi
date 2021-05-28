@@ -14,7 +14,7 @@ Exception :
 
 """
 from datetime import datetime
-from functools import wraps
+from functools import partial, wraps
 import logging
 from typing import Callable, List, Dict, Generator
 from types import ModuleType, FunctionType
@@ -33,7 +33,7 @@ class DomainNotFoundError(Exception):
     """ Exception when a domain is not importable
     """
 
-def route_acl_decorator(fct: Callable, params: List[Dict]):
+def route_acl_decorator(fct: Callable = None, params: List[Dict] = []):
     """
     Decorator for async functions that calls pre-conditions functions
     and appends kwargs to the target function
@@ -49,6 +49,10 @@ def route_acl_decorator(fct: Callable, params: List[Dict]):
     Returns:
         async function
     """
+
+    if not fct:
+        return partial(route_acl_decorator, params=params)
+
 
     @wraps(fct)
     async def caller(req: Request, *args, **kwargs):
