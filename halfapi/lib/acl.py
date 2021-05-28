@@ -15,6 +15,11 @@ def public(*args, **kwargs) -> bool:
     "Unlimited access"
     return True
 
+def private(*args, **kwargs) -> bool:
+    "Forbidden access"
+    return False
+
+
 def connected(fct=public):
     """ Decorator that checks if the user object of the request has been set
     """

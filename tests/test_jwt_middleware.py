@@ -26,7 +26,7 @@ def test_JWTUser():
     token = '{}'
     payload = {}
     user = JWTUser(uid, token, payload)
-    assert user.identity == uid
+    assert user.id == uid
     assert user.token == token
     assert user.payload == payload
     assert user.is_authenticated == True

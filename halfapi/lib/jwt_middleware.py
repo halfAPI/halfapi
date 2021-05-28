@@ -72,7 +72,10 @@ class JWTUser(BaseUser):
             (self.payload.get('name'), self.payload.get('firstname')))
 
     @property
-    def identity(self) -> str:
+    def id(self) -> str:
+        return self.__id
+
+
         return self.__id
 
 
