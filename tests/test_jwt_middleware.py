@@ -167,3 +167,36 @@ async def test_JWTAuthenticationBackend_DebugTrue(token_debug_true_builder):
         await backend.authenticate(req)
     except Exception as exc:
         assert type(exc) == AuthenticationError
+
+@pytest.mark.asyncio
+async def test_JWTAuthenticationBackend_Check(token_debug_false_builder):
+    backend = JWTAuthenticationBackend()
+    assert backend.secret_key == SECRET
+
+    req = Request(
+        params={
+            'check':True,
+        })
+
+    credentials, user = await backend.authenticate(req)
+    assert isinstance(user, UnauthenticatedUser)
+    assert isinstance(credentials, AuthCredentials)
+
+
+@pytest.mark.asyncio
+async def test_JWTAuthenticationBackend_CheckUserId(token_debug_false_builder):
+    backend = JWTAuthenticationBackend()
+    assert backend.secret_key == SECRET
+
+    tmp_user_id = str(uuid4())
+
+    req = Request(
+        params={
+            'check': True,
+            'user_id': tmp_user_id
+        })
+
+    credentials, user = await backend.authenticate(req)
+    assert isinstance(user, JWTUser)
+    assert user.__id ==  tmp_user_id
+    assert isinstance(credentials, AuthCredentials)
