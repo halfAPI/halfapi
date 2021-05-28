@@ -6,20 +6,59 @@ import os
 import subprocess
 import importlib
 import tempfile
-import click
-from unittest.mock import patch
 from typing import Dict, Tuple
+from uuid import uuid1, uuid4, UUID
+import click
+import jwt
+from unittest.mock import patch
 import pytest
-from uuid import uuid1
-from click.testing import CliRunner
+from starlette.applications import Starlette
+from starlette.responses import PlainTextResponse
+from starlette.middleware.authentication import AuthenticationMiddleware
+from starlette.testclient import TestClient
 from halfapi import __version__
 from halfapi.cli.cli import cli
 from halfapi.cli.init import init, format_halfapi_etc
 from halfapi.cli.domain import domain, create_domain
+from halfapi.lib.responses import ORJSONResponse
+from halfapi.lib.jwt_middleware import JWTAuthenticationBackend
 logger = logging.getLogger('halfapitest')
 
 PROJNAME = os.environ.get('PROJ','tmp_api')
 
+os.environ['HALFAPI_SECRET'] = 'dummysecret'
+SECRET = 'dummysecret'
+
+from halfapi.lib.jwt_middleware import (
+    JWTUser, JWTAuthenticationBackend,
+    JWTWebSocketAuthenticationBackend)
+
+@pytest.fixture
+def token_builder():
+    yield jwt.encode({
+        'name':'xxx',
+        'user_id': str(uuid4())},
+        key=SECRET
+    )
+
+@pytest.fixture
+def token_debug_false_builder():
+    yield jwt.encode({
+        'name':'xxx',
+        'user_id': str(uuid4()),
+        'debug': False},
+        key=SECRET
+    )
+
+
+@pytest.fixture
+def token_debug_true_builder():
+    yield jwt.encode({
+        'name':'xxx',
+        'user_id': str(uuid4()),
+        'debug': True},
+        key=SECRET
+    )
 
 @pytest.fixture
 def runner():
@@ -161,3 +200,30 @@ def project_runner(runner, halfapicli, halfapi_conf_dir):
         ###
 
         yield halfapicli
+
+@pytest.fixture
+def dummy_app():
+    app = Starlette()
+    app.add_route('/',
+        lambda request, *args, **kwargs: PlainTextResponse('Hello test!'))
+    app.add_middleware(
+        AuthenticationMiddleware,
+        backend=JWTAuthenticationBackend(secret_key='dummysecret')
+    )
+    return app
+@pytest.fixture
+
+def dummy_debug_app():
+    app = Starlette(debug=True)
+    app.add_route('/',
+        lambda request, *args, **kwargs: PlainTextResponse('Hello test!'))
+    app.add_middleware(
+        AuthenticationMiddleware,
+        backend=JWTAuthenticationBackend(secret_key='dummysecret')
+    )
+    return app
+
+
+@pytest.fixture
+def test_client(dummy_app):
+    return TestClient(dummy_app)
