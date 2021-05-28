@@ -9,6 +9,7 @@ import tempfile
 from typing import Dict, Tuple
 from uuid import uuid1, uuid4, UUID
 import click
+from click.testing import CliRunner
 import jwt
 from unittest.mock import patch
 import pytest

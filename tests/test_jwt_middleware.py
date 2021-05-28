@@ -31,92 +31,77 @@ def test_JWTUser():
     assert user.payload == payload
     assert user.is_authenticated == True
 
-@pytest.mark.asyncio
-async def test_JWTAuthenticationBackend_NoToken(token_builder):
-    backend = JWTAuthenticationBackend()
-    assert backend.secret_key == SECRET
+def test_jwt_NoToken(dummy_app):
+    async def test_route(request):
+        assert isinstance(request.user, UnauthenticatedUser)
+        return PlainTextResponse('ok')
 
-    req = Request()
+    dummy_app.add_route('/test', test_route)
+    test_client = TestClient(dummy_app)
+    resp = test_client.get('/test')
+    assert resp.status_code == 200
 
-    credentials, user = await backend.authenticate(req)
-    assert isinstance(user, UnauthenticatedUser)
-    assert isinstance(credentials, AuthCredentials)
+def test_jwt_Token(dummy_app, token_builder):
+    async def test_route(request):
+        assert isinstance(request.user, JWTUser)
+        print(request.scope['app'].debug)
+        return PlainTextResponse('ok')
 
+    dummy_app.add_route('/test', test_route)
+    test_client = TestClient(dummy_app)
 
-@pytest.mark.asyncio
-async def test_JWTAuthenticationBackend_Token(token_builder):
-    backend = JWTAuthenticationBackend()
-    assert backend.secret_key == SECRET
-
-    req = Request(
+    resp = test_client.get('/test',
         headers={
             'Authorization': token_builder
         })
-
-    credentials, user = await backend.authenticate(req)
-    assert isinstance(user, JWTUser)
-    assert isinstance(credentials, AuthCredentials)
+    assert resp.status_code == 200
 
 
-@pytest.mark.asyncio
-async def test_JWTAuthenticationBackend_DebugFalse(token_debug_false_builder):
-    backend = JWTAuthenticationBackend()
-    assert backend.secret_key == SECRET
+def test_jwt_DebugFalse(dummy_app, token_debug_false_builder):
+    async def test_route(request):
+        assert isinstance(request.user, JWTUser)
+        return PlainTextResponse('ok')
 
-    req = Request(
+    dummy_app.add_route('/test', test_route)
+    test_client = TestClient(dummy_app)
+
+    resp = test_client.get('/test',
         headers={
             'Authorization': token_debug_false_builder
         })
-
-    credentials, user = await backend.authenticate(req)
-    assert isinstance(user, JWTUser)
-    assert isinstance(credentials, AuthCredentials)
+    assert resp.status_code == 200
 
 
-@pytest.mark.asyncio
-async def test_JWTAuthenticationBackend_DebugTrue(token_debug_true_builder):
-    backend = JWTAuthenticationBackend()
-    assert backend.secret_key == SECRET
+def test_jwt_DebugTrue(dummy_app, token_debug_true_builder):
+    """
+    A debug token should return a 400 status code with a non debug app
+    """
+    async def test_route(request):
+        return PlainTextResponse('ok')
 
-    req = Request(
+    dummy_app.add_route('/test', test_route)
+    test_client = TestClient(dummy_app)
+
+    resp = test_client.get('/test',
         headers={
             'Authorization': token_debug_true_builder
         })
+    assert resp.status_code == 400
 
-    try:
-        await backend.authenticate(req)
-    except Exception as exc:
-        assert type(exc) == AuthenticationError
 
-@pytest.mark.asyncio
-async def test_JWTAuthenticationBackend_Check(token_debug_false_builder):
-    backend = JWTAuthenticationBackend()
-    assert backend.secret_key == SECRET
+def test_jwt_DebugTrue_DebugApp(dummy_debug_app, token_debug_true_builder):
+    """
+    A debug token should return a 200 status code with a debug app
+    """
+    async def test_route(request):
+        assert isinstance(request.user, JWTUser)
+        return PlainTextResponse('ok')
 
-    req = Request(
-        params={
-            'check':True,
+    dummy_debug_app.add_route('/test', test_route)
+    test_client = TestClient(dummy_debug_app)
+
+    resp = test_client.get('/test',
+        headers={
+            'Authorization': token_debug_true_builder
         })
-
-    credentials, user = await backend.authenticate(req)
-    assert isinstance(user, UnauthenticatedUser)
-    assert isinstance(credentials, AuthCredentials)
-
-
-@pytest.mark.asyncio
-async def test_JWTAuthenticationBackend_CheckUserId(token_debug_false_builder):
-    backend = JWTAuthenticationBackend()
-    assert backend.secret_key == SECRET
-
-    tmp_user_id = str(uuid4())
-
-    req = Request(
-        params={
-            'check': True,
-            'user_id': tmp_user_id
-        })
-
-    credentials, user = await backend.authenticate(req)
-    assert isinstance(user, JWTUser)
-    assert user.__id ==  tmp_user_id
-    assert isinstance(credentials, AuthCredentials)
+    assert resp.status_code == 200
