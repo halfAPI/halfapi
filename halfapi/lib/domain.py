@@ -153,25 +153,6 @@ def gen_router_routes(m_router: ModuleType, path: List[str]) -> Generator:
         path.pop()
 
 
-
-def gen_domain_routes(domain: str, m_dom: ModuleType) -> Generator:
-    """
-    Generator that calls gen_router_routes for a domain
-
-    The domain must have a routers module in it's root-level.
-    If not, it is considered as empty
-    """
-    m_router = None
-    try:
-        m_router = importlib.import_module('.routers', domain)
-    except ImportError:
-        logger.warning('Domain **%s** has no **routers** module', domain)
-        m_router = importlib.import_module('.routers', f'.{domain}')
-
-    if m_router:
-        yield from gen_router_routes(m_router, [domain])
-
-
 def d_domains(config) -> Dict[str, ModuleType]:
     """
     Parameters:
@@ -188,8 +169,8 @@ def d_domains(config) -> Dict[str, ModuleType]:
     try:
         sys.path.append('.')
         return {
-            domain: importlib.import_module(domain)
-            for domain, _ in config.items('domains')
+            domain: importlib.import_module(''.join((domain, module)))
+            for domain, module in config.items('domains')
         }
     except ImportError as exc:
         logger.error('Could not load a domain : %s', exc)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import importlib
-from halfapi.lib.domain import VERBS, gen_domain_routes, gen_router_routes
+from halfapi.lib.domain import VERBS, gen_router_routes
 
 
 def test_gen_router_routes():
@@ -16,11 +16,3 @@ def test_gen_router_routes():
             assert hasattr(route['fct'], '__call__')
             if 'fqtn' in route:
                 assert isinstance(route['fqtn'], str)
-
-
-def test_gen_domain_routes():
-    from . import dummy_domain
-    for path, route in gen_domain_routes(
-            'dummy_domain', dummy_domain):
-        assert isinstance(path, str)
-        assert isinstance(route, dict)

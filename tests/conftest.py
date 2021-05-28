@@ -197,7 +197,7 @@ def project_runner(runner, halfapicli, halfapi_conf_dir):
         ###
         # add dummy domain
         ###
-        create_domain('dummy_domain', '.dummy_domain')
+        create_domain('tests', '.dummy_domain.routers')
         ###
 
         yield halfapicli

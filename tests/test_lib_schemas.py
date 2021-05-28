@@ -9,9 +9,9 @@ from halfapi.app import application
 from halfapi.lib.schemas import schema_dict_dom
 
 def test_schemas_dict_dom():
-    from . import dummy_domain
+    from .dummy_domain import routers
     schema = schema_dict_dom({
-        'dummy_domain':dummy_domain})
+        'dummy_domain':routers})
     assert isinstance(schema, dict)
 
 

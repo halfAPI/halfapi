@@ -24,7 +24,7 @@ from starlette.routing import Route
 from starlette.requests import Request
 from starlette.responses import Response, PlainTextResponse
 
-from halfapi.lib.domain import gen_domain_routes, VERBS
+from halfapi.lib.domain import gen_router_routes, VERBS
 
 
 logger = logging.getLogger('uvicorn.asgi')
@@ -104,7 +104,7 @@ def gen_starlette_routes(d_domains: Dict[str, ModuleType]) -> Generator:
     """
 
     for domain_name, m_domain in d_domains.items():
-        for path, d_route in gen_domain_routes(domain_name, m_domain):
+        for path, d_route in gen_router_routes(m_domain, [domain_name]):
             for verb in VERBS:
                 if verb not in d_route.keys():
                     continue
@@ -148,7 +148,7 @@ def api_routes(m_dom: ModuleType) -> Generator:
         return l_params
 
     d_res = {}
-    for path, d_route in gen_domain_routes(m_dom.__name__, m_dom):
+    for path, d_route in gen_router_routes(m_dom, [m_dom.__name__]):
         d_res[path] = {'fqtn': d_route['fqtn'] }
 
         for verb in VERBS:
