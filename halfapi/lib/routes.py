@@ -84,6 +84,9 @@ def route_acl_decorator(fct: Callable = None, params: List[Dict] = []):
                         **param
                     })
 
+        if 'check' in req.query_params:
+            return PlainTextResponse('')
+
         raise HTTPException(401)
 
     return caller
