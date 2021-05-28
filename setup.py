@@ -54,7 +54,9 @@ setup(
     extras_require={
         "tests":[
             "pytest",
-            "requests"
+            "requests",
+            "pytest-asyncio",
+            "pylint"
         ]
     },
     entry_points={
