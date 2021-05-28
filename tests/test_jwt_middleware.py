@@ -112,7 +112,19 @@ def test_JWTUser():
     assert user.is_authenticated == True
 
 @pytest.mark.asyncio
-async def test_JWTAuthenticationBackend(token_builder):
+async def test_JWTAuthenticationBackend_NoToken(token_builder):
+    backend = JWTAuthenticationBackend()
+    assert backend.secret_key == SECRET
+
+    req = Request()
+
+    credentials, user = await backend.authenticate(req)
+    assert isinstance(user, UnauthenticatedUser)
+    assert isinstance(credentials, AuthCredentials)
+
+
+@pytest.mark.asyncio
+async def test_JWTAuthenticationBackend_Token(token_builder):
     backend = JWTAuthenticationBackend()
     assert backend.secret_key == SECRET
 
