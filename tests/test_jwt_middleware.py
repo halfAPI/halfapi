@@ -122,8 +122,8 @@ async def test_JWTAuthenticationBackend(token_builder):
         })
 
     credentials, user = await backend.authenticate(req)
-    assert type(user) == JWTUser
-    assert type(credentials) == AuthCredentials
+    assert isinstance(user, JWTUser)
+    assert isinstance(credentials, AuthCredentials)
 
 
 @pytest.mark.asyncio
@@ -137,8 +137,8 @@ async def test_JWTAuthenticationBackend_DebugFalse(token_debug_false_builder):
         })
 
     credentials, user = await backend.authenticate(req)
-    assert type(user) == JWTUser
-    assert type(credentials) == AuthCredentials
+    assert isinstance(user, JWTUser)
+    assert isinstance(credentials, AuthCredentials)
 
 
 @pytest.mark.asyncio
