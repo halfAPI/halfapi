@@ -101,45 +101,6 @@ def token_dirser():
 
     return res['token']
 
-
-"""
-def test_token(token):
-    client = TestClient(app)
-
-    r = client.get('/user', headers={'Authorization':token})
-    res = False
-    try:
-        res = json.loads(r.text)
-    except JSONDecodeError:
-        raise Exception('Malformed response from /user request')
-
-    assert 'user' in res.keys()
-    assert 'user_id' in res['user'].keys()
-    assert 'token' in res['user'].keys()
-    assert 'payload' in res['user'].keys()
-
-def test_labopers(token, token_dirser):
-    res = requests.get('http://127.0.0.1:8080/api/v4/organigramme/laboratoire/personnel',
-        params={
-            'q': 'limit:10|format:csv'
-        },
-        headers={
-            'Authorization': token
-        })
-
-    assert res.status_code == 401
-
-    res = requests.get('http://127.0.0.1:8080/api/v4/organigramme/laboratoire/personnel',
-        params={
-            'q': 'limit:10|format:csv'
-        },
-        headers={
-            'Authorization': token_dirser
-        })
-
-    assert res.status_code == 200
-"""
-
 def test_JWTUser():
     uid = uuid4()
     token = '{}'
