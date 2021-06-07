@@ -6,7 +6,7 @@ lib/domain.py The domain-scoped utility functions
 import sys
 import importlib
 import logging
-from types import ModuleType
+from types import ModuleType, FunctionType
 from typing import Generator, Dict, List
 
 logger = logging.getLogger("uvicorn.asgi")
@@ -188,6 +188,9 @@ def router_acls(route_params: Dict, path: List, m_router: ModuleType) -> Generat
         else:
             for param in params:
                 acl = param.get('acl')
+                if not isinstance(acl, FunctionType):
+                    continue
+
                 yield acl.__name__, acl
 
 

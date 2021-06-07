@@ -169,6 +169,9 @@ def api_acls(request):
     for domain, m_domain in domains.items():
         res[domain] = {}
         for acl_name, fct in domain_acls(m_domain, [domain]):
+            if not isinstance(fct, FunctionType):
+                continue
+
             fct_result = fct.__doc__.strip() if doc and fct.__doc__ else fct(request)
             if acl_name in res[domain]:
                 continue
