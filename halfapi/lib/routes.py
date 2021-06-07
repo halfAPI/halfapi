@@ -24,7 +24,8 @@ from starlette.routing import Route
 from starlette.requests import Request
 from starlette.responses import Response, PlainTextResponse
 
-from halfapi.lib.domain import gen_router_routes, VERBS
+from halfapi.lib.domain import gen_router_routes, VERBS, domain_acls
+from ..conf import DOMAINSDICT
 
 
 logger = logging.getLogger('uvicorn.asgi')
@@ -163,11 +164,15 @@ def api_acls(request):
     """ Returns the list of possible ACLs
     """
     res = {}
+    domains = DOMAINSDICT()
     doc = 'doc' in request.query_params
-    for domain, d_domain_acl in request.scope['acl'].items():
+    for domain, m_domain in domains.items():
         res[domain] = {}
-        for acl_name, fct in d_domain_acl.items():
+        for acl_name, fct in domain_acls(m_domain, [domain]):
             fct_result = fct.__doc__.strip() if doc and fct.__doc__ else fct(request)
+            if acl_name in res[domain]:
+                continue
+
             if isinstance(fct_result, FunctionType):
                 fct_result = fct()(request)
             res[domain][acl_name] = fct_result

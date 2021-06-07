@@ -175,3 +175,47 @@ def d_domains(config) -> Dict[str, ModuleType]:
     except ImportError as exc:
         logger.error('Could not load a domain : %s', exc)
         raise exc
+
+def router_acls(route_params: Dict, path: List, m_router: ModuleType) -> Generator:
+    d_res = {'fqtn': route_params.get('FQTN')}
+
+    for verb in VERBS:
+        params = route_params.get(verb)
+        if params is None:
+            continue
+        if len(params) == 0:
+            logger.error('No ACL for route [{%s}] %s', verb, "/".join(path))
+        else:
+            for param in params:
+                acl = param.get('acl')
+                yield acl.__name__, acl
+
+
+def domain_acls(m_router, path):
+    if not hasattr(m_router, 'ROUTES'):
+        logger.error('Missing *ROUTES* constant in *%s*', m_router.__name__)
+        raise Exception(f'No ROUTES constant for {m_router.__name__}')
+
+
+    routes = m_router.ROUTES
+
+    for subpath, route_params in routes.items():
+        path.append(subpath)
+
+        yield from router_acls(route_params, path, m_router)
+
+        subroutes = route_params.get('SUBROUTES', [])
+        for subroute in subroutes:
+            logger.debug('Processing subroute **%s** - %s', subroute, m_router.__name__)
+            path.append(subroute)
+            try:
+                submod = importlib.import_module(f'.{subroute}', m_router.__name__)
+            except ImportError as exc:
+                logger.error('Failed to import subroute **{%s}**', subroute)
+                raise exc
+
+            yield from domain_acls(submod, path)
+
+            path.pop()
+
+        path.pop()
