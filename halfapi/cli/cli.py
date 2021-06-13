@@ -28,5 +28,6 @@ if IS_PROJECT:
     from . import run
 elif IS_HOP_PROJECT:
     from . import init_hop
+    from . import route
 else:
     from . import init

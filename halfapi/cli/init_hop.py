@@ -1,4 +1,5 @@
 import os
+import subprocess
 from configparser import ConfigParser
 from half_orm.model import Model
 
@@ -27,6 +28,8 @@ def init():
             if len(query.strip()) == 0:
                 continue
             model.execute_query(query.strip())
+
+    subprocess.run(['hop', 'update', '-f'])
 
     click.echo('halfapi schema has been initialized')
     click.echo('use halfapi route command to create your first route')

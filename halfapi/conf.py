@@ -56,6 +56,10 @@ SECRET = ''
 IS_PROJECT = os.path.isfile('.halfapi/config')
 IS_HOP_PROJECT = os.path.isfile('.hop/config')
 
+ENDPOINT_TYPES = [
+    'JSON'
+]
+
 
 
 default_config = {

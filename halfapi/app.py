@@ -10,12 +10,10 @@ It defines the following globals :
 
 """
 import logging
-import time
 
 # asgi framework
 from starlette.applications import Starlette
 from starlette.authentication import UnauthenticatedUser
-from starlette.middleware import Middleware
 from starlette.routing import Route
 from starlette.middleware.authentication import AuthenticationMiddleware
 
