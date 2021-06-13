@@ -9,14 +9,17 @@ from half_orm.model import Model
 from .cli import cli
 from halfapi.lib.domain import VERBS
 
-
-def get_package_module(name):
+def get_package_name():
     hop_conf_path = os.path.join('.hop', 'config')
     config = ConfigParser()
     config.read([ hop_conf_path ])
 
     assert os.path.isdir(config.get('halfORM', 'package_name'))
-    package_name = config.get('halfORM', 'package_name')
+    return config.get('halfORM', 'package_name')
+
+
+def get_package_module(name):
+    package_name = get_package_name()
 
     if sys.path[0] != '.':
         sys.path.insert(0, '.')
@@ -65,7 +68,7 @@ def endpoint_create(verb, endpoint, endpoint_type):
         EndpointType = EndpointType_mod.EndpointType
         EndpointType.create(endpoint_type)
 
-        return endpoint_create(package_name, verb, endpoint, endpoint_type)
+        return endpoint_create(verb, endpoint, endpoint_type)
 
         
 @click.option('--type', prompt=True, type=str, default='JSON')
@@ -93,3 +96,78 @@ def list():
     for endpoint in Endpoint().select():
         elt = Endpoint(**endpoint)
         click.echo(f'{elt.method}: {elt.path}')
+
+
+@click.option('--target', default='./Lib/api', type=str)
+@route.command()
+def update(target):
+    """
+    The "halfapi route update" command for hop projects
+
+    Creates the router tree under <target>, and add missing methods
+    for endpoints, that raise NotImplementedError
+    """
+    from time import sleep
+
+    package = get_package_name()
+    target_path = os.path.join(os.path.abspath('.'), package, target)
+
+    if not os.path.isdir(target_path):
+        raise Exception('Missing target path {}'.format(target_path))
+
+    click.echo('Will create router tree in {}'.format(target_path))
+    proceed = click.prompt(
+        'Proceed? [Y/n]',
+        default='y',
+        type=click.Choice(['Y', 'n'], case_sensitive=False)
+    )
+
+    if proceed.lower() == 'n':
+        sys.exit()
+
+    Endpoint_mod = get_package_module('endpoint')
+    Endpoint = Endpoint_mod.Endpoint
+
+    missing_methods = {}
+
+    for endpoint in Endpoint().select():
+        elt = Endpoint(**endpoint)
+        path = elt.path
+        stack = [target_path]
+
+        for segment in path.split('/'):
+            stack.append(segment)
+            if os.path.isdir(os.path.join(*stack)):
+                continue
+
+            print(f'Create {os.path.join(*stack)}')
+            os.mkdir(os.path.join(*stack))
+            sleep(.1)
+
+        endpoint_mod_path = '.'.join([package, *target.split('/')[1:], *path.split('/')[1:]])
+        try:
+            endpoint_mod = importlib.import_module(endpoint_mod_path)
+            if not hasattr(endpoint_mod, str(elt.method)):
+                if endpoint_mod.__path__[0] not in missing_methods:
+                    missing_methods[endpoint_mod.__path__[0]] = []
+
+                missing_methods[endpoint_mod.__path__[0]].append(str(elt.method))
+
+        except Exception as exc:
+            print(f'Could not import {endpoint_mod_path}, may be a bug')
+            print(exc)
+            endpoint_mod_path = endpoint_mod_path.replace('.', '/')
+            if endpoint_mod_path not in missing_methods:
+                missing_methods[endpoint_mod_path] = []
+
+            missing_methods[endpoint_mod_path].append(str(elt.method))
+
+            pass
+
+
+    for path, methods in missing_methods.items():
+        with open(os.path.join(path, '__init__.py'), 'a+') as f:
+            for method in methods:
+                f.write('\n'.join((
+                    f'def {method}():', 
+                    '    raise NotImplementedError\n')))
