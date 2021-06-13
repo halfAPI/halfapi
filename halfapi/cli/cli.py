@@ -7,7 +7,7 @@ not loaded otherwise.
 """
 # builtins
 import click
-from ..conf import IS_PROJECT
+from ..conf import IS_PROJECT, IS_HOP_PROJECT
 
 @click.group(invoke_without_command=True)
 @click.option('--version', is_flag=True)
@@ -26,6 +26,7 @@ if IS_PROJECT:
     from . import config
     from . import domain
     from . import run
-
+elif IS_HOP_PROJECT:
+    from . import init_hop
 else:
     from . import init

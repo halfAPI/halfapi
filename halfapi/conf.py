@@ -54,6 +54,7 @@ PORT = '3000'
 SECRET = ''
 
 IS_PROJECT = os.path.isfile('.halfapi/config')
+IS_HOP_PROJECT = os.path.isfile('.hop/config')
 
 
 
