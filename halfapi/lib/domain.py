@@ -3,11 +3,14 @@
 lib/domain.py The domain-scoped utility functions
 """
 
+import os
 import sys
 import importlib
 import logging
 from types import ModuleType, FunctionType
 from typing import Generator, Dict, List
+
+from halfapi.lib import acl
 
 logger = logging.getLogger("uvicorn.asgi")
 
@@ -106,7 +109,8 @@ def gen_routes(route_params: Dict, path: List, m_router: ModuleType) -> Generato
 
         d_res[verb] = {'fct': fct, 'params': params}
 
-    yield f"/{'/'.join([ elt for elt in path if elt ])}", d_res
+    if len(d_res.keys()) > 1:
+        yield f"/{'/'.join([ elt for elt in path if elt ])}", d_res
 
 
 def gen_router_routes(m_router: ModuleType, path: List[str]) -> Generator:
@@ -125,11 +129,21 @@ def gen_router_routes(m_router: ModuleType, path: List[str]) -> Generator:
     """
 
     if not hasattr(m_router, 'ROUTES'):
-        logger.error('Missing *ROUTES* constant in *%s*', m_router.__name__)
-        raise Exception(f'No ROUTES constant for {m_router.__name__}')
+        routes = {'':{}}
+        for verb in VERBS:
+            if hasattr(m_router, verb.lower()):
+                routes[''][verb.upper()] = [{
+                    'acl': acl.public
+                }]
+            else:
+                print(f'no {verb.lower()} in {m_router}')
 
-
-    routes = m_router.ROUTES
+        routes['']['SUBROUTES'] = []
+        for item in os.listdir(list(m_router.__path__)[0]):
+            if os.path.isdir(os.path.join(list(m_router.__path__)[0], item)):
+                routes['']['SUBROUTES'].append(item)
+    else:
+        routes = getattr(m_router, 'ROUTES')
 
     for subpath, route_params in routes.items():
         path.append(subpath)

@@ -34,7 +34,7 @@ def test_create_route(dummy_project, create_route):
     assert hasattr(mod, 'post')
     assert hasattr(mod, 'put')
 
-def test_create_route(dummy_project, create_route):
+def test_has_route(dummy_project, create_route):
     
     create_route(os.path.join(dummy_project[0], dummy_project[1]),
         'get', '/test')
