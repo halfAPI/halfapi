@@ -228,3 +228,42 @@ def dummy_debug_app():
 @pytest.fixture
 def test_client(dummy_app):
     return TestClient(dummy_app)
+
+@pytest.fixture
+def create_route():
+    def wrapped(domain_path, method, path):
+        stack = [domain_path, *path.split('/')[1:]]
+        for i in range(len(stack)):
+            if len(stack[i]) == 0:
+                continue
+
+            path = os.path.join(*stack[0:i+1])
+            if os.path.isdir(os.path.join(path)):
+                continue
+            os.mkdir(path)
+        init_path = os.path.join(*stack, '__init__.py')
+        with open(init_path, 'a+') as f:
+            f.write(f'\ndef {method}():\n    raise NotImplementedError')
+
+    return wrapped
+
+
+
+@pytest.fixture
+def dummy_project():
+    halfapi_dirname = tempfile.mkdtemp(prefix='halfapi_')
+    domain_dirname = os.path.join(halfapi_dirname, 'test_domain')
+    halfapi_path = os.path.join(halfapi_dirname, '.halfapi')
+    os.mkdir(halfapi_path)
+    os.mkdir(os.path.join(domain_dirname))
+    os.mkdir(os.path.join(domain_dirname, 'test_router'))
+
+    with open(os.path.join(halfapi_path, 'config'), 'w') as f:
+        f.writelines([
+            '[domains]',
+            f'test_domain = test_router'
+        ])
+    with open(os.path.join(halfapi_dirname, 'test_domain', '__init__.py'), 'w') as f:
+        f.write('')
+
+    return (halfapi_dirname, 'test_domain')
