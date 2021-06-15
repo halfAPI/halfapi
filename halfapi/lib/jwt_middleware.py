@@ -140,7 +140,7 @@ class JWTAuthenticationBackend(AuthenticationBackend):
                     key=self.secret_key,
                     algorithms=[self.algorithm],
                     options={
-                        'verify_signature': bool(PRODUCTION)
+                        'verify_signature': True
                     })
 
             if is_check_call:
