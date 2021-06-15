@@ -5,6 +5,7 @@ import subprocess
 import time
 import pytest
 from starlette.routing import Route
+from starlette.testclient import TestClient
 
 from halfapi.lib.routes import gen_starlette_routes
 
@@ -39,6 +40,13 @@ def test_has_route(dummy_project, create_route):
     create_route(os.path.join(dummy_project[0], dummy_project[1]),
         'get', '/test')
 
+    create_route(os.path.join(dummy_project[0], dummy_project[1]),
+        'post', '/test/tutu')
+
+    create_route(os.path.join(dummy_project[0], dummy_project[1]),
+        'patch', '/test/ID')
+
+
     os.chdir(dummy_project[0])
     sys.path.insert(0, '.')
     try:
@@ -50,3 +58,21 @@ def test_has_route(dummy_project, create_route):
 
     for elt in gen_starlette_routes({dummy_project[1]: mod}):
         assert(isinstance(elt, Route))
+
+
+
+def test_get_route(dummy_project, create_route):
+    
+    create_route(os.path.join(dummy_project[0], dummy_project[1]),
+        'get', '/test')
+
+    create_route(os.path.join(dummy_project[0], dummy_project[1]),
+        'post', '/test/tutu')
+
+    create_route(os.path.join(dummy_project[0], dummy_project[1]),
+        'post', '/test/ID')
+
+    from halfapi.app import application
+    c = TestClient(application)
+    r = c.get('/test')
+    assert r.status_code == 500
