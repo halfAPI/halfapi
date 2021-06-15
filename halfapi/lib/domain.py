@@ -26,7 +26,9 @@ def route_decorator(fct: Callable = None, ret_type: str = 'json'):
         @acl.args_check
         async def wrapped(request, *args, **kwargs):
             return ORJSONResponse(
-                fct(**request.path_params, data=kwargs.get('data')))
+                    fct(**request.path_params, halfapi={'user': request.user if
+                        'user' in request else None,
+                        'config': request.scope['config']}, data=kwargs.get('data')))
     else:
         raise Exception('Return type not available')
 
@@ -150,11 +152,20 @@ def gen_router_routes(m_router: ModuleType, path: List[str]) -> Generator:
 
     if not hasattr(m_router, 'ROUTES'):
         routes = {'':{}}
+        acls = m_router.ACLS if hasattr(m_router, 'ACLS') else {}
+
         for verb in VERBS:
-            if hasattr(m_router, verb.lower()):
-                routes[''][verb.upper()] = [{
-                    'acl': acl.public
-                }]
+            if not hasattr(m_router, verb.lower()):
+                continue
+
+            """ There is a "verb" route in the router
+            """
+
+            if verb.upper() not in acls:
+                continue
+
+            routes[''][verb.upper()] = []
+            routes[''][verb.upper()] = m_router.ACLS[verb.upper()].copy()
 
         routes['']['SUBROUTES'] = []
         for item in os.listdir(list(m_router.__path__)[0]):
@@ -198,14 +209,14 @@ def d_domains(config) -> Dict[str, ModuleType]:
 
         dict[str, ModuleType]
     """
-    if not config.has_section('domains'):
+    if not 'domains' in config:
         return {}
 
     try:
         sys.path.append('.')
         return {
             domain: importlib.import_module(''.join((domain, module)))
-            for domain, module in config.items('domains')
+            for domain, module in config['domains'].items()
         }
     except ImportError as exc:
         logger.error('Could not load a domain : %s', exc)

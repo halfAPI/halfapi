@@ -47,6 +47,7 @@ logger = logging.getLogger('halfapi')
 
 PROJECT_NAME = os.path.basename(os.getcwd())
 DOMAINSDICT = lambda: {}
+DOMAINS = {}
 PRODUCTION = False
 LOGLEVEL = 'info'
 HOST = '127.0.0.1'
@@ -56,6 +57,12 @@ SECRET = ''
 IS_PROJECT = os.path.isfile('.halfapi/config')
 
 
+CONFIG = {
+    'project_name': PROJECT_NAME,
+    'production': PRODUCTION,
+    'secret': SECRET,
+    'domains': DOMAINS
+}
 
 default_config = {
     'project': {
@@ -123,12 +130,14 @@ if IS_PROJECT:
         raise Exception('Need a project name as argument')
 
     DOMAINSDICT = lambda: d_domains(config)
+    DOMAINS = DOMAINSDICT()
     HOST = config.get('project', 'host')
     PORT = config.getint('project', 'port')
 
     try:
         with open(config.get('project', 'secret')) as secret_file:
-            SECRET = secret_file.read()
+            SECRET = secret_file.read().strip()
+            CONFIG['secret'] = SECRET.strip()
             # Set the secret so we can use it in domains
             os.environ['HALFAPI_SECRET'] = SECRET
     except FileNotFoundError as exc:

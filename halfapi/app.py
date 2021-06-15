@@ -23,7 +23,7 @@ from timing_asgi import TimingMiddleware
 from timing_asgi.integrations import StarletteScopeToName
 
 # module libraries
-from halfapi.conf import config, SECRET, PRODUCTION, DOMAINSDICT
+from halfapi.conf import CONFIG, SECRET, PRODUCTION, DOMAINSDICT
 
 from .lib.domain_middleware import DomainMiddleware
 from .lib.timing import HTimingClient
@@ -76,7 +76,7 @@ application = Starlette(
 if DOMAINSDICT:
     application.add_middleware(
         DomainMiddleware,
-        config=config
+        config=CONFIG
     )
 
 if SECRET:

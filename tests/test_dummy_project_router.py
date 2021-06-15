@@ -74,5 +74,5 @@ def test_get_route(dummy_project, create_route):
 
     from halfapi.app import application
     c = TestClient(application)
-    r = c.get('/test')
-    assert r.status_code == 500
+    r = c.get(f'/{dummy_project[1]}/test')
+    assert r.status_code == 200

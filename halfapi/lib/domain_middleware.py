@@ -57,8 +57,7 @@ class DomainMiddleware(BaseHTTPMiddleware):
             current_domain = cur_path.split('/')[0]
 
         try:
-            config_section = self.config.items(current_domain)
-            scope_['config'] = dict(config_section)
+            scope_['config'] = self.config.copy()
         except configparser.NoSectionError:
             logger.debug(
                 'No specific configuration for domain **%s**', current_domain)
