@@ -6,15 +6,32 @@ lib/domain.py The domain-scoped utility functions
 import os
 import sys
 import importlib
+import inspect
 import logging
 from types import ModuleType, FunctionType
-from typing import Generator, Dict, List
+from typing import Callable, Generator, Dict, List
 
 from halfapi.lib import acl
+from halfapi.lib.responses import ORJSONResponse
 
 logger = logging.getLogger("uvicorn.asgi")
 
 VERBS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE')
+
+
+def route_decorator(fct: Callable = None, ret_type: str = 'json'):
+    """ Returns an async function that can be mounted on a router
+    """
+    if ret_type == 'json':
+        @acl.args_check
+        async def wrapped(request, *args, **kwargs):
+            return ORJSONResponse(
+                fct(**request.path_params, data=kwargs.get('data')))
+    else:
+        raise Exception('Return type not available')
+
+    return wrapped
+
 
 def get_fct_name(http_verb: str, path: str) -> str:
     """
@@ -106,6 +123,9 @@ def gen_routes(route_params: Dict, path: List, m_router: ModuleType) -> Generato
         except AttributeError as exc:
             logger.error('%s is not defined in %s', fct_name, m_router.__name__)
             continue
+
+        if not inspect.iscoroutinefunction(fct):
+            fct = route_decorator(fct)
 
         d_res[verb] = {'fct': fct, 'params': params}
 

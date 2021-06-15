@@ -66,26 +66,31 @@ def args_check(fct):
             return ', '.join(array)
 
 
-        args_d = kwargs.get('args', {})
-        required = args_d.get('required', set())
+        args_d = kwargs.get('args', None)
+        if args_d is not None:
+            required = args_d.get('required', set())
 
-        missing = []
-        data = {}
+            missing = []
+            data = {}
 
-        for key in required:
-            data[key] = data_.pop(key, None)
-            if data[key] is None:
-                missing.append(key)
+            for key in required:
+                data[key] = data_.pop(key, None)
+                if data[key] is None:
+                    missing.append(key)
 
-        if missing:
-            raise HTTPException(
-                400,
-                f"Missing value{plural(missing)} for: {comma_list(missing)}!")
+            if missing:
+                raise HTTPException(
+                    400,
+                    f"Missing value{plural(missing)} for: {comma_list(missing)}!")
 
-        optional = args_d.get('optional', set())
-        for key in optional:
-            if key in data_:
-                data[key] = data_[key]
+            optional = args_d.get('optional', set())
+            for key in optional:
+                if key in data_:
+                    data[key] = data_[key]
+        else:
+            """ Unsafe mode, without specified arguments
+            """
+            data = data_
 
         kwargs['data'] = data
 
