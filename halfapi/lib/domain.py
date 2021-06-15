@@ -135,8 +135,6 @@ def gen_router_routes(m_router: ModuleType, path: List[str]) -> Generator:
                 routes[''][verb.upper()] = [{
                     'acl': acl.public
                 }]
-            else:
-                print(f'no {verb.lower()} in {m_router}')
 
         routes['']['SUBROUTES'] = []
         for item in os.listdir(list(m_router.__path__)[0]):
@@ -153,7 +151,10 @@ def gen_router_routes(m_router: ModuleType, path: List[str]) -> Generator:
         subroutes = route_params.get('SUBROUTES', [])
         for subroute in subroutes:
             logger.debug('Processing subroute **%s** - %s', subroute, m_router.__name__)
-            path.append(subroute)
+            if ':' in subroute:
+                path.append(f'{{{subroute}}}')
+            else:
+                path.append(subroute)
             try:
                 submod = importlib.import_module(f'.{subroute}', m_router.__name__)
             except ImportError as exc:
