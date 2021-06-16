@@ -212,8 +212,8 @@ def dummy_app():
         backend=JWTAuthenticationBackend(secret_key='dummysecret')
     )
     return app
-@pytest.fixture
 
+@pytest.fixture
 def dummy_debug_app():
     app = Starlette(debug=True)
     app.add_route('/',
@@ -251,19 +251,23 @@ def create_route():
 
 @pytest.fixture
 def dummy_project():
-    halfapi_dirname = tempfile.mkdtemp(prefix='halfapi_')
-    domain_dirname = os.path.join(halfapi_dirname, 'test_domain')
-    halfapi_path = os.path.join(halfapi_dirname, '.halfapi')
-    os.mkdir(halfapi_path)
-    os.mkdir(os.path.join(domain_dirname))
-    os.mkdir(os.path.join(domain_dirname, 'test_router'))
+    halfapi_config = tempfile.mktemp()
+    halfapi_secret = tempfile.mktemp()
+    domain = 'dummy_domain'
 
-    with open(os.path.join(halfapi_path, 'config'), 'w') as f:
+    with open(halfapi_config, 'w') as f:
         f.writelines([
-            '[domains]',
-            f'test_domain = test_router'
+            '[project]\n',
+            'name = lirmm_api\n',
+            'halfapi_version = 0.5.0\n',
+            f'secret = {halfapi_secret}\n',
+            'port = 3050\n',
+            'loglevel = debug\n',
+            '[domains]\n',
+            f'{domain}= .routers'
         ])
-    with open(os.path.join(halfapi_dirname, 'test_domain', '__init__.py'), 'w') as f:
-        f.write('')
 
-    return (halfapi_dirname, 'test_domain')
+    with open(halfapi_secret, 'w') as f:
+        f.write('turlututu')
+
+    return (halfapi_config, 'dummy_domain', 'routers')
