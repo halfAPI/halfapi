@@ -42,7 +42,7 @@ class DomainMiddleware(BaseHTTPMiddleware):
 
         self.domains = self.config.get('domains', {})
 
-        if len(domain) == 0:
+        if len(domain) == 0 or domain == 'halfapi':
             for domain in self.domains:
                 self.api[domain], self.acl[domain] = api_routes(self.domains[domain])
         elif domain in self.domains:
