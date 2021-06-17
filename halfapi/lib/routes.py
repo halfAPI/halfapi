@@ -16,7 +16,7 @@ Exception :
 from datetime import datetime
 from functools import partial, wraps
 import logging
-from typing import Callable, List, Dict, Generator
+from typing import Callable, List, Dict, Generator, Tuple
 from types import ModuleType, FunctionType
 
 from starlette.exceptions import HTTPException
@@ -105,22 +105,19 @@ def gen_starlette_routes(d_domains: Dict[str, ModuleType]) -> Generator:
     """
 
     for domain_name, m_domain in d_domains.items():
-        for path, d_route in gen_router_routes(m_domain, [domain_name]):
-            for verb in VERBS:
-                if verb not in d_route.keys():
-                    continue
-
-                yield (
-                    Route(path,
-                        route_acl_decorator(
-                            d_route[verb]['fct'],
-                            d_route[verb]['params']
-                        ),
-                        methods=[verb])
-                )
+        for path, verb, fct, params in gen_router_routes(m_domain, []):
+            yield (
+                Route(f'/{domain_name}/{path}',
+                    route_acl_decorator(
+                        fct,
+                        params
+                    ),
+                    methods=[verb])
+            )
 
 
-def api_routes(m_dom: ModuleType) -> Generator:
+
+def api_routes(m_dom: ModuleType) -> Tuple[Dict, Dict]:
     """
     Yields the description objects for HalfAPI app routes
 
@@ -128,7 +125,7 @@ def api_routes(m_dom: ModuleType) -> Generator:
         m_dom (ModuleType): the halfapi module
 
     Returns:
-        Generator(Dict)
+        (Dict, Dict)
     """
 
     d_acls = {}
@@ -137,6 +134,7 @@ def api_routes(m_dom: ModuleType) -> Generator:
         l_params = []
 
         for param in params:
+
             if 'acl' not in param.keys() or not param['acl']:
                 continue
 
@@ -149,13 +147,10 @@ def api_routes(m_dom: ModuleType) -> Generator:
         return l_params
 
     d_res = {}
-    for path, d_route in gen_router_routes(m_dom, [m_dom.__name__]):
-        d_res[path] = {'fqtn': d_route['fqtn'] }
-
-        for verb in VERBS:
-            if verb not in d_route.keys():
-                continue
-            d_res[path][verb] = str_acl(d_route[verb]['params'])
+    for path, verb, fct, params in gen_router_routes(m_dom, []):
+        if path not in d_res:
+            d_res[path] = {}
+        d_res[path][verb] = str_acl(params)
 
     return d_res, d_acls
 
@@ -196,7 +191,7 @@ def debug_routes():
     yield Route('/halfapi/log', debug_log)
 
     async def error_code(request: Request, *args, **kwargs):
-        code = request.path_params.get('code')
+        code = request.path_params['code']
         raise HTTPException(code)
 
     yield Route('/halfapi/error/{code:int}', error_code)

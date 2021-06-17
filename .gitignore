@@ -138,3 +138,6 @@ cython_debug/
 
 domains/
 .vscode
+
+# Vim swap files
+*.swp

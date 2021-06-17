@@ -1,0 +1,1 @@
+VERBS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE')

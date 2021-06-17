@@ -3,15 +3,71 @@
 lib/domain.py The domain-scoped utility functions
 """
 
+import os
+import re
 import sys
 import importlib
+import inspect
 import logging
 from types import ModuleType, FunctionType
-from typing import Generator, Dict, List
+from typing import Any, Callable, Coroutine, Generator
+from typing import Dict, List, Tuple, Iterator
+import inspect
+
+from starlette.exceptions import HTTPException
+
+from halfapi.lib import acl
+from halfapi.lib.responses import ORJSONResponse
+from halfapi.lib.router import read_router
+from halfapi.lib.constants import VERBS
 
 logger = logging.getLogger("uvicorn.asgi")
 
-VERBS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE')
+class MissingAclError(Exception):
+    pass
+
+class PathError(Exception):
+    pass
+
+class UnknownPathParameterType(Exception):
+    pass
+
+class UndefinedRoute(Exception):
+    pass
+
+class UndefinedFunction(Exception):
+    pass
+
+def route_decorator(fct: FunctionType, ret_type: str = 'json') -> Coroutine:
+    """ Returns an async function that can be mounted on a router
+    """
+    if ret_type == 'json':
+        @acl.args_check
+        async def wrapped(request, *args, **kwargs):
+            fct_args_spec = inspect.getfullargspec(fct).args
+            fct_args = request.path_params.copy()
+
+            if 'halfapi' in fct_args_spec:
+                fct_args['halfapi'] = {
+                    'user': request.user if
+                        'user' in request else None,
+                    'config': request.scope['config']
+                }
+
+
+            if 'data' in fct_args_spec:
+                fct_args['data'] = kwargs.get('data')
+
+            try:
+                return ORJSONResponse(fct(**fct_args))
+            except NotImplementedError as exc:
+                raise HTTPException(501) from exc
+
+    else:
+        raise Exception('Return type not available')
+
+    return wrapped
+
 
 def get_fct_name(http_verb: str, path: str) -> str:
     """
@@ -57,59 +113,53 @@ def get_fct_name(http_verb: str, path: str) -> str:
 
     return '_'.join(fct_name)
 
-def gen_routes(route_params: Dict, path: List, m_router: ModuleType) -> Generator:
+def gen_routes(m_router: ModuleType,
+    verb: str,
+    path: List[str],
+    params: List[Dict]) -> Tuple[FunctionType, Dict]:
     """
-    Generates a tuple of the following form for a specific path:
-
-    "/path/to/route", {
-        "GET": {
-            "fct": endpoint_fct,
-            "params": [
-                { "acl": acl_fct, [...] }
-            ]
-        },
-        [...]
-    }
+    Returns a tuple of the function associatied to the verb and path arguments,
+    and the dictionary of it's acls
 
     Parameters:
+        - m_router (ModuleType): The module containing the function definition
 
-        - route_params (Dict): Contains the following keys :
-            - one or more HTTP VERB (if none, route is not treated)
-            - one or zero FQTN (if none, fqtn is set to None)
+        - verb (str): The HTTP verb for the route (GET, POST, ...)
 
         - path (List): The route path, as a list (each item being a level of
             deepness), from the lowest level (domain) to the highest
 
-        - m_router (ModuleType): The parent router module
+        - params (Dict): The acl list of the following format :
+            [{'acl': Function, 'args': {'required': [], 'optional': []}}]
 
-    Yields:
 
-        (str, Dict): The path routes description
+    Returns:
+
+        (Function, Dict): The destination function and the acl dictionary
 
     """
-    d_res = {'fqtn': route_params.get('FQTN')}
+    if len(params) == 0:
+        raise MissingAclError('[{}] {}'.format(verb, '/'.join(path)))
 
-    for verb in VERBS:
-        params = route_params.get(verb)
-        if params is None:
-            continue
-        if len(params) == 0:
-            logger.error('No ACL for route [{%s}] %s', verb, "/".join(path))
+    if len(path) == 0:
+        logger.error('Empty path for [{%s}]', verb)
+        raise PathError()
 
-        try:
-            fct_name = get_fct_name(verb, path[-1])
-            fct = getattr(m_router, fct_name)
-            logger.debug('%s defined in %s', fct.__name__, m_router.__name__)
-        except AttributeError as exc:
-            logger.error('%s is not defined in %s', fct_name, m_router.__name__)
-            continue
-
-        d_res[verb] = {'fct': fct, 'params': params}
-
-    yield f"/{'/'.join([ elt for elt in path if elt ])}", d_res
+    fct_name = get_fct_name(verb, path[-1])
+    if hasattr(m_router, fct_name):
+        fct = getattr(m_router, fct_name)
+    else:
+        raise UndefinedFunction('{}.{}'.format(m_router.__name__, fct_name or ''))
 
 
-def gen_router_routes(m_router: ModuleType, path: List[str]) -> Generator:
+    if not inspect.iscoroutinefunction(fct):
+        return route_decorator(fct), params
+    else:
+        return fct, params
+
+
+def gen_router_routes(m_router: ModuleType, path: List[str]) -> \
+    Iterator[Tuple[str, str, Coroutine, List]]:
     """
     Recursive generatore that parses a router (or a subrouter)
     and yields from gen_routes
@@ -121,32 +171,42 @@ def gen_router_routes(m_router: ModuleType, path: List[str]) -> Generator:
 
     Yields:
 
-        (str, Dict): The path routes description from **gen_routes**
+        (str, str, Coroutine, List): A tuple containing the path, verb,
+            function and parameters of the route
     """
 
-    if not hasattr(m_router, 'ROUTES'):
-        logger.error('Missing *ROUTES* constant in *%s*', m_router.__name__)
-        raise Exception(f'No ROUTES constant for {m_router.__name__}')
-
-
-    routes = m_router.ROUTES
-
-    for subpath, route_params in routes.items():
+    for subpath, params in read_router(m_router).items():
         path.append(subpath)
 
-        yield from gen_routes(route_params, path, m_router)
+        for verb in VERBS:
+            if verb not in params:
+                continue
+            yield ('/'.join(filter(lambda x: len(x) > 0, path)),
+                verb,
+                *gen_routes(m_router, verb, path, params[verb])
+            )
 
-        subroutes = route_params.get('SUBROUTES', [])
-        for subroute in subroutes:
-            logger.debug('Processing subroute **%s** - %s', subroute, m_router.__name__)
-            path.append(subroute)
+        for subroute in params.get('SUBROUTES', []):
+            #logger.debug('Processing subroute **%s** - %s', subroute, m_router.__name__)
+            param_match = re.fullmatch('^([A-Z_]+)_([a-z]+)$', subroute)
+            if param_match is not None:
+                try:
+                    path.append('{{{}:{}}}'.format(
+                        param_match.groups()[0].lower(),
+                        param_match.groups()[1]))
+                except AssertionError:
+                    raise UnknownPathParameterType(subroute)
+            else:
+                path.append(subroute)
+
             try:
-                submod = importlib.import_module(f'.{subroute}', m_router.__name__)
+                yield from gen_router_routes(
+                    importlib.import_module(f'.{subroute}', m_router.__name__),
+                    path)
+
             except ImportError as exc:
                 logger.error('Failed to import subroute **{%s}**', subroute)
                 raise exc
-
-            yield from gen_router_routes(submod, path)
 
             path.pop()
 
@@ -163,14 +223,14 @@ def d_domains(config) -> Dict[str, ModuleType]:
 
         dict[str, ModuleType]
     """
-    if not config.has_section('domains'):
+    if not 'domains' in config:
         return {}
 
     try:
         sys.path.append('.')
         return {
             domain: importlib.import_module(''.join((domain, module)))
-            for domain, module in config.items('domains')
+            for domain, module in config['domains'].items()
         }
     except ImportError as exc:
         logger.error('Could not load a domain : %s', exc)

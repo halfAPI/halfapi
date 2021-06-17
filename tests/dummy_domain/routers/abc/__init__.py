@@ -1,5 +1,0 @@
-ROUTES={
-    '': {
-        'SUBROUTES': ['alphabet', 'pinnochio']
-    }
-}

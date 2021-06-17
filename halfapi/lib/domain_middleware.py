@@ -40,10 +40,17 @@ class DomainMiddleware(BaseHTTPMiddleware):
         """
         domain = scope['path'].split('/')[1]
 
-        self.domains = d_domains(self.config)
+        self.domains = self.config.get('domains', {})
 
-        if domain in self.domains:
+        if len(domain) == 0:
+            for domain in self.domains:
+                self.api[domain], self.acl[domain] = api_routes(self.domains[domain])
+        elif domain in self.domains:
             self.api[domain], self.acl[domain] = api_routes(self.domains[domain])
+        else:
+            logger.error('domain not in self.domains %s / %s',
+                    scope['path'],
+                    self.domains)
 
         scope_ = scope.copy()
         scope_['domains'] = self.domains
@@ -57,8 +64,7 @@ class DomainMiddleware(BaseHTTPMiddleware):
             current_domain = cur_path.split('/')[0]
 
         try:
-            config_section = self.config.items(current_domain)
-            scope_['config'] = dict(config_section)
+            scope_['config'] = self.config.copy()
         except configparser.NoSectionError:
             logger.debug(
                 'No specific configuration for domain **%s**', current_domain)

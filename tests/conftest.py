@@ -11,6 +11,7 @@ from uuid import uuid1, uuid4, UUID
 import click
 from click.testing import CliRunner
 import jwt
+import sys
 from unittest.mock import patch
 import pytest
 from starlette.applications import Starlette
@@ -212,8 +213,8 @@ def dummy_app():
         backend=JWTAuthenticationBackend(secret_key='dummysecret')
     )
     return app
-@pytest.fixture
 
+@pytest.fixture
 def dummy_debug_app():
     app = Starlette(debug=True)
     app.add_route('/',
@@ -228,3 +229,75 @@ def dummy_debug_app():
 @pytest.fixture
 def test_client(dummy_app):
     return TestClient(dummy_app)
+
+@pytest.fixture
+def create_route():
+    def wrapped(domain_path, method, path):
+        stack = [domain_path, *path.split('/')[1:]]
+        for i in range(len(stack)):
+            if len(stack[i]) == 0:
+                continue
+
+            path = os.path.join(*stack[0:i+1])
+            if os.path.isdir(os.path.join(path)):
+                continue
+            os.mkdir(path)
+        init_path = os.path.join(*stack, '__init__.py')
+        with open(init_path, 'a+') as f:
+            f.write(f'\ndef {method}():\n    raise NotImplementedError')
+
+    return wrapped
+
+
+
+@pytest.fixture
+def dummy_project():
+    sys.path.insert(0, './tests')
+    halfapi_config = tempfile.mktemp()
+    halfapi_secret = tempfile.mktemp()
+    domain = 'dummy_domain'
+
+    with open(halfapi_config, 'w') as f:
+        f.writelines([
+            '[project]\n',
+            'name = lirmm_api\n',
+            'halfapi_version = 0.5.0\n',
+            f'secret = {halfapi_secret}\n',
+            'port = 3050\n',
+            'loglevel = debug\n',
+            '[domains]\n',
+            f'{domain}= .routers'
+        ])
+
+    with open(halfapi_secret, 'w') as f:
+        f.write('turlututu')
+
+    return (halfapi_config, 'dummy_domain', 'routers')
+
+@pytest.fixture
+def routers():
+    sys.path.insert(0, './tests')
+
+    from dummy_domain import routers
+    return routers
+
+
+@pytest.fixture
+def application_debug():
+    from halfapi.app import HalfAPI
+    return HalfAPI({
+        'SECRET':'turlututu',
+        'PRODUCTION':False
+    }).application
+
+
+@pytest.fixture
+def application_domain(routers):
+    from halfapi.app import HalfAPI
+    return HalfAPI({
+        'SECRET':'turlututu',
+        'PRODUCTION':True,
+        'DOMAINS':{'dummy_domain':routers}
+    }).application
+
+
