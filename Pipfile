@@ -8,7 +8,6 @@ pytest = "*"
 requests = "*"
 pytest-asyncio = "*"
 pylint = "*"
-dummy-domain = {path = "./tests"}
 
 [packages]
 click = ">=7.1,<8"
