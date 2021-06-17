@@ -10,13 +10,16 @@ Constant :
     SCHEMAS (starlette.schemas.SchemaGenerator)
 """
 
+import logging
 from typing import Dict
 
 from starlette.schemas import SchemaGenerator
+from starlette.exceptions import HTTPException
 
 from .routes import gen_starlette_routes, api_acls
 from .responses import ORJSONResponse
 
+logger = logging.getLogger('uvicorn.asgi')
 SCHEMAS = SchemaGenerator(
     {"openapi": "3.0.0", "info": {"title": "HalfAPI", "version": "1.0"}}
 )
@@ -27,6 +30,20 @@ async def get_api_routes(request, *args, **kwargs):
                  as a JSON object
     """
     return ORJSONResponse(request.scope['api'])
+
+def get_api_domain_routes(domain):
+    async def wrapped(request, *args, **kwargs):
+        """
+        description: Returns the current API routes description (HalfAPI 0.2.1)
+                    as a JSON object
+        """
+        if domain in request.scope['api']:
+            return ORJSONResponse(request.scope['api'][domain])
+        else:
+            raise HTTPException(404)
+
+    return wrapped
+
 
 
 async def schema_json(request, *args, **kwargs):

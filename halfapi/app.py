@@ -43,7 +43,7 @@ class HalfAPI:
         if config:
             SECRET = config.get('SECRET')
             PRODUCTION = config.get('PRODUCTION')
-            DOMAINS = config.get('DOMAINS')
+            DOMAINS = config.get('DOMAINS', {})
             CONFIG = config.get('CONFIG', {
                 'domains': DOMAINS
             })
@@ -94,7 +94,6 @@ class HalfAPI:
             }
         )
 
-        print(f'HALFAPI CONFIG: {CONFIG}')
         self.application.add_middleware(
             DomainMiddleware,
             config=CONFIG
