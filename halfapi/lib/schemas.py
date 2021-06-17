@@ -16,26 +16,60 @@ from typing import Dict
 from starlette.schemas import SchemaGenerator
 from starlette.exceptions import HTTPException
 
+from .. import __version__
 from .routes import gen_starlette_routes, api_acls
 from .responses import ORJSONResponse
 
 logger = logging.getLogger('uvicorn.asgi')
 SCHEMAS = SchemaGenerator(
-    {"openapi": "3.0.0", "info": {"title": "HalfAPI", "version": "1.0"}}
+    {"openapi": "3.0.0", "info": {"title": "HalfAPI", "version": __version__}}
 )
 
 async def get_api_routes(request, *args, **kwargs):
     """
-    description: Returns the current API routes description (HalfAPI 0.2.1)
+    description: Returns the current API routes dictionary
                  as a JSON object
+    example: {
+        "dummy_domain": {
+            "abc/alphabet": {
+                "GET": [
+                    {
+                        "acl": "public"
+                    }
+                ]
+            },
+            "abc/alphabet/{test:uuid}": {
+                "GET": [
+                    {
+                        "acl": "public"
+                    }
+                ],
+                "POST": [
+                    {
+                        "acl": "public"
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "acl": "public"
+                    }
+                ],
+                "PUT": [
+                    {
+                        "acl": "public"
+                    }
+                ]
+            }
+        }
+    }
     """
     return ORJSONResponse(request.scope['api'])
 
 def get_api_domain_routes(domain):
     async def wrapped(request, *args, **kwargs):
         """
-        description: Returns the current API routes description (HalfAPI 0.2.1)
-                    as a JSON object
+        description: Returns the current API routes dictionary for a specific 
+            domain as a JSON object
         """
         if domain in request.scope['api']:
             return ORJSONResponse(request.scope['api'][domain])
