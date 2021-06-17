@@ -53,16 +53,11 @@ LOGLEVEL = 'info'
 HOST = '127.0.0.1'
 PORT = '3000'
 SECRET = ''
+CONF_FILE = os.environ.get('HALFAPI_CONF_FILE', '.halfapi/config')
 
-IS_PROJECT = os.path.isfile('.halfapi/config')
+is_project = lambda: os.path.isfile(CONF_FILE)
 
 
-CONFIG = {
-    'project_name': PROJECT_NAME,
-    'production': PRODUCTION,
-    'secret': SECRET,
-    'domains': DOMAINS
-}
 
 default_config = {
     'project': {
@@ -84,7 +79,7 @@ HALFAPI_ETC_FILE=os.path.join(
 HALFAPI_DOT_FILE=os.path.join(
     os.getcwd(), '.halfapi', 'config')
 
-HALFAPI_CONFIG_FILES = [ HALFAPI_ETC_FILE, HALFAPI_DOT_FILE ]
+HALFAPI_CONFIG_FILES = [ CONF_FILE, HALFAPI_DOT_FILE ]
 
 def conf_files():
     return [
@@ -121,8 +116,11 @@ def read_config():
 
 
 
-if IS_PROJECT:
-    read_config()
+CONFIG = {}
+IS_PROJECT = False
+if is_project():
+    IS_PROJECT = True
+    CONFIG = read_config()
 
     PROJECT_NAME = config.get('project', 'name', fallback=PROJECT_NAME)
 
@@ -150,3 +148,11 @@ if IS_PROJECT:
     LOGLEVEL = config.get('project', 'loglevel').lower() or 'info'
 
     BASE_DIR = config.get('project', 'base_dir', fallback='.') #os.getcwd())
+
+    CONFIG = {
+        'project_name': PROJECT_NAME,
+        'production': PRODUCTION,
+        'secret': SECRET,
+        'domains': DOMAINS
+    }
+
