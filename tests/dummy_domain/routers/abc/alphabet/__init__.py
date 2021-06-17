@@ -1,5 +1,5 @@
 from starlette.responses import PlainTextResponse
-from dummy_domain import acl
+from halfapi.lib import acl
 
 ACLS = {
     'GET': [{'acl':acl.public}]

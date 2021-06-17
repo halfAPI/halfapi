@@ -11,6 +11,7 @@ from uuid import uuid1, uuid4, UUID
 import click
 from click.testing import CliRunner
 import jwt
+import sys
 from unittest.mock import patch
 import pytest
 from starlette.applications import Starlette
@@ -251,6 +252,7 @@ def create_route():
 
 @pytest.fixture
 def dummy_project():
+    sys.path.insert(0, './tests')
     halfapi_config = tempfile.mktemp()
     halfapi_secret = tempfile.mktemp()
     domain = 'dummy_domain'
@@ -271,3 +273,31 @@ def dummy_project():
         f.write('turlututu')
 
     return (halfapi_config, 'dummy_domain', 'routers')
+
+@pytest.fixture
+def routers():
+    sys.path.insert(0, './tests')
+
+    from dummy_domain import routers
+    return routers
+
+
+@pytest.fixture
+def application_debug():
+    from halfapi.app import HalfAPI
+    return HalfAPI({
+        'SECRET':'turlututu',
+        'PRODUCTION':False
+    }).application
+
+
+@pytest.fixture
+def application_domain(routers):
+    from halfapi.app import HalfAPI
+    return HalfAPI({
+        'SECRET':'turlututu',
+        'PRODUCTION':True,
+        'DOMAINS':{'dummy_domain':routers}
+    }).application
+
+

@@ -7,17 +7,35 @@ import pytest
 from starlette.routing import Route
 from starlette.testclient import TestClient
 
-from halfapi.lib.routes import gen_starlette_routes
+from halfapi.lib.domain import gen_router_routes
 
 
-def test_get_route(dummy_project):
-    from halfapi.app import application
-    os.environ['HALFAPI_CONFIG'] = dummy_project[0]
-    c = TestClient(application)
-    print(f'/{dummy_project[1]}/alphabet')
-    r = c.get(f'/{dummy_project[1]}/alphabet')
-    try:
-        assert r.status_code == 200
-    except AssertionError as exc:
-        print('.'.join((dummy_project[1], 'routers')))
-        raise exc
+def test_get_route(dummy_project, application_domain, routers):
+    c = TestClient(application_domain)
+    path = verb = params = None
+    for path, verb, _, params in gen_router_routes(routers, []):
+        if len(params):
+            route_path = '/dummy_domain/{}'.format(path)
+            try:
+                if verb.lower() == 'get':
+                    r = c.get(route_path)
+                elif verb.lower() == 'post':
+                    r = c.post(route_path)
+                elif verb.lower() == 'patch':
+                    r = c.patch(route_path)
+                elif verb.lower() == 'put':
+                    r = c.put(route_path)
+                elif verb.lower() == 'delete':
+                    r = c.delete(route_path)
+                else:
+                    raise Exception(verb)
+                try:
+                    assert r.status_code in [200, 501]
+                except AssertionError as exc:
+                    print('{} [{}] {}'.format(str(r.status_code), verb, route_path))
+
+            except NotImplementedError:
+                pass
+
+    if not path:
+        raise Exception('No route generated')
