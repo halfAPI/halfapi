@@ -74,7 +74,7 @@ def args_check(fct):
             data = {}
 
             for key in required:
-                data[key] = data_.pop(key, None)
+                data[key] = data_.get(key, None)
                 if data[key] is None:
                     missing.append(key)
 
