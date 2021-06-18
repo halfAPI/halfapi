@@ -62,6 +62,12 @@ def route_decorator(fct: FunctionType, ret_type: str = 'json') -> Coroutine:
                 return ORJSONResponse(fct(**fct_args))
             except NotImplementedError as exc:
                 raise HTTPException(501) from exc
+            except Exception as exc:
+                # TODO: Write tests
+                if not isinstance(exc, HTTPException):
+                    raise HTTPException(500)
+                raise exc
+
 
     else:
         raise Exception('Return type not available')
