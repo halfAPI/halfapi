@@ -153,6 +153,12 @@ if is_project():
         'project_name': PROJECT_NAME,
         'production': PRODUCTION,
         'secret': SECRET,
-        'domains': DOMAINS
+        'domains': DOMAINS,
+        'config': {}
     }
 
+    for domain in DOMAINS:
+        if domain not in config.sections():
+            continue
+
+        CONFIG['config'][domain] = dict(config.items(domain))
