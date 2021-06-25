@@ -39,3 +39,12 @@ def test_get_route(dummy_project, application_domain, routers):
 
     if not path:
         raise Exception('No route generated')
+
+
+def test_delete_route(dummy_project, application_domain, routers):
+    c = TestClient(application_domain)
+    from uuid import uuid4
+    arg = str(uuid4())
+    r = c.delete(f'/dummy_domain/abc/alphabet/{arg}')
+    assert r.status_code == 200
+    assert r.json() == arg

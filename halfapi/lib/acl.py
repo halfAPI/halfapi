@@ -51,14 +51,16 @@ def args_check(fct):
             # Check query param should not read the "args"
             return await fct(req, *args, **kwargs)
 
+        data_ = {}
         if req.method == 'GET':
             data_ = req.query_params
 
-        if req.method == 'POST':
+        if req.method in ['POST', 'PATCH', 'PUT', 'DELETE']:
             try:
                 data_ = await req.json()
             except JSONDecodeError as exc:
-                data_ = {}
+                logger.debug('Posted data was not JSON')
+                pass
 
         def plural(array: list) -> str:
             return 's' if len(array) > 1 else ''
