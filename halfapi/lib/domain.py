@@ -261,13 +261,7 @@ def router_acls(route_params: Dict, path: List, m_router: ModuleType) -> Generat
 
 
 def domain_acls(m_router, path):
-    if not hasattr(m_router, 'ROUTES'):
-        logger.error('Missing *ROUTES* constant in *%s*', m_router.__name__)
-        #raise Exception(f'No ROUTES constant for {m_router.__name__}')
-        return
-
-
-    routes = m_router.ROUTES
+    routes = read_router(m_router)
 
     for subpath, route_params in routes.items():
         path.append(subpath)
