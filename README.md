@@ -22,6 +22,7 @@ Configure HalfAPI in the file : .halfapi/config .
 
 It's an **ini** file that contains at least two sections, project and domains.
 
+
 ### Project
 
 The main configuration options without which HalfAPI cannot be run.
