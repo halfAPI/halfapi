@@ -37,7 +37,7 @@ module_name="halfapi"
 setup(
     name=module_name,
     version=get_version(module_name),
-    url="https://gite.lirmm.fr/malves/halfapi",
+    url="https://github.com/halfAPI/halfapi",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
     packages=get_packages(module_name),
