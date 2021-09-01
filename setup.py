@@ -8,6 +8,9 @@ from setuptools import setup, find_packages
 
 import pathlib
 
+here = pathlib.Path(__file__).parent.resolve()
+long_description = (here / 'README.md').read_text(encoding='utf-8')
+
 def get_version(package):
     """
     Return package version as listed in `__version__` in `init.py`.
@@ -15,13 +18,6 @@ def get_version(package):
     with open(os.path.join(package, "__init__.py")) as f:
         return re.search("__version__ = ['\"]([^'\"]+)['\"]", f.read()).group(1)
 
-
-def get_long_description():
-    """
-    Return the README.
-    """
-    here = pathlib.Path(__file__).parent.resolve()
-    long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 def get_packages(package):
     """
@@ -38,10 +34,14 @@ setup(
     name=module_name,
     version=get_version(module_name),
     url="https://github.com/halfAPI/halfapi",
-    long_description=get_long_description(),
+    description="Core to write deep APIs using a module's tree",
+    author="Maxime ALVES",
+    author_email="maxime@freepoteries.fr",
+    license="GPLv3",
+    long_description=long_description,
     long_description_content_type="text/markdown",
     packages=get_packages(module_name),
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     install_requires=[
         "PyJWT>=2.0.1",
         "starlette>=0.14,<0.15",
@@ -50,6 +50,14 @@ setup(
         "orjson>=3.4.7,<4",
         "pyyaml>=5.3.1,<6",
         "timing-asgi>=0.2.1,<1"
+    ],
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Intended Audience :: Developers",
+        "Topic :: Software Development :: Libraries :: Application Frameworks",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     extras_require={
         "tests":[
@@ -63,5 +71,9 @@ setup(
         "console_scripts":[
             "halfapi=halfapi.cli.cli:cli"
         ]
+    },
+    keywords="web-api development boilerplate",
+    project_urls={
+        "Source": "https://github.com/halfAPI/halfapi",
     }
 )
