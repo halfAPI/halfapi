@@ -1,18 +1,6 @@
 # HalfAPI
 
-
-This Python-based ASGI application aims to provide the core functionality to
-multiple API domains.
-
-It's developed at the [LIRMM](https://lirmm.fr) in Montpellier, France.
-
-The name "halfAPI" comes from the deep relationship between it and
-[halfORM](https://gite.lirmm.fr/newsi/halfORM), a project authored by
-[Joël Maizi](https://gite.lirmm.fr/maizi).
-
-You'll need a database with the API details. You can find the database model in halfapi/models/api.sql
-
-**TODO :** include a token generation tool for testing purpose.
+Base tools to develop comlex API with rights management.
 
 
 ## Dependencies
@@ -20,67 +8,65 @@ You'll need a database with the API details. You can find the database model in 
 - python3
 - python3-pip
 - libgit2-dev
+- starlette
+- PyJWT
+- click
+- uvicorn
+- orjson
+- pyyaml
 
 
-## Installing
+## Configuration
+
+Configure HalfAPI in the file : .halfapi/config .
+
+It's an **ini** file that contains at least two sections, project and domains.
+
+### Project
+
+The main configuration options without which HalfAPI cannot be run.
+
+**name** : Project's name
+
+**halfapi_version** : The HalfAPI version on which you work
+
+**secret** : The file containing the secret to decode the user's tokens.
+
+**port** : The port for the test server.
+
+**loglevel** : The log level (info, debug, critical, ...)
 
 
-With local folder :
+### Domains
 
-`pip3 install -r requirements.txt .[cli]`
+The name of the options should be the name of the domains' module, the value is the
+submodule which contains the routers.
 
+Example :
 
-From the repository :
-
-`pip3 install git+ssh://git@gite.lirmm.fr:malves/halfapi.git[cli]`
-
-
-## CLI usage
+dummy_domain = .routers
 
 
-## Running
+## Usage
 
-### Development mode
+Develop an HalfAPI domain by following the examples located in
+tests/dummy_domain . An HalfAPI domain should be an importable python module
+that is available in the python path.
 
-In the project's folder :
-
-`halfapi run`
-
-
-### Production
-
-The production server may use different init systems. As our main server is Debian-based, we use systemd services to manage the api server. Find the right service files and configure them properly in order to make your production setup perfect.
+Run the project by using the `halfapi run` command.
 
 
-```
-cp conf/systemd/lirmm_api* /etc/systemd/system/
-systemctl daemon-reload
-systemctl start lirmm_api
-```
+## API Testing
+
+@TODO
 
 
-To make it start at boot :
+### Example
+
+Check out the [sample project](https://github.com/halfAPI/halfapi_sample_project)
+that helps you to build your own domain.
 
 
-`systemctl enable lirmm_api`
+## Development
 
-
-
-To get the logs :
-
-
-```
-journalctl -f --unit lirmm_api
-
-```
-
-
-## Testing
-
-### Installing
-
-pip3 install .[cli][tests]
-
-### Running
-
-pytest -v
+@TODO
