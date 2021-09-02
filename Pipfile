@@ -12,7 +12,7 @@ build = "*"
 
 [packages]
 click = ">=7.1,<8"
-starlette = ">=0.15,<0.16"
+starlette = ">=0.16,<0.17"
 uvicorn = ">=0.13,<1"
 orjson = ">=3.4.7,<4"
 pyjwt = ">=2.0.1,<3"
