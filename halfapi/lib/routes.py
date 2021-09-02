@@ -24,7 +24,7 @@ from starlette.routing import Route
 from starlette.requests import Request
 from starlette.responses import Response, PlainTextResponse
 
-from halfapi.lib.domain import gen_router_routes, VERBS, domain_acls
+from halfapi.lib.domain import gen_router_routes, domain_acls
 from ..conf import DOMAINSDICT
 
 
@@ -34,7 +34,7 @@ class DomainNotFoundError(Exception):
     """ Exception when a domain is not importable
     """
 
-def route_acl_decorator(fct: Callable = None, params: List[Dict] = []):
+def route_acl_decorator(fct: Callable = None, params: List[Dict] = None):
     """
     Decorator for async functions that calls pre-conditions functions
     and appends kwargs to the target function
@@ -50,6 +50,9 @@ def route_acl_decorator(fct: Callable = None, params: List[Dict] = []):
     Returns:
         async function
     """
+
+    if not params:
+        params = []
 
     if not fct:
         return partial(route_acl_decorator, params=params)
@@ -147,7 +150,7 @@ def api_routes(m_dom: ModuleType) -> Tuple[Dict, Dict]:
         return l_params
 
     d_res = {}
-    for path, verb, fct, params in gen_router_routes(m_dom, []):
+    for path, verb, _, params in gen_router_routes(m_dom, []):
         if path not in d_res:
             d_res[path] = {}
         d_res[path][verb] = str_acl(params)

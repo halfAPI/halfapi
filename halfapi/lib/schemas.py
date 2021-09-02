@@ -98,7 +98,7 @@ async def schema_json(request, *args, **kwargs):
         SCHEMAS.get_schema(routes=request.app.routes))
 
 
-def schema_dict_dom(d_domains) -> Dict:
+def schema_dict_dom(d_domains: Dict[str, ModuleType]) -> Dict:
     """
     Returns the API schema of the *m_domain* domain as a python dictionnary
 

@@ -9,6 +9,10 @@ from starlette.testclient import TestClient
 
 from halfapi.lib.domain import gen_router_routes
 
+def test_get_config_route(dummy_project, application_domain, routers):
+    c = TestClient(application_domain)
+    r = c.get('/dummy_domain/config')
+    assert 'test' in r.json()
 
 def test_get_route(dummy_project, application_domain, routers):
     c = TestClient(application_domain)

@@ -3,16 +3,14 @@
 lib/domain.py The domain-scoped utility functions
 """
 
-import os
 import re
 import sys
 import importlib
 import inspect
 import logging
 from types import ModuleType, FunctionType
-from typing import Any, Callable, Coroutine, Generator
+from typing import Coroutine, Generator
 from typing import Dict, List, Tuple, Iterator
-import inspect
 
 from starlette.exceptions import HTTPException
 
@@ -51,7 +49,9 @@ def route_decorator(fct: FunctionType, ret_type: str = 'json') -> Coroutine:
                 fct_args['halfapi'] = {
                     'user': request.user if
                         'user' in request else None,
-                    'config': request.scope['config']
+                    'config': request.scope['config'],
+                    'domain': request.scope['domain'],
+
                 }
 
 
@@ -65,7 +65,7 @@ def route_decorator(fct: FunctionType, ret_type: str = 'json') -> Coroutine:
             except Exception as exc:
                 # TODO: Write tests
                 if not isinstance(exc, HTTPException):
-                    raise HTTPException(500)
+                    raise HTTPException(500) from exc
                 raise exc
 
 
@@ -200,8 +200,8 @@ def gen_router_routes(m_router: ModuleType, path: List[str]) -> \
                     path.append('{{{}:{}}}'.format(
                         param_match.groups()[0].lower(),
                         param_match.groups()[1]))
-                except AssertionError:
-                    raise UnknownPathParameterType(subroute)
+                except AssertionError as exc:
+                    raise UnknownPathParameterType(subroute) from exc
             else:
                 path.append(subroute)
 
@@ -243,8 +243,6 @@ def d_domains(config) -> Dict[str, ModuleType]:
         raise exc
 
 def router_acls(route_params: Dict, path: List, m_router: ModuleType) -> Generator:
-    d_res = {'fqtn': route_params.get('FQTN')}
-
     for verb in VERBS:
         params = route_params.get(verb)
         if params is None:
@@ -253,11 +251,11 @@ def router_acls(route_params: Dict, path: List, m_router: ModuleType) -> Generat
             logger.error('No ACL for route [{%s}] %s', verb, "/".join(path))
         else:
             for param in params:
-                acl = param.get('acl')
-                if not isinstance(acl, FunctionType):
+                fct_acl = param.get('acl')
+                if not isinstance(fct_acl, FunctionType):
                     continue
 
-                yield acl.__name__, acl
+                yield fct_acl.__name__, fct_acl
 
 
 def domain_acls(m_router, path):

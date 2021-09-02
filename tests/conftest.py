@@ -8,7 +8,6 @@ import importlib
 import tempfile
 from typing import Dict, Tuple
 from uuid import uuid1, uuid4, UUID
-import click
 from click.testing import CliRunner
 import jwt
 import sys
@@ -70,7 +69,7 @@ def runner():
 @pytest.fixture
 def cli_runner():
     """Yield a click.testing.CliRunner to invoke the CLI."""
-    class_ = click.testing.CliRunner
+    class_ = CliRunner
 
     def invoke_wrapper(f):
         """Augment CliRunner.invoke to emit its output to stdout.
@@ -266,7 +265,9 @@ def dummy_project():
             'port = 3050\n',
             'loglevel = debug\n',
             '[domains]\n',
-            f'{domain}= .routers'
+            f'{domain} = .routers',
+            f'[{domain}]',
+            'test = True'
         ])
 
     with open(halfapi_secret, 'w') as f:
@@ -297,7 +298,11 @@ def application_domain(routers):
     return HalfAPI({
         'SECRET':'turlututu',
         'PRODUCTION':True,
-        'DOMAINS':{'dummy_domain':routers}
+        'DOMAINS':{'dummy_domain':routers},
+        'CONFIG':{
+            'domains': {'dummy_domain':routers},
+            'domain_config': {'dummy_domain': {'test': True}}
+        }
     }).application
 
 

@@ -1,7 +1,6 @@
 """
 DomainMiddleware
 """
-import configparser
 import logging
 
 from starlette.datastructures import URL
@@ -9,10 +8,6 @@ from starlette.middleware.base import (BaseHTTPMiddleware,
     RequestResponseEndpoint)
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette.types import Scope, Send, Receive
-
-from .routes import api_routes
-from .domain import d_domains
 
 logger = logging.getLogger('uvicorn.asgi')
 
@@ -38,6 +33,15 @@ class DomainMiddleware(BaseHTTPMiddleware):
         Call of the route fonction (decorated or not)
         """
 
+        l_path = URL(scope=request.scope).path.split('/')
+        cur_domain = l_path[0]
+        if len(cur_domain) == 0 and len(l_path) > 1:
+            cur_domain = l_path[1]
+
+        request.scope['domain'] = cur_domain
+        request.scope['config'] = self.config['domain_config'][cur_domain] \
+            if cur_domain in self.config.get('domain_config', {}) else {}
+
         response = await call_next(request)
 
         if 'acl_pass' in request.scope:
@@ -54,5 +58,6 @@ class DomainMiddleware(BaseHTTPMiddleware):
                 response.headers['x-args-optional'] = \
                     ','.join(request.scope['args']['optional'])
 
+        response.headers['x-domain'] = cur_domain
 
         return response

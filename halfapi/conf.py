@@ -111,16 +111,15 @@ def read_config():
     The highest index in "filenames" are the highest priorty
     """
     config.read(HALFAPI_CONFIG_FILES)
-    return config_dict()
-
 
 
 
 CONFIG = {}
 IS_PROJECT = False
 if is_project():
+    read_config()
+
     IS_PROJECT = True
-    CONFIG = read_config()
 
     PROJECT_NAME = config.get('project', 'name', fallback=PROJECT_NAME)
 
@@ -154,11 +153,11 @@ if is_project():
         'production': PRODUCTION,
         'secret': SECRET,
         'domains': DOMAINS,
-        'config': {}
+        'domain_config': {}
     }
 
     for domain in DOMAINS:
         if domain not in config.sections():
             continue
 
-        CONFIG['config'][domain] = dict(config.items(domain))
+        CONFIG['domain_config'][domain] = dict(config.items(domain))
