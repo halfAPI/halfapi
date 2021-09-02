@@ -10,14 +10,15 @@ Constant :
     SCHEMAS (starlette.schemas.SchemaGenerator)
 """
 
+import os
 import logging
-from typing import Dict
+from typing import Dict, Coroutine
+from types import ModuleType
 
 from starlette.schemas import SchemaGenerator
-from starlette.exceptions import HTTPException
 
 from .. import __version__
-from .routes import gen_starlette_routes, api_acls
+from .routes import gen_starlette_routes, api_routes, api_acls
 from .responses import ORJSONResponse
 
 logger = logging.getLogger('uvicorn.asgi')
@@ -25,7 +26,7 @@ SCHEMAS = SchemaGenerator(
     {"openapi": "3.0.0", "info": {"title": "HalfAPI", "version": __version__}}
 )
 
-async def get_api_routes(request, *args, **kwargs):
+def get_api_routes(domains: Dict[str, ModuleType]) -> Coroutine:
     """
     description: Returns the current API routes dictionary
                  as a JSON object
@@ -63,18 +64,26 @@ async def get_api_routes(request, *args, **kwargs):
         }
     }
     """
-    return ORJSONResponse(request.scope['api'])
+    routes = {
+        domain: api_routes(m_domain)[0]
+        for domain, m_domain in domains.items()
+    }
 
-def get_api_domain_routes(domain):
+    async def wrapped(request, *args, **kwargs):
+        return ORJSONResponse(routes)
+
+    return wrapped
+
+
+def get_api_domain_routes(m_domain: ModuleType) -> Coroutine:
+    routes, _ = api_routes(m_domain)
+
     async def wrapped(request, *args, **kwargs):
         """
-        description: Returns the current API routes dictionary for a specific 
+        description: Returns the current API routes dictionary for a specific
             domain as a JSON object
         """
-        if domain in request.scope['api']:
-            return ORJSONResponse(request.scope['api'][domain])
-        else:
-            raise HTTPException(404)
+        return ORJSONResponse(routes)
 
     return wrapped
 

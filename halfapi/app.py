@@ -51,12 +51,12 @@ class HalfAPI:
             from halfapi.conf import CONFIG, SECRET, PRODUCTION, DOMAINS
 
 
-        routes = [ Route('/', get_api_routes) ]
+        routes = [ Route('/', get_api_routes(DOMAINS)) ]
 
 
         routes += [
             Route('/halfapi/schema', schema_json),
-            Route('/halfapi/acls', get_acls)
+            Route('/halfapi/acls', get_acls),
         ]
 
         routes += Route('/halfapi/current_user', lambda request, *args, **kwargs:
@@ -74,11 +74,11 @@ class HalfAPI:
             for route in gen_starlette_routes(DOMAINS):
                 routes.append(route)
 
-            for domain in DOMAINS:
+            for domain, m_domain in DOMAINS.items():
                 routes.append(
                     Route(
                         f'/{domain}',
-                        get_api_domain_routes(domain)
+                        get_api_domain_routes(m_domain)
                     )
                 )
 
