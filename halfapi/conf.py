@@ -135,8 +135,6 @@ except FileNotFoundError as exc:
 PRODUCTION = config.getboolean('project', 'production',
     fallback=environ.get('HALFAPI_PROD', False))
 
-os.environ['HALFAPI_PROD'] = str(PRODUCTION)
-
 LOGLEVEL = config.get('project', 'loglevel',
     fallback=environ.get('HALFAPI_LOGLEVEL', 'info')).lower()
 

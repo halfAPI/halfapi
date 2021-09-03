@@ -113,6 +113,6 @@ class HalfAPI:
                 starlette_app=self.application)
             )
 
-
+        logger.info('CONFIG:\n%s', CONFIG)
 
 application = HalfAPI().application

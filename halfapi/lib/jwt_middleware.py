@@ -24,17 +24,6 @@ from starlette.exceptions import HTTPException
 
 logger = logging.getLogger('halfapi')
 
-"""
-@OLD : old way to check production setting, we can simply check app's "debug" attribute
-
-try:
-    from ..conf import PRODUCTION
-except ImportError:
-    logger.warning('Could not import PRODUCTION variable from conf module,'\
-        ' using HALFAPI_PROD environment variable')
-    PRODUCTION = bool(environ.get('HALFAPI_PROD', False))
-"""
-
 try:
     from ..conf import SECRET
 except ImportError as exc:
