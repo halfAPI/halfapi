@@ -21,12 +21,12 @@ logger = logging.getLogger('halfapi')
 # domain create #
 #################
 def create_domain(domain_name: str, module_path: str):
-    logger.info('Will add **%s** (%s) to current halfAPI project', 
+    logger.info('Will add **%s** (%s) to current halfAPI project',
             domain_name, module_path)
 
-    if domain_name in DOMAINSDICT():
-        logger.warning('Domain **%s** is already in project')
-        sys.exit(1)
+    #if domain_name in DOMAINSDICT():
+    #    logger.warning('Domain **%s** is already in project', domain_name)
+    #    sys.exit(1)
 
     if not config.has_section('domains'):
         config.add_section('domains')
@@ -54,7 +54,7 @@ def list_api_routes():
     """
     Echoes the list of all active domains.
     """
-    
+
     click.echo('# API Routes')
     for domain, m_dom in DOMAINSDICT().items():
         list_routes(domain, m_dom)

@@ -21,7 +21,7 @@ logger = logging.getLogger('halfapi')
 
 TMPL_HALFAPI_ETC = """[project]
 name = {project}
-host = 127.0.0.1 
+host = 127.0.0.1
 port = 8000
 secret = /path/to/secret_file
 production = False

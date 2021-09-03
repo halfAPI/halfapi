@@ -3,6 +3,7 @@
 lib/domain.py The domain-scoped utility functions
 """
 
+import os
 import re
 import sys
 import importlib
@@ -229,6 +230,11 @@ def d_domains(config) -> Dict[str, ModuleType]:
 
         dict[str, ModuleType]
     """
+    if os.environ.get('HALFAPI_DOMAIN_NAME') and os.environ.get('HALFAPI_DOMAIN_MODULE', '.routers'):
+        config['domains'] = {
+            os.environ.get('HALFAPI_DOMAIN_NAME'): os.environ.get('HALFAPI_DOMAIN_MODULE')
+        }
+
     if not 'domains' in config:
         return {}
 

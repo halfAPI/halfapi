@@ -7,7 +7,12 @@ not loaded otherwise.
 """
 # builtins
 import click
-from ..conf import IS_PROJECT
+
+IS_PROJECT = True
+try:
+    from ..conf import DOMAINS
+except Exception:
+    IS_PROJECT = False
 
 @click.group(invoke_without_command=True)
 @click.option('--version', is_flag=True)
