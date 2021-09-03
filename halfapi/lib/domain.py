@@ -230,19 +230,19 @@ def d_domains(config) -> Dict[str, ModuleType]:
 
         dict[str, ModuleType]
     """
-    if os.environ.get('HALFAPI_DOMAIN_NAME') and os.environ.get('HALFAPI_DOMAIN_MODULE', '.routers'):
-        config['domains'] = {
-            os.environ.get('HALFAPI_DOMAIN_NAME'): os.environ.get('HALFAPI_DOMAIN_MODULE')
-        }
 
-    if not 'domains' in config:
-        return {}
+    domains = {}
+
+    if os.environ.get('HALFAPI_DOMAIN_NAME') and os.environ.get('HALFAPI_DOMAIN_MODULE', '.routers'):
+        domains[os.environ.get('HALFAPI_DOMAIN_NAME')] = os.environ.get('HALFAPI_DOMAIN_MODULE')
+    elif 'domains' in config:
+        domains = dict(config['domains'].items())
 
     try:
         sys.path.append('.')
         return {
             domain: importlib.import_module(''.join((domain, module)))
-            for domain, module in config['domains'].items()
+            for domain, module in domains.items()
         }
     except ImportError as exc:
         logger.error('Could not load a domain : %s', exc)
