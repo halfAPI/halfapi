@@ -59,17 +59,8 @@ is_project = lambda: os.path.isfile(CONF_FILE)
 
 
 
-default_config = {
-    'project': {
-        'host': '127.0.0.1',
-        'port': '8000',
-        'secret': '',
-        'production': 'no'
-    }
-}
 
 config = ConfigParser(allow_no_value=True)
-config.read_dict(default_config)
 
 CONF_DIR = environ.get('HALFAPI_CONF_DIR', '/etc/half_api')
 HALFAPI_ETC_FILE=os.path.join(
@@ -127,26 +118,19 @@ if len(PROJECT_NAME) == 0:
 DOMAINSDICT = lambda: d_domains(config)
 DOMAINS = DOMAINSDICT()
 if len(DOMAINS) == 0:
-    logger.info('Domain-less instance')
+    logger.info('Domain-less instance %s', d_domains(config))
 
 HOST = config.get('project', 'host', fallback=environ.get('HALFAPI_HOST', '127.0.0.1'))
 PORT = config.getint('project', 'port', fallback=environ.get('HALFAPI_PORT', '3000'))
 
 try:
-    with open(config.get('project', 'secret')) as secret_file:
+    with open(config.get('project', 'secret',
+        fallback=environ.get('HALFAPI_SECRET', ''))) as secret_file:
+
         SECRET = secret_file.read().strip()
         CONFIG['secret'] = SECRET.strip()
-        # Set the secret so we can use it in domains
-        environ['HALFAPI_SECRET'] = SECRET
 except FileNotFoundError as exc:
-    if 'HALFAPI_SECRET' in environ:
-        SECRET = environ.get('HALFAPI_SECRET')
-        CONFIG['secret'] = SECRET.strip()
-        # Set the secret so we can use it in domains
-        environ['HALFAPI_SECRET'] = SECRET
-
-    logger.error('There is no file like %s : %s',
-        config.get('project', 'secret'), exc)
+    logger.error('Missing secret file: %s', exc)
 
 PRODUCTION = config.getboolean('project', 'production',
     fallback=environ.get('HALFAPI_PROD', False))

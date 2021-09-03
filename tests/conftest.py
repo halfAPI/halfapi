@@ -27,7 +27,6 @@ logger = logging.getLogger('halfapitest')
 
 PROJNAME = os.environ.get('PROJ','tmp_api')
 
-os.environ['HALFAPI_SECRET'] = 'dummysecret'
 SECRET = 'dummysecret'
 
 from halfapi.lib.jwt_middleware import (

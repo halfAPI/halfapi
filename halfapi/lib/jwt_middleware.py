@@ -7,7 +7,7 @@ Classes:
     - JWTWebSocketAuthenticationBackend
 
 Raises:
-    Exception: If configuration has no SECRET or HALFAPI_SECRET is not set
+    Exception: If configuration has no SECRET
 """
 
 from os import environ
@@ -38,11 +38,9 @@ except ImportError:
 try:
     from ..conf import SECRET
 except ImportError as exc:
-    logger.warning('Could not import SECRET variable from conf module,'\
+    logger.error('Could not import SECRET variable from conf module,'\
         ' using HALFAPI_SECRET environment variable')
-    SECRET  = environ.get('HALFAPI_SECRET', False)
-    if not SECRET:
-        raise Exception('Missing HALFAPI_SECRET variable') from exc
+    raise Exception('Missing secret') from exc
 
 
 
