@@ -14,8 +14,9 @@ from ..conf import (PROJECT_NAME, HOST, PORT,
 
 @click.option('--host', default=None)
 @click.option('--port', default=None)
+@click.option('--reload', default=False)
 @cli.command()
-def run(host, port):
+def run(host, port, reload):
     """
     The "halfapi run" command
     """
@@ -28,7 +29,10 @@ def run(host, port):
 
     port = int(port)
 
-    reload = not PRODUCTION
+    if PRODUCTION:
+        reload = False
+        raise Exception('Can\'t use live code reload in production')
+
     log_level = 'info' if PRODUCTION else LOGLEVEL
 
     click.echo(f'Launching application {PROJECT_NAME}')
