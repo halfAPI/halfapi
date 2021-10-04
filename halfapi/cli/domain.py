@@ -13,6 +13,7 @@ from .cli import cli
 from ..conf import config, write_config, DOMAINSDICT
 
 from ..lib.schemas import schema_dict_dom
+from ..lib.routes import api_routes
 
 
 logger = logging.getLogger('halfapi')
@@ -43,11 +44,15 @@ def list_routes(domain, m_dom):
     Echoes the list of the **m_dom** active routes
     """
 
-    click.echo(f'\nDomain : {domain}')
+    click.echo(f'\nDomain : {domain}\n')
+    routes = api_routes(m_dom)[0]
+    if len(routes):
+        for key, item in routes.items():
+            methods = '|'.join(list(item.keys()))
+            click.echo(f'\t{key} : {methods}')
+    else:
+        click.echo(f'\t**No ROUTES**')
 
-    for key, item in schema_dict_dom({domain: m_dom}).get('paths', {}).items():
-        methods = '|'.join(list(item.keys()))
-        click.echo(f'{key} : {methods}')
 
 
 def list_api_routes():

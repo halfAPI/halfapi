@@ -17,6 +17,7 @@ from starlette.applications import Starlette
 from starlette.authentication import UnauthenticatedUser
 from starlette.middleware import Middleware
 from starlette.routing import Route
+from starlette.responses import Response, PlainTextResponse
 from starlette.middleware.authentication import AuthenticationMiddleware
 
 from timing_asgi import TimingMiddleware
@@ -34,12 +35,15 @@ from halfapi.lib.responses import (ORJSONResponse, UnauthorizedResponse,
 
 from halfapi.lib.routes import gen_starlette_routes, debug_routes
 from halfapi.lib.schemas import get_api_routes, get_api_domain_routes, schema_json, get_acls
+from halfapi.logging import logger, config_logging
+from halfapi import __version__
 
-logger = logging.getLogger('uvicorn.asgi')
 
 
 class HalfAPI:
     def __init__(self, config=None):
+        config_logging(logging.DEBUG)
+
         if config:
             SECRET = config.get('SECRET')
             PRODUCTION = config.get('PRODUCTION')
@@ -54,16 +58,10 @@ class HalfAPI:
         routes = [ Route('/', get_api_routes(DOMAINS)) ]
 
 
-        routes += [
-            Route('/halfapi/schema', schema_json),
-            Route('/halfapi/acls', get_acls),
-        ]
 
-        routes += Route('/halfapi/current_user', lambda request, *args, **kwargs:
-            ORJSONResponse({'user':request.user.json})
-            if SECRET and not isinstance(request.user, UnauthenticatedUser)
-            else ORJSONResponse({'user': None})),
 
+        for route in self.routes():
+            routes.append(route)
 
         if not PRODUCTION:
             for route in debug_routes():
@@ -100,6 +98,7 @@ class HalfAPI:
         )
 
         if SECRET:
+            self.SECRET = SECRET
             self.application.add_middleware(
                 AuthenticationMiddleware,
                 backend=JWTAuthenticationBackend(secret_key=SECRET)
@@ -114,5 +113,24 @@ class HalfAPI:
             )
 
         logger.info('CONFIG:\n%s', CONFIG)
+
+    @property
+    def version(self):
+        return __version__
+
+    async def version_async(self, request, *args, **kwargs):
+        return Response(self.version)
+
+    def routes(self):
+        """ Halfapi default routes
+        """
+
+        async def get_user(request, *args, **kwargs):
+            return ORJSONResponse({'user':request.user})
+
+        yield Route('/halfapi/whoami', get_user)
+        yield Route('/halfapi/schema', schema_json)
+        yield Route('/halfapi/acls', get_acls)
+        yield Route('/halfapi/version', self.version_async)
 
 application = HalfAPI().application

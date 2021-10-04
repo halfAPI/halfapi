@@ -21,6 +21,8 @@ import orjson
 # asgi framework
 from starlette.responses import PlainTextResponse, Response, JSONResponse
 
+from .jwt_middleware import JWTUser, Nobody
+
 
 __all__ = [
     'HJSONResponse',
@@ -82,11 +84,16 @@ class ORJSONResponse(JSONResponse):
         list_types = {
             set
         }
+        jsonable_types = {
+            JWTUser, Nobody
+        }
 
         if type(typ) in str_types:
             return str(typ)
         if type(typ) in list_types:
             return list(typ)
+        if type(typ) in jsonable_types:
+            return typ.json
 
         raise TypeError(f'Type {type(typ)} is not handled by ORJSONResponse')
 

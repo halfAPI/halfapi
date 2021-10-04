@@ -22,15 +22,27 @@ from starlette.authentication import (
 from starlette.requests import HTTPConnection
 from starlette.exceptions import HTTPException
 
-logger = logging.getLogger('halfapi')
+logger = logging.getLogger('uvicorn.error')
 
+SECRET=None
 try:
     from ..conf import SECRET
 except ImportError as exc:
     logger.error('Could not import SECRET variable from conf module,'\
         ' using HALFAPI_SECRET environment variable')
-    raise Exception('Missing secret') from exc
 
+class Nobody(UnauthenticatedUser):
+    """ Nobody class
+
+    The default class when no token is passed
+    """
+    @property
+    def json(self):
+       return {
+        'id' : '',
+        'token': '',
+        'payload': ''
+    }
 
 
 class JWTUser(BaseUser):
@@ -119,7 +131,7 @@ class JWTAuthenticationBackend(AuthenticationBackend):
         PRODUCTION = conn.scope['app'].debug == False
 
         if not token and not is_check_call:
-            return AuthCredentials(), UnauthenticatedUser()
+            return AuthCredentials(), Nobody()
 
         try:
             if token and not is_fake_user_id:
@@ -142,7 +154,7 @@ class JWTAuthenticationBackend(AuthenticationBackend):
                 if token:
                     return AuthCredentials(), CheckUser(payload['user_id'])
                 else:
-                    return AuthCredentials(), UnauthenticatedUser()
+                    return AuthCredentials(), Nobody()
 
 
             if PRODUCTION and 'debug' in payload.keys() and payload['debug']:
@@ -177,7 +189,7 @@ class JWTWebSocketAuthenticationBackend(AuthenticationBackend):
     ) -> typing.Optional[typing.Tuple["AuthCredentials", "BaseUser"]]:
 
         if self.query_param_name not in conn.query_params:
-            return AuthCredentials(), UnauthenticatedUser()
+            return AuthCredentials(), Nobody()
 
         token = conn.query_params[self.query_param_name]
 

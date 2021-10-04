@@ -5,9 +5,10 @@ from starlette.testclient import TestClient
 import json
 
 
-def test_current_user(project_runner, application_debug):
+def test_whoami(project_runner, application_debug):
+    # @TODO : test with fake login
     c = TestClient(application_debug)
-    r = c.get('/halfapi/current_user')
+    r = c.get('/halfapi/whoami')
     assert r.status_code == 200
 
 def test_log(application_debug):

@@ -42,8 +42,8 @@ from configparser import ConfigParser
 import importlib
 
 from .lib.domain import d_domains
+from .logging import logger
 
-logger = logging.getLogger('uvicorn.asgi')
 
 PROJECT_NAME = environ.get('HALFAPI_PROJECT_NAME') or os.path.basename(os.getcwd())
 DOMAINSDICT = lambda: {}
