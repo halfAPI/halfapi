@@ -11,6 +11,7 @@ Classes :
     - NotImplementedResponse
     - ORJSONResponse
     - PlainTextResponse
+    - ServiceUnavailableResponse
     - UnauthorizedResponse
 
 """
@@ -31,6 +32,7 @@ __all__ = [
     'NotImplementedResponse',
     'ORJSONResponse',
     'PlainTextResponse',
+    'ServiceUnavailableResponse',
     'UnauthorizedResponse']
 
 
@@ -54,6 +56,11 @@ class NotImplementedResponse(Response):
     def __init__(self, *args, **kwargs):
         super().__init__(status_code=501)
 
+class ServiceUnavailableResponse(Response):
+    """ The 503 Service Unavailable default Response
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(status_code=503)
 
 class UnauthorizedResponse(Response):
     """ The 401 Not Found default Response

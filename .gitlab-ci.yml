@@ -31,6 +31,7 @@ before_script:
 test:
   script:
     - pipenv run pytest -v
+    - pipenv run halfapi --version
 
 run:
   script:
