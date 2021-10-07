@@ -29,7 +29,7 @@ def run(host, port, reload):
 
     port = int(port)
 
-    if PRODUCTION:
+    if PRODUCTION and reload:
         reload = False
         raise Exception('Can\'t use live code reload in production')
 
