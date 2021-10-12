@@ -33,13 +33,20 @@ def run(host, port, reload):
         reload = False
         raise Exception('Can\'t use live code reload in production')
 
-    log_level = 'info' if PRODUCTION else LOGLEVEL
+    log_level = LOGLEVEL or 'info'
 
     click.echo(f'Launching application {PROJECT_NAME}')
 
     sys.path.insert(0, os.getcwd())
 
     list_api_routes()
+
+    click.echo(f'uvicorn.run("halfapi.app:application"\n' \
+        f'host: {host}\n' \
+        f'port: {port}\n' \
+        f'log_level: {log_level}\n' \
+        f'reload: {reload}\n'
+    )
 
     uvicorn.run('halfapi.app:application',
         host=host,
