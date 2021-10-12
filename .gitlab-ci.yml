@@ -23,18 +23,19 @@ cache:
     - .cache/pip
     - venv/
 
-before_script:
-  - python -V  # Print out python version for debugging
-  - pip install pipenv
-  - pipenv install  --dev --skip-lock
-
 test:
   script:
+    - python3 -V  # Print out python version for debugging
+    - pip3 install pipenv
+    - pipenv install  --dev --skip-lock
     - pipenv run pytest -v
     - pipenv run halfapi --version
 
 run:
   script:
+    - python3 -V  # Print out python version for debugging
+    - pip3 install pipenv
+    - pipenv install  --dev --skip-lock
     - pipenv run python -m build --sdist
     - pipenv run python -m build --wheel
   artifacts:
@@ -44,5 +45,4 @@ run:
 build:
   image: docker:19.03.12-dind
   script:
-    - apt-get install python3
     - docker build -t halfapi .
