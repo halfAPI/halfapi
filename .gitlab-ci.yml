@@ -40,3 +40,9 @@ run:
   artifacts:
     paths:
       - dist/*.whl
+
+build:
+  image: docker:19.03.12-dind
+  script:
+    - apt-get install python3
+    - docker build -t halfapi .
