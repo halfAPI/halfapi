@@ -2,14 +2,12 @@
 """
 Base ACL module that contains generic functions for domains ACL
 """
-import logging
 from functools import wraps
 from json import JSONDecodeError
 from starlette.authentication import UnauthenticatedUser
 from starlette.exceptions import HTTPException
 
-
-logger = logging.getLogger('uvicorn.asgi')
+from ..logging import logger
 
 def public(*args, **kwargs) -> bool:
     "Unlimited access"

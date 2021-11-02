@@ -5,7 +5,6 @@ cli/init.py Defines the "halfapi init" cli commands
 Helps the user to create a new project
 """
 # builtins
-import logging
 import os
 import sys
 import re
@@ -17,7 +16,7 @@ from ..conf import CONF_DIR
 
 from .cli import cli
 
-logger = logging.getLogger('halfapi')
+from ..logging import logger
 
 TMPL_HALFAPI_ETC = """[project]
 name = {project}

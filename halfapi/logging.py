@@ -28,4 +28,4 @@ def config_logging(level=logging.INFO):
     logging.getLogger('uvicorn.error').propagate = True
 
 config_logging()
-logger = logging.getLogger('uvicorn.asgi')
+logger = logging.getLogger()

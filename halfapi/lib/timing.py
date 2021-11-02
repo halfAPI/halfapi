@@ -9,7 +9,7 @@ import logging
 
 from timing_asgi import TimingClient
 
-logger = logging.getLogger('uvicorn.asgi')
+from ..logging import logger
 
 class HTimingClient(TimingClient):
     """ Used to redefine TimingClient.timing

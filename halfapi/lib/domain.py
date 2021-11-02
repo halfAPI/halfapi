@@ -8,7 +8,6 @@ import re
 import sys
 import importlib
 import inspect
-import logging
 from types import ModuleType, FunctionType
 from typing import Coroutine, Generator
 from typing import Dict, List, Tuple, Iterator
@@ -20,7 +19,7 @@ from halfapi.lib.responses import ORJSONResponse
 from halfapi.lib.router import read_router
 from halfapi.lib.constants import VERBS
 
-logger = logging.getLogger("uvicorn.asgi")
+from ..logging import logger
 
 class MissingAclError(Exception):
     pass

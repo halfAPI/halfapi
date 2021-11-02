@@ -11,17 +11,16 @@ Constant :
 """
 
 import os
-import logging
 from typing import Dict, Coroutine
 from types import ModuleType
 
 from starlette.schemas import SchemaGenerator
 
 from .. import __version__
+from ..logging import logger
 from .routes import gen_starlette_routes, api_routes, api_acls
 from .responses import ORJSONResponse
 
-logger = logging.getLogger('uvicorn.asgi')
 SCHEMAS = SchemaGenerator(
     {"openapi": "3.0.0", "info": {"title": "HalfAPI", "version": __version__}}
 )

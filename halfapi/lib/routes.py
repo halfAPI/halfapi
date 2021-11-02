@@ -15,7 +15,6 @@ Exception :
 """
 from datetime import datetime
 from functools import partial, wraps
-import logging
 from typing import Callable, List, Dict, Generator, Tuple
 from types import ModuleType, FunctionType
 
@@ -27,8 +26,7 @@ from starlette.responses import Response, PlainTextResponse
 from halfapi.lib.domain import gen_router_routes, domain_acls
 from ..conf import DOMAINSDICT
 
-
-logger = logging.getLogger('uvicorn.asgi')
+from ..logging import logger
 
 class DomainNotFoundError(Exception):
     """ Exception when a domain is not importable

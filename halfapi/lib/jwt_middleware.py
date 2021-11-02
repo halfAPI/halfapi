@@ -12,7 +12,6 @@ Raises:
 
 from os import environ
 import typing
-import logging
 from uuid import UUID
 
 import jwt
@@ -22,7 +21,7 @@ from starlette.authentication import (
 from starlette.requests import HTTPConnection
 from starlette.exceptions import HTTPException
 
-logger = logging.getLogger('uvicorn.error')
+from ..logging import logger
 
 SECRET=None
 try:

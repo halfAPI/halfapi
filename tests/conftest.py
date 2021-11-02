@@ -23,7 +23,8 @@ from halfapi.cli.init import init, format_halfapi_etc
 from halfapi.cli.domain import domain, create_domain
 from halfapi.lib.responses import ORJSONResponse
 from halfapi.lib.jwt_middleware import JWTAuthenticationBackend
-logger = logging.getLogger('halfapitest')
+
+logger = logging.getLogger()
 
 PROJNAME = os.environ.get('PROJ','tmp_api')
 

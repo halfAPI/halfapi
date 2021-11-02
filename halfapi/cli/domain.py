@@ -3,7 +3,6 @@
 cli/domain.py Defines the "halfapi domain" cli commands
 """
 # builtins
-import logging
 import sys
 
 import click
@@ -16,7 +15,7 @@ from ..lib.schemas import schema_dict_dom
 from ..lib.routes import api_routes
 
 
-logger = logging.getLogger('halfapi')
+from ..logging import logger
 
 #################
 # domain create #

@@ -1,15 +1,13 @@
 """
 DomainMiddleware
 """
-import logging
-
 from starlette.datastructures import URL
 from starlette.middleware.base import (BaseHTTPMiddleware,
     RequestResponseEndpoint)
 from starlette.requests import Request
 from starlette.responses import Response
 
-logger = logging.getLogger('uvicorn.asgi')
+from ..logging import logger
 
 class DomainMiddleware(BaseHTTPMiddleware):
     """

@@ -1,6 +1,5 @@
 from halfapi.lib import acl
-import logging
-logger = logging.getLogger('uvicorn.asgi')
+from halfapi.logging import logger
 
 ACLS = {
     'GET' : [{'acl':acl.public}]
