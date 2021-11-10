@@ -12,7 +12,7 @@ image: python:3.8
 # only cache local items.
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  # REGISTRY_USERNAME - secret variable 
+  # REGISTRY_USERNAME - secret variable
   # REGISTRY_PASSWORD - secret variable
   # REGISTRY_SERVER - secret variable
   IMAGE_NAME: ${REGISTRY_SERVER}/malves/${CI_PROJECT_NAME}
@@ -47,12 +47,13 @@ run:
       - dist/*.whl
 
 build:
-  image: gite.lirmm.fr:5555/si-v4/docker
+  image: buildah/buildah
   dependencies:
     - build
   before_script:
     - podman version
     - buildah version
+      # - podman login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     # - podman login --username "${REGISTRY_USERNAME}" --password "${REGISTRY_PASSWORD}" "${REGISTRY_SERVER}"
   script:
     - buildah bud -t ${IMAGE_NAME}:${CI_COMMIT_SHA} .
