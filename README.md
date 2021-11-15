@@ -1,6 +1,9 @@
 # HalfAPI
 
-Base tools to develop comlex API with rights management.
+Base tools to develop complex API with rights management.
+
+This project was developped by Maxime Alves and Joël Maïzi. The name was chosen
+to reference [HalfORM](https://github.com/collorg/halfORM), a project written by Joël Maïzi.
 
 
 ## Dependencies
