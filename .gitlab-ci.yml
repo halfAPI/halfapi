@@ -47,16 +47,10 @@ run:
       - dist/*.whl
 
 build:
-  image: buildah/buildah
-  dependencies:
-    - build
-  before_script:
-    - podman version
-    - buildah version
-      # - podman login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-    # - podman login --username "${REGISTRY_USERNAME}" --password "${REGISTRY_PASSWORD}" "${REGISTRY_SERVER}"
+  image: $CI_REGISTRY/devtools/kaniko
   script:
-    - buildah bud -t ${IMAGE_NAME}:${CI_COMMIT_SHA} .
-    # - buildah push ${IMAGE_NAME}:${CI_COMMIT_SHA} docker://${IMAGE_NAME}:${CI_COMMIT_SHA}
-  after_script:
-    # - podman logout "${REGISTRY_SERVER}"
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY/malves/halfapi:latest
+  artifacts:
+    paths:
+      - /kaniko/.docker/config.json
