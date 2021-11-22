@@ -14,8 +14,9 @@ from ..lib.domain import gen_router_routes
 
 @click.argument('module', required=True)
 @click.option('--export', default=False, is_flag=True)
+@click.option('--noheader', default=False, is_flag=True)
 @cli.command()
-def routes(module, export=False):
+def routes(module, export=False, noheader=False):
     """
     The "halfapi routes" command
     """
@@ -25,13 +26,15 @@ def routes(module, export=False):
         raise click.BadParameter('Cannot import this module', param=module) from exc
 
     if export:
+        if not noheader:
+            click.echo(';'.join(('path', 'method', 'module:function', 'acl',
+            'in_parameters')))
         for path, verb, m_router, fct, parameters in gen_router_routes(mod, []):
             for param in parameters:
                 click.echo(';'.join((
                     path,
                     verb,
-                    m_router.__name__,
-                    fct.__name__,
+                    f'{m_router.__name__}:{fct.__name__}',
                     param['acl'].__name__,
                     ','.join((param.get('in', [])))
                 )))
