@@ -7,11 +7,13 @@ from types import FunctionType
 
 def test_gen_router_routes():
     from .dummy_domain import routers
-    for path, verb, fct, params in gen_router_routes(routers, ['dummy_domain']):
+    for path, verb, m_router, fct, params in gen_router_routes(routers, ['dummy_domain']):
         assert isinstance(path, str)
         assert verb in VERBS
         assert len(params) > 0
         assert hasattr(fct, '__call__')
+        assert len(m_router.__file__) > 0
+
 
 def test_gen_routes():
     from .dummy_domain.routers.abc.alphabet import TEST_uuid

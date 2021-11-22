@@ -194,6 +194,7 @@ def gen_router_routes(m_router: ModuleType, path: List[str]) -> \
                 continue
             yield ('/'.join(filter(lambda x: len(x) > 0, path)),
                 verb,
+                m_router,
                 *gen_routes(m_router, verb, path, params[verb])
             )
 

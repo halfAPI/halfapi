@@ -17,7 +17,7 @@ def test_get_config_route(dummy_project, application_domain, routers):
 def test_get_route(dummy_project, application_domain, routers):
     c = TestClient(application_domain)
     path = verb = params = None
-    for path, verb, _, params in gen_router_routes(routers, []):
+    for path, verb, _, _, params in gen_router_routes(routers, []):
         if len(params):
             route_path = '/dummy_domain/{}'.format(path)
             try:

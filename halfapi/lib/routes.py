@@ -122,7 +122,7 @@ def gen_domain_routes(m_domain: ModuleType):
     Returns:
         Generator(Route)
     """
-    for path, verb, fct, params in gen_router_routes(m_domain, []):
+    for path, verb, m_router, fct, params in gen_router_routes(m_domain, []):
         yield (
             Route(f'/{path}',
                 route_acl_decorator(
@@ -176,7 +176,7 @@ def api_routes(m_dom: ModuleType) -> Tuple[Dict, Dict]:
         return l_params
 
     d_res = {}
-    for path, verb, _, params in gen_router_routes(m_dom, []):
+    for path, verb, _, _, params in gen_router_routes(m_dom, []):
         if path not in d_res:
             d_res[path] = {}
         d_res[path][verb] = str_acl(params)
