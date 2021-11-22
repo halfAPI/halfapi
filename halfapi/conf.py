@@ -48,7 +48,7 @@ from .logging import logger
 PROJECT_NAME = environ.get('HALFAPI_PROJECT_NAME') or os.path.basename(os.getcwd())
 DOMAINSDICT = lambda: {}
 DOMAINS = {}
-PRODUCTION = False
+PRODUCTION = True
 LOGLEVEL = 'info'
 HOST = '127.0.0.1'
 PORT = '3000'
@@ -133,7 +133,7 @@ except FileNotFoundError as exc:
     logger.error('Missing secret file: %s', exc)
 
 PRODUCTION = config.getboolean('project', 'production',
-    fallback=environ.get('HALFAPI_PROD', False))
+    fallback=environ.get('HALFAPI_PROD', True))
 
 LOGLEVEL = config.get('project', 'loglevel',
     fallback=environ.get('HALFAPI_LOGLEVEL', 'info')).lower()
