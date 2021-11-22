@@ -22,7 +22,7 @@ import orjson
 # asgi framework
 from starlette.responses import PlainTextResponse, Response, JSONResponse
 
-from .jwt_middleware import JWTUser, Nobody
+from .user import JWTUser, Nobody
 
 
 __all__ = [
