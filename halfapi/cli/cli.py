@@ -34,3 +34,5 @@ if IS_PROJECT:
 
 else:
     from . import init
+
+from . import routes
