@@ -25,7 +25,7 @@ SCHEMAS = SchemaGenerator(
     {"openapi": "3.0.0", "info": {"title": "HalfAPI", "version": __version__}}
 )
 
-def get_api_routes(domains: Dict[str, ModuleType]) -> Coroutine:
+def get_api_routes(domains: Dict[str, ModuleType]) -> Dict:
     """
     description: Returns the current API routes dictionary
                  as a JSON object
@@ -63,15 +63,10 @@ def get_api_routes(domains: Dict[str, ModuleType]) -> Coroutine:
         }
     }
     """
-    routes = {
+    return {
         domain: api_routes(m_domain)[0]
         for domain, m_domain in domains.items()
     }
-
-    async def wrapped(request, *args, **kwargs):
-        return ORJSONResponse(routes)
-
-    return wrapped
 
 
 def get_api_domain_routes(m_domain: ModuleType) -> Coroutine:

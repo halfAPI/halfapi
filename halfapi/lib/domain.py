@@ -36,6 +36,11 @@ class UndefinedRoute(Exception):
 class UndefinedFunction(Exception):
     pass
 
+class NoDomainsException(Exception):
+    """ The exception that is raised when HalfAPI is called without domains
+    """
+    pass
+
 def route_decorator(fct: FunctionType, ret_type: str = 'json') -> Coroutine:
     """ Returns an async function that can be mounted on a router
     """

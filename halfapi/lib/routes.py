@@ -4,10 +4,10 @@ Routes module
 
 Fonctions :
     - route_acl_decorator
+    - gen_domain_routes
     - gen_starlette_routes
     - api_routes
     - api_acls
-    - debug_routes
 
 Exception :
     - DomainNotFoundError
@@ -15,7 +15,7 @@ Exception :
 """
 from datetime import datetime
 from functools import partial, wraps
-from typing import Callable, List, Dict, Generator, Tuple
+from typing import Callable, Coroutine, List, Dict, Generator, Tuple, Any
 from types import ModuleType, FunctionType
 
 from starlette.exceptions import HTTPException
@@ -24,6 +24,7 @@ from starlette.requests import Request
 from starlette.responses import Response, PlainTextResponse
 
 from halfapi.lib.domain import gen_router_routes, domain_acls
+from halfapi.lib.responses import ORJSONResponse
 from ..conf import DOMAINSDICT
 
 from ..logging import logger
@@ -32,7 +33,24 @@ class DomainNotFoundError(Exception):
     """ Exception when a domain is not importable
     """
 
-def route_acl_decorator(fct: Callable = None, params: List[Dict] = None):
+def JSONRoute(data: Any) -> Coroutine:
+    """
+    Returns a route function that returns the data as JSON
+
+    Parameters:
+        data (Any):
+            The data to return
+
+    Returns:
+        async function
+    """
+    async def wrapped(request, *args, **kwargs):
+        return ORJSONResponse(data)
+
+    return wrapped
+
+
+def route_acl_decorator(fct: Callable = None, params: List[Dict] = None) -> Coroutine:
     """
     Decorator for async functions that calls pre-conditions functions
     and appends kwargs to the target function
@@ -94,6 +112,26 @@ def route_acl_decorator(fct: Callable = None, params: List[Dict] = None):
     return caller
 
 
+def gen_domain_routes(m_domain: ModuleType):
+    """
+    Yields the Route objects for a domain
+
+    Parameters:
+        m_domains: ModuleType
+
+    Returns:
+        Generator(Route)
+    """
+    for path, verb, fct, params in gen_router_routes(m_domain, []):
+        yield (
+            Route(f'/{path}',
+                route_acl_decorator(
+                    fct,
+                    params
+                ),
+                methods=[verb])
+        )
+
 def gen_starlette_routes(d_domains: Dict[str, ModuleType]) -> Generator:
     """
     Yields the Route objects for HalfAPI app
@@ -104,18 +142,8 @@ def gen_starlette_routes(d_domains: Dict[str, ModuleType]) -> Generator:
     Returns:
         Generator(Route)
     """
-
     for domain_name, m_domain in d_domains.items():
-        for path, verb, fct, params in gen_router_routes(m_domain, []):
-            yield (
-                Route(f'/{domain_name}/{path}',
-                    route_acl_decorator(
-                        fct,
-                        params
-                    ),
-                    methods=[verb])
-            )
-
+        yield from gen_domain_routes(m_domain)
 
 
 def api_routes(m_dom: ModuleType) -> Tuple[Dict, Dict]:
@@ -177,27 +205,3 @@ def api_acls(request):
             res[domain][acl_name] = fct_result
 
     return res
-
-
-def debug_routes():
-    """ Halfapi debug routes definition
-    """
-    async def debug_log(request: Request, *args, **kwargs):
-        logger.debug('debuglog# %s', {datetime.now().isoformat()})
-        logger.info('debuglog# %s', {datetime.now().isoformat()})
-        logger.warning('debuglog# %s', {datetime.now().isoformat()})
-        logger.error('debuglog# %s', {datetime.now().isoformat()})
-        logger.critical('debuglog# %s', {datetime.now().isoformat()})
-        return Response('')
-    yield Route('/halfapi/log', debug_log)
-
-    async def error_code(request: Request, *args, **kwargs):
-        code = request.path_params['code']
-        raise HTTPException(code)
-
-    yield Route('/halfapi/error/{code:int}', error_code)
-
-    async def exception(request: Request, *args, **kwargs):
-        raise Exception('Test exception')
-
-    yield Route('/halfapi/exception', exception)

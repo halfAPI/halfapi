@@ -18,6 +18,7 @@ from starlette.responses import PlainTextResponse
 from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.testclient import TestClient
 from halfapi import __version__
+from halfapi.halfapi import HalfAPI
 from halfapi.cli.cli import cli
 from halfapi.cli.init import init, format_halfapi_etc
 from halfapi.cli.domain import domain, create_domain
@@ -94,7 +95,6 @@ def cli_runner():
     cli_runner_ = class_()
 
     yield cli_runner_
-
 
 @pytest.fixture
 def halfapicli(cli_runner):
@@ -279,22 +279,27 @@ def dummy_project():
 def routers():
     sys.path.insert(0, './tests')
 
-    from dummy_domain import routers
+    from .dummy_domain import routers
     return routers
 
 
 @pytest.fixture
-def application_debug():
-    from halfapi.app import HalfAPI
+def application_debug(routers):
     return HalfAPI({
         'SECRET':'turlututu',
-        'PRODUCTION':False
+        'PRODUCTION':False,
+        'DOMAINS': {
+            'dummy_domain': routers
+        },
+        'CONFIG':{
+            'domains': {'dummy_domain':routers},
+            'domain_config': {'dummy_domain': {'test': True}}
+        }
     }).application
 
 
 @pytest.fixture
 def application_domain(routers):
-    from halfapi.app import HalfAPI
     return HalfAPI({
         'SECRET':'turlututu',
         'PRODUCTION':True,
