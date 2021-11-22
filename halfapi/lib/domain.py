@@ -8,6 +8,7 @@ import re
 import sys
 import importlib
 import inspect
+from functools import wraps
 from types import ModuleType, FunctionType
 from typing import Coroutine, Generator
 from typing import Dict, List, Tuple, Iterator
@@ -45,6 +46,7 @@ def route_decorator(fct: FunctionType, ret_type: str = 'json') -> Coroutine:
     """ Returns an async function that can be mounted on a router
     """
     if ret_type == 'json':
+        @wraps(fct)
         @acl.args_check
         async def wrapped(request, *args, **kwargs):
             fct_args_spec = inspect.getfullargspec(fct).args
