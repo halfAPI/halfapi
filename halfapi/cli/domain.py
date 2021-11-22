@@ -44,13 +44,15 @@ def list_routes(domain, m_dom):
     """
 
     click.echo(f'\nDomain : {domain}\n')
+
     routes = api_routes(m_dom)[0]
     if len(routes):
         for key, item in routes.items():
             methods = '|'.join(list(item.keys()))
             click.echo(f'\t{key} : {methods}')
     else:
-        click.echo(f'\t**No ROUTES**')
+        click.echo('\t**No ROUTES**')
+        raise Exception('Routeless domain')
 
 
 
@@ -83,29 +85,30 @@ def domain(domains, delete, update, create, read):  #, domains, read, create, up
         update (boolean): If set, update the database for the selected domains
     """
 
+    dom_dict = DOMAINSDICT()
+
     if not domains:
         if create:
             # TODO: Connect to the create_domain function
             raise NotImplementedError
-
-        domains = DOMAINSDICT().keys()
     else:
-        domains_ = []
+        dom_dict_ = {}
+
         for domain_name in domains.split(','):
-            if domain_name in DOMAINSDICT().keys():
-                domains_.append(domain_name)
+            if domain_name in dom_dict.keys():
+                dom_dict_[domain_name] = dom_dict[domain_name]
                 continue
 
             click.echo(
                 f'Domain {domain_name}s is not activated in the configuration')
 
-        domains = domains_
+        dom_dict = dom_dict_
 
-    for domain_name in domains:
+    for domain_name, m_dom in dom_dict.items():
         if update:
             raise NotImplementedError
         if delete:
             raise NotImplementedError
 
         if read:
-            list_api_routes()
+            list_routes(domain_name, m_dom)
