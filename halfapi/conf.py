@@ -110,19 +110,19 @@ if len(PROJECT_NAME) == 0:
 DOMAINSDICT = lambda: d_domains(config)
 DOMAINS = DOMAINSDICT()
 if len(DOMAINS) == 0:
-    logger.info('Domain-less instance %s', d_domains(config))
+    logger.info('Running without domains: %s', d_domains(config) or 'empty domain dictionary')
 
 HOST = config.get('project', 'host', fallback=environ.get('HALFAPI_HOST', '127.0.0.1'))
 PORT = config.getint('project', 'port', fallback=environ.get('HALFAPI_PORT', '3000'))
 
+secret_path = config.get('project', 'secret', fallback=environ.get('HALFAPI_SECRET', ''))
 try:
-    with open(config.get('project', 'secret',
-        fallback=environ.get('HALFAPI_SECRET', ''))) as secret_file:
+    with open(secret_path, 'r') as secret_file:
 
         SECRET = secret_file.read().strip()
         CONFIG['secret'] = SECRET.strip()
 except FileNotFoundError as exc:
-    logger.error('Missing secret file: %s', exc)
+    logger.info('Running without secret file: %s', secret_path or 'no file specified')
 
 PRODUCTION = config.getboolean('project', 'production',
     fallback=environ.get('HALFAPI_PROD', True))
@@ -137,6 +137,8 @@ CONFIG = {
     'project_name': PROJECT_NAME,
     'production': PRODUCTION,
     'secret': SECRET,
+    'host': HOST,
+    'port': PORT,
     'domains': DOMAINS,
     'domain_config': {}
 }
