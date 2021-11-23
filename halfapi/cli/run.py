@@ -11,15 +11,24 @@ from .cli import cli
 from .domain import list_api_routes
 from ..conf import (PROJECT_NAME, HOST, PORT,
     PRODUCTION, LOGLEVEL, DOMAINSDICT)
+from ..logging import logger
 
-@click.option('--host', default=None)
-@click.option('--port', default=None)
+@click.option('--host', default=HOST)
+@click.option('--port', default=PORT)
 @click.option('--reload', default=False)
+@click.option('--secret', default=False)
+@click.option('--production', default=True)
+@click.option('--loglevel', default=LOGLEVEL)
+@click.option('--prefix', default='')
+@click.argument('schema', type=click.File('r'), required=False)
 @cli.command()
-def run(host, port, reload):
+def run(host, port, reload, secret, production, loglevel, prefix, schema):
     """
     The "halfapi run" command
     """
+    logger.debug('[run] host=%s port=%s reload=%s secret=%s production=%s loglevel=%s prefix=%s schema=%s',
+        host, port, reload, secret, production, loglevel, prefix, schema
+    )
 
     if not host:
         host = HOST
