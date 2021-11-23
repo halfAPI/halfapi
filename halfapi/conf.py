@@ -17,7 +17,6 @@ It defines the following globals :
     - HOST (str) - HALFAPI_HOST
     - PORT (int) - HALFAPI_PORT
     - CONF_DIR (str) - HALFAPI_CONF_DIR
-    - IS_PROJECT (bool)
     - config (ConfigParser)
 
 It reads the following ressource :
@@ -54,11 +53,6 @@ HOST = '127.0.0.1'
 PORT = '3000'
 SECRET = ''
 CONF_FILE = os.environ.get('HALFAPI_CONF_FILE', '.halfapi/config')
-
-is_project = lambda: os.path.isfile(CONF_FILE)
-
-
-
 
 config = ConfigParser(allow_no_value=True)
 
@@ -107,8 +101,6 @@ def read_config():
 
 CONFIG = {}
 read_config()
-
-IS_PROJECT = True
 
 PROJECT_NAME = config.get('project', 'name', fallback=PROJECT_NAME)
 

@@ -8,12 +8,6 @@ not loaded otherwise.
 # builtins
 import click
 
-IS_PROJECT = True
-try:
-    from ..conf import DOMAINS
-except Exception:
-    IS_PROJECT = False
-
 @click.group(invoke_without_command=True)
 @click.option('--version', is_flag=True)
 @click.pass_context
@@ -27,12 +21,8 @@ def cli(ctx, version):
         from halfapi import version
         click.echo(version())
 
-if IS_PROJECT:
-    from . import config
-    from . import domain
-    from . import run
-
-else:
-    from . import init
-
+from . import config
+from . import domain
+from . import run
+from . import init
 from . import routes
