@@ -172,9 +172,9 @@ def gen_routes(m_router: ModuleType,
 
 
 def gen_router_routes(m_router: ModuleType, path: List[str]) -> \
-    Iterator[Tuple[str, str, Coroutine, List]]:
+    Iterator[Tuple[str, str, ModuleType, Coroutine, List]]:
     """
-    Recursive generatore that parses a router (or a subrouter)
+    Recursive generator that parses a router (or a subrouter)
     and yields from gen_routes
 
     Parameters:
@@ -184,8 +184,10 @@ def gen_router_routes(m_router: ModuleType, path: List[str]) -> \
 
     Yields:
 
-        (str, str, Coroutine, List): A tuple containing the path, verb,
-            function and parameters of the route
+        (str, str, ModuleType, Coroutine, List): A tuple containing the path, verb,
+            router module, function reference and parameters of the route.
+            Function and parameters are yielded from then gen_routes function,
+            that decorates the endpoint function.
     """
 
     for subpath, params in read_router(m_router).items():

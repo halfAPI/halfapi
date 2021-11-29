@@ -6,5 +6,9 @@ ACLS = {
 }
 
 def get(halfapi):
+    """
+    description:
+        returns the configuration of the domain
+    """
     logger.error('%s', halfapi)
     return halfapi['config']

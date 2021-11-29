@@ -122,10 +122,23 @@ def api_routes(m_dom: ModuleType) -> Tuple[Dict, Dict]:
         return l_params
 
     d_res = {}
-    for path, verb, _, _, params in gen_router_routes(m_dom, []):
-        if path not in d_res:
-            d_res[path] = {}
-        d_res[path][verb] = str_acl(params)
+    for path, verb, m_router, fct, params in gen_router_routes(m_dom, []):
+        try:
+            if path not in d_res:
+                d_res[path] = {}
+
+            d_res[path][verb] = {
+                'docs': yaml.load(fct.__doc__, Loader=yaml.FullLoader),
+                'acls': str_acl(params)
+            }
+        except Exception as exc:
+            logger.error("""Error in route generation
+                path:%s
+                verb:%s
+                router:%s
+                fct:%s
+                params:%s """, path, verb, m_router, fct, params)
+            raise exc
 
     return d_res, d_acls
 

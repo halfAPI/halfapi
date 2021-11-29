@@ -41,4 +41,4 @@ def test_get_api_dummy_domain_routes(application_domain, routers):
     assert 'abc/alphabet' in d_r
     assert 'GET' in d_r['abc/alphabet']
     assert len(d_r['abc/alphabet']['GET']) > 0
-    assert 'acl' in d_r['abc/alphabet']['GET'][0]
+    assert 'acls' in d_r['abc/alphabet']['GET']

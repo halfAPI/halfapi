@@ -3,4 +3,8 @@ ACLS = {
     'GET' : [{'acl':acl.public}]
 }
 def get():
+    """
+    description:
+        Not implemented
+    """
     raise NotImplementedError
