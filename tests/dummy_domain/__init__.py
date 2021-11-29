@@ -1,0 +1,5 @@
+ROUTES = {
+    '': {
+        'SUBROUTES': ['async']
+    }
+}

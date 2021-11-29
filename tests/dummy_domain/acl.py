@@ -1,8 +1,11 @@
+from halfapi.lib import acl
+from halfapi.lib.acl import public
 from random import randint
 
-public = lambda *args: True
 
-random = lambda *args: randint(0,1) == 1
+def random():
+    return randint(0,1) == 1
 
-denied = lambda *args: False
+def denied():
+    return False
 

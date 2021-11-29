@@ -49,10 +49,10 @@ class DomainMiddleware(BaseHTTPMiddleware):
         if 'args' in request.scope:
             # Set the http headers "x-args-required" and "x-args-optional"
 
-            if 'required' in request.scope['args']:
+            if len(request.scope['args'].get('required', set())):
                 response.headers['x-args-required'] = \
                     ','.join(request.scope['args']['required'])
-            if 'optional' in request.scope['args']:
+            if len(request.scope['args'].get('optional', set())):
                 response.headers['x-args-optional'] = \
                     ','.join(request.scope['args']['optional'])
 
