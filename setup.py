@@ -49,7 +49,8 @@ setup(
         "uvicorn>=0.13,<1",
         "orjson>=3.4.7,<4",
         "pyyaml>=5.3.1,<6",
-        "timing-asgi>=0.2.1,<1"
+        "timing-asgi>=0.2.1,<1",
+        "schema>=0.7.4,<1"
     ],
     classifiers=[
         "Development Status :: 3 - Alpha",
