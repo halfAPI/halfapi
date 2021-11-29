@@ -1,8 +1,11 @@
-from halfapi.lib import acl
+from ... import acl
 from halfapi.logging import logger
 
 ACLS = {
-    'GET' : [{'acl':acl.public}]
+    'GET' : [
+        {'acl':acl.public},
+        {'acl':acl.random},
+    ]
 }
 
 def get(halfapi):
