@@ -53,6 +53,7 @@ HOST = '127.0.0.1'
 PORT = '3000'
 SECRET = ''
 CONF_FILE = os.environ.get('HALFAPI_CONF_FILE', '.halfapi/config')
+SCHEMA = {}
 
 config = ConfigParser(allow_no_value=True)
 

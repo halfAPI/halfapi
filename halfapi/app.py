@@ -1,9 +1,8 @@
 from .halfapi import HalfAPI
-from .conf import PRODUCTION, SECRET, DOMAINS, CONFIG
+from .conf import CONFIG, SCHEMA
+from .logging import logger
 
-application = HalfAPI({
-    'PRODUCTION': PRODUCTION,
-    'SECRET': SECRET,
-    'DOMAINS': DOMAINS,
-    'CONFIG': CONFIG,
-}).application
+logger.info('CONFIG: %s', CONFIG)
+logger.info('SCHEMA: %s', SCHEMA)
+
+application = HalfAPI(CONFIG, SCHEMA or None).application

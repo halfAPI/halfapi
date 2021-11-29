@@ -9,8 +9,8 @@ import uvicorn
 
 from .cli import cli
 from .domain import list_api_routes
-from ..conf import (PROJECT_NAME, HOST, PORT,
-    PRODUCTION, LOGLEVEL, DOMAINSDICT)
+from ..conf import (PROJECT_NAME, HOST, PORT, SCHEMA,
+    PRODUCTION, LOGLEVEL, DOMAINSDICT, CONFIG)
 from ..logging import logger
 
 @click.option('--host', default=HOST)
