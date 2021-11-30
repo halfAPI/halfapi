@@ -32,6 +32,7 @@ test:
     - python3 -V  # Print out python version for debugging
     - pip3 install pipenv
     - pipenv install  --dev --skip-lock
+    - pipenv run pytest --version
     - pipenv run pytest -v
     - pipenv run halfapi --version
 
