@@ -4,6 +4,7 @@ import importlib
 import subprocess
 import time
 import pytest
+from pprint import pprint
 from starlette.routing import Route
 from starlette.testclient import TestClient
 
@@ -11,8 +12,11 @@ from halfapi.lib.domain import gen_router_routes
 
 def test_get_config_route(dummy_project, application_domain, routers):
     c = TestClient(application_domain)
-    r = c.get('/dummy_domain/config')
+    r = c.get('/config')
+    assert r.status_code == 200
+    pprint(r.json())
     assert 'test' in r.json()
+
 def test_get_route(dummy_project, application_domain, routers):
     c = TestClient(application_domain)
     path = verb = params = None
@@ -27,7 +31,7 @@ def test_get_route(dummy_project, application_domain, routers):
 
     for route_def in []:#dummy_domain_routes:
         path, verb = route_def[0], route_def[1]
-        route_path = '/dummy_domain/{}'.format(path)
+        route_path = '/{}'.format(path)
         print(route_path)
         try:
             if verb.lower() == 'get':
@@ -62,7 +66,7 @@ def test_get_route(dummy_project, application_domain, routers):
         for route_def in dummy_domain_path_routes:
             path, verb = route_def[0], route_def[1]
             path = path.format(test=str(test_uuid))
-            route_path = f'/dummy_domain/{path}'
+            route_path = f'/{path}'
             if verb.lower() == 'get':
                 r = c.get(f'{route_path}')
 
@@ -73,14 +77,14 @@ def test_delete_route(dummy_project, application_domain, routers):
     c = TestClient(application_domain)
     from uuid import uuid4
     arg = str(uuid4())
-    r = c.delete(f'/dummy_domain/abc/alphabet/{arg}')
+    r = c.delete(f'/abc/alphabet/{arg}')
     assert r.status_code == 200
     assert isinstance(r.json(), str)
 
 def test_arguments_route(dummy_project, application_domain, routers):
     c = TestClient(application_domain)
 
-    path = '/dummy_domain/arguments'
+    path = '/arguments'
     r = c.get(path)
     assert r.status_code == 400
     r = c.get(path, params={'foo':True})
@@ -90,7 +94,7 @@ def test_arguments_route(dummy_project, application_domain, routers):
     assert r.status_code == 200
     for key, val in arg.items():
         assert r.json()[key] == str(val)
-    path = '/dummy_domain/async/arguments'
+    path = '/async/arguments'
     r = c.get(path)
     assert r.status_code == 400
     r = c.get(path, params={'foo':True})

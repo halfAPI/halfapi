@@ -197,7 +197,7 @@ def project_runner(runner, halfapicli, halfapi_conf_dir):
         ###
         # add dummy domain
         ###
-        create_domain('tests', '.dummy_domain.routers')
+        create_domain('dummy_domain', '.routers')
         ###
 
         yield halfapicli
@@ -264,9 +264,10 @@ def dummy_project():
             f'secret = {halfapi_secret}\n',
             'port = 3050\n',
             'loglevel = debug\n',
-            '[domains]\n',
-            f'{domain} = .routers',
-            f'[{domain}]',
+            '[domain]\n',
+            f'name = {domain}\n',
+            'router = routers\n',
+            f'[{domain}]\n',
             'test = True'
         ])
 
@@ -288,11 +289,11 @@ def application_debug(routers):
     halfAPI = HalfAPI({
         'secret':'turlututu',
         'production':False,
-        'domains': {
-            'dummy_domain': routers
+        'domain': {
+            'name': 'dummy_domain',
+            'router': 'routers'
         },
         'config':{
-            'domains': {'dummy_domain':routers},
             'domain_config': {'dummy_domain': {'test': True}}
         }
     })
@@ -310,9 +311,11 @@ def application_domain(routers):
     return HalfAPI({
         'secret':'turlututu',
         'production':True,
-        'domains':{'dummy_domain':routers},
+        'domain': {
+            'name': 'dummy_domain',
+            'router': 'routers'
+        },
         'config':{
-            'domains': {'dummy_domain':routers},
             'domain_config': {'dummy_domain': {'test': True}}
         }
     }).application

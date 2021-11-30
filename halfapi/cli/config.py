@@ -9,10 +9,6 @@ import click
 from .cli import cli
 from ..conf import CONFIG
 
-DOMAINS_STR='\n'.join(
-    [ ' = '.join((key, val.__name__)) for key, val in CONFIG['domains'].items() ]
-)
-
 CONF_STR="""
 [project]
 name = {project_name}
@@ -20,8 +16,11 @@ host = {host}
 port = {port}
 production = {production}
 
-[domains]
-""".format(**CONFIG) + DOMAINS_STR
+[domain]
+name = {domain_name}
+router = {router}
+"""
+
 
 @cli.command()
 def config():

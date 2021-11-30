@@ -28,10 +28,11 @@ def create_domain(domain_name: str, module_path: str):
     #    logger.warning('Domain **%s** is already in project', domain_name)
     #    sys.exit(1)
 
-    if not config.has_section('domains'):
-        config.add_section('domains')
+    if not config.has_section('domain'):
+        config.add_section('domain')
 
-    config.set('domains', domain_name, module_path)
+    config.set('domain', 'name', domain_name)
+    config.set('domain', 'router', module_path)
     write_config()
 
 

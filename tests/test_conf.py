@@ -1,22 +1,23 @@
 from halfapi.halfapi import HalfAPI
 
+halfapi_arg = { 'domain': { 'name': 'dummy_domain', 'router': 'routers' } }
 def test_conf_production_default():
     halfapi = HalfAPI({
-        'domains': {'test': True}
+        **halfapi_arg
     })
     assert halfapi.PRODUCTION is True
 
 def test_conf_production_true():
     halfapi = HalfAPI({
+        **halfapi_arg,
         'production': True,
-        'domains': {'test': True}
     })
     assert halfapi.PRODUCTION is True
 
 def test_conf_production_false():
     halfapi = HalfAPI({
+        **halfapi_arg,
         'production': False,
-        'domains': {'test': True}
     })
     assert halfapi.PRODUCTION is False
 

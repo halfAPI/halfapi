@@ -5,4 +5,5 @@ from .logging import logger
 logger.info('CONFIG: %s', CONFIG)
 logger.info('SCHEMA: %s', SCHEMA)
 
-application = HalfAPI(CONFIG, SCHEMA or None).application
+application = HalfAPI(
+    CONFIG, SCHEMA or None).application

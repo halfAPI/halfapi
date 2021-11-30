@@ -29,61 +29,61 @@ from timing_asgi.integrations import StarletteScopeToName
 
 # module libraries
 
+from .lib.constants import API_SCHEMA_DICT
 from .lib.domain_middleware import DomainMiddleware
 from .lib.timing import HTimingClient
 from .lib.domain import NoDomainsException
-
-from halfapi.lib.jwt_middleware import JWTAuthenticationBackend
-
-from halfapi.lib.responses import (ORJSONResponse, UnauthorizedResponse,
+from .lib.jwt_middleware import JWTAuthenticationBackend
+from .lib.responses import (ORJSONResponse, UnauthorizedResponse,
     NotFoundResponse, InternalServerErrorResponse, NotImplementedResponse,
     ServiceUnavailableResponse)
-
-from halfapi.lib.routes import gen_domain_routes, gen_schema_routes, JSONRoute
-from halfapi.lib.schemas import schema_json, get_acls
-from halfapi.logging import logger, config_logging
+from .lib.domain import domain_schema_dict
+from .lib.routes import gen_domain_routes, gen_schema_routes, JSONRoute
+from .lib.schemas import schema_json, get_acls
+from .logging import logger, config_logging
 from halfapi import __version__
 
 
 
 class HalfAPI:
-    def __init__(self, config, routes_dict=None):
+    def __init__(self, config,
+        routes_dict=None):
         config_logging(logging.DEBUG)
 
         SECRET = config.get('secret')
         PRODUCTION = config.get('production', True)
-        DOMAINS = config.get('domains', {})
-        CONFIG = config.get('config', {
-            'domains': DOMAINS
-        })
+        CONFIG = config.get('config', {})
 
-        if not (DOMAINS or routes_dict):
+        domain = config.get('domain')['name']
+        router = config.get('domain')['router']
+
+        if not (domain and router):
             raise NoDomainsException()
 
         self.PRODUCTION = PRODUCTION
         self.CONFIG = CONFIG
-        self.DOMAINS = DOMAINS
         self.SECRET = SECRET
 
         self.__application = None
 
-        """ The base route contains the route schema
-        """
-        if routes_dict:
-            any_route = routes_dict[
-                list(routes_dict.keys())[0]
-            ]
-            domain, router = any_route[
-                list(any_route.keys())[0]
-            ]['module'].__name__.split('.')[0:2]
+        if domain and router:
+            m_domain = importlib.import_module(f'{domain}')
+            m_domain_router = importlib.import_module(f'{domain}.{router}')
+            m_domain_acl = importlib.import_module(f'{domain}.acl')
 
-            DOMAINS = {}
-            DOMAINS[domain] = importlib.import_module(f'{domain}.{router}')
+        self.schema = { **API_SCHEMA_DICT }
 
-        if DOMAINS:
-            self.api_routes = {}
+        self.schema['domain'] = {
+            'name': domain,
+            'version': getattr(m_domain, '__version__', ''),
+            'patch_release': getattr(m_domain, '__path_release__', ''),
+            'acls': tuple(getattr(m_domain_acl, 'ACLS', ()))
+        }
 
-        routes = [ Route('/', JSONRoute(self.api_routes)) ]
+        self.schema['paths'] = domain_schema_dict(m_domain_router)
+
+
+        routes = [ Route('/', JSONRoute(self.schema)) ]
 
         """ HalfAPI routes (if not PRODUCTION, includes debug routes)
         """
@@ -96,20 +96,9 @@ class HalfAPI:
             logger.info('Domain-less mode : the given schema defines the activated routes')
             for route in gen_schema_routes(routes_dict):
                 routes.append(route)
-        elif DOMAINS:
-            # Mount the domain routes
-            logger.info('Domains mode : the list of domains is retrieves from the configuration file')
-            for domain, m_domain in DOMAINS.items():
-                if domain not in self.api_routes.keys():
-                    raise Exception(f'The domain does not have a schema: {domain}')
-                routes.append(
-                    Route(f'/{domain}', JSONRoute(self.api_routes[domain]))
-                )
-                routes.append(
-                    Mount(f'/{domain}', routes=gen_domain_routes(m_domain))
-                )
-
-
+        else:
+            for route in gen_domain_routes(m_domain_router):
+                routes.append(route)
 
         self.__application = Starlette(
             debug=not PRODUCTION,
@@ -125,6 +114,7 @@ class HalfAPI:
 
         self.__application.add_middleware(
             DomainMiddleware,
+            domain=domain,
             config=CONFIG
         )
 
@@ -192,3 +182,7 @@ class HalfAPI:
             raise Exception('Test exception')
 
         yield Route('/exception', exception)
+
+    @staticmethod
+    def api_schema(domain):
+        pass

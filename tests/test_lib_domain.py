@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import importlib
-from halfapi.lib.domain import VERBS, gen_routes, gen_router_routes, MissingAclError
+from halfapi.lib.domain import VERBS, gen_routes, gen_router_routes, \
+    MissingAclError, domain_schema_dict, domain_schema_list
 
 from types import FunctionType
 
@@ -36,3 +37,15 @@ def test_gen_routes():
     assert isinstance(params, list)
     assert len(TEST_uuid.ACLS['GET']) == len(params)
 
+def test_domain_schema_dict():
+    from .dummy_domain import routers
+    d_res = domain_schema_dict(routers)
+
+    assert isinstance(d_res, dict)
+
+def test_domain_schema_list():
+    from .dummy_domain import routers
+    res = domain_schema_list(routers)
+
+    assert isinstance(res, list)
+    assert len(res) > 0

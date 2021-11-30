@@ -59,6 +59,12 @@ that is available in the python path.
 
 Run the project by using the `halfapi run` command.
 
+You can try the dummy_domain with the following command.
+
+```
+python -m halfapi routes --export --noheader dummy_domain.routers | python -m halfapi run -
+```
+
 
 ## API Testing
 

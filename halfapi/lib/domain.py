@@ -12,6 +12,7 @@ from functools import wraps
 from types import ModuleType, FunctionType
 from typing import Coroutine, Generator
 from typing import Dict, List, Tuple, Iterator
+import yaml
 
 from starlette.exceptions import HTTPException
 
@@ -227,6 +228,60 @@ def gen_router_routes(m_router: ModuleType, path: List[str]) -> \
             path.pop()
 
         path.pop()
+
+
+def domain_schema_dict(m_router: ModuleType) -> Dict:
+    """ gen_router_routes return values as a dict
+    Parameters:
+
+       m_router (ModuleType): The domain routers' module
+
+    Returns:
+
+       Dict: Schema of dict is halfapi.lib.constants.DOMAIN_SCHEMA
+    """
+    d_res = {}
+
+    for path, verb, m_router, fct, parameters in gen_router_routes(m_router, []):
+        if path not in d_res:
+            d_res[path] = {}
+
+        if verb not in d_res[path]:
+            d_res[path][verb] = {}
+
+        d_res[path][verb]['callable'] = f'{m_router.__name__}:{fct.__name__}'
+        d_res[path][verb]['docs'] = yaml.safe_load(fct.__doc__)
+        d_res[path][verb]['acls'] = list(map(lambda elt: { **elt, 'acl': elt['acl'].__name__ },
+            parameters))
+
+    return d_res
+
+def domain_schema_list(m_router: ModuleType) -> List:
+    """ Schema as list, one row by route/acl
+    Parameters:
+
+       m_router (ModuleType): The domain routers' module
+
+    Returns:
+
+       List[Tuple]: (path, verb, callable, doc, acls)
+    """
+    res = []
+
+    for path, verb, m_router, fct, parameters in gen_router_routes(m_router, []):
+        for params in parameters:
+            res.append((
+                path,
+                verb,
+                f'{m_router.__name__}:{fct.__name__}',
+                params.get('acl').__name__,
+                params.get('args', {}).get('required', []),
+                params.get('args', {}).get('optional', []),
+                params.get('out', [])
+            ))
+
+    return res
+
 
 
 def d_domains(config) -> Dict[str, ModuleType]:

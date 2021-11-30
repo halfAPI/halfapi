@@ -13,15 +13,15 @@ class DomainMiddleware(BaseHTTPMiddleware):
     """
     DomainMiddleware adds the api routes and acls to the following scope keys :
 
-        - domains
         - api
         - acl
     """
 
-    def __init__(self, app, config):
+    def __init__(self, app, domain, config):
+        logger.info('DomainMiddleware %s %s', domain, config)
         super().__init__(app)
+        self.domain = domain
         self.config = config
-        self.domains = {}
         self.request = None
 
 
@@ -31,14 +31,9 @@ class DomainMiddleware(BaseHTTPMiddleware):
         Call of the route fonction (decorated or not)
         """
 
-        l_path = URL(scope=request.scope).path.split('/')
-        cur_domain = l_path[0]
-        if len(cur_domain) == 0 and len(l_path) > 1:
-            cur_domain = l_path[1]
-
-        request.scope['domain'] = cur_domain
-        request.scope['config'] = self.config['domain_config'][cur_domain] \
-            if cur_domain in self.config.get('domain_config', {}) else {}
+        request.scope['domain'] = self.domain
+        request.scope['config'] = self.config['domain_config'][self.domain] \
+            if self.domain in self.config.get('domain_config', {}) else {}
 
         response = await call_next(request)
 
@@ -56,6 +51,6 @@ class DomainMiddleware(BaseHTTPMiddleware):
                 response.headers['x-args-optional'] = \
                     ','.join(request.scope['args']['optional'])
 
-        response.headers['x-domain'] = cur_domain
+        response.headers['x-domain'] = self.domain
 
         return response

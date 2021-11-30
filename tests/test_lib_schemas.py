@@ -6,7 +6,7 @@ from starlette.authentication import (
     UnauthenticatedUser)
 
 from halfapi.lib.schemas import schema_dict_dom, schema_to_csv, schema_csv_dict
-from halfapi.lib.constants import DOMAIN_SCHEMA
+from halfapi.lib.constants import DOMAIN_SCHEMA, API_SCHEMA
 
 from halfapi import __version__
 
@@ -22,20 +22,11 @@ def test_get_api_schema(project_runner, application_debug):
     assert isinstance(c, TestClient)
     d_r = r.json()
     assert isinstance(d_r, dict)
-
-def test_get_schema_route(project_runner, application_debug):
-    c = TestClient(application_debug)
-    assert isinstance(c, TestClient)
-    r = c.get('/halfapi/schema')
-    d_r = r.json()
-    assert isinstance(d_r, dict)
-    assert 'openapi' in d_r.keys()
-    assert 'info' in d_r.keys()
-    assert d_r['info']['title'] == 'HalfAPI'
-    assert d_r['info']['version'] == __version__
-    assert 'paths' in d_r.keys()
+    pprint(d_r)
+    assert API_SCHEMA.validate(d_r)
 
 
+"""
 def test_get_api_dummy_domain_routes(application_domain, routers):
     c = TestClient(application_domain)
     r = c.get('/dummy_domain')
@@ -46,6 +37,7 @@ def test_get_api_dummy_domain_routes(application_domain, routers):
     assert 'GET' in d_r['abc/alphabet']
     assert len(d_r['abc/alphabet']['GET']) > 0
     assert 'acls' in d_r['abc/alphabet']['GET']
+"""
 
 def test_schema_to_csv():
     csv = schema_to_csv('dummy_domain.routers', False)
@@ -57,4 +49,5 @@ def test_schema_csv_dict():
     assert isinstance(csv, str)
     schema_d = schema_csv_dict(csv.split('\n'))
     assert isinstance(schema_d, dict)
+
 

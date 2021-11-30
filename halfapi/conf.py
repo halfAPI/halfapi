@@ -53,6 +53,9 @@ HOST = '127.0.0.1'
 PORT = '3000'
 SECRET = ''
 CONF_FILE = os.environ.get('HALFAPI_CONF_FILE', '.halfapi/config')
+
+DOMAIN = None
+ROUTER = None
 SCHEMA = {}
 
 config = ConfigParser(allow_no_value=True)
@@ -140,7 +143,10 @@ CONFIG = {
     'secret': SECRET,
     'host': HOST,
     'port': PORT,
-    'domains': DOMAINS,
+    'domain': {
+        'name': None,
+        'router': None
+    },
     'domain_config': {}
 }
 

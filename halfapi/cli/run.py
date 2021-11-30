@@ -10,7 +10,7 @@ import uvicorn
 from .cli import cli
 from .domain import list_api_routes
 from ..conf import (PROJECT_NAME, HOST, PORT, SCHEMA,
-    PRODUCTION, LOGLEVEL, DOMAINSDICT, CONFIG)
+    PRODUCTION, LOGLEVEL, DOMAINSDICT, CONFIG, DOMAIN, ROUTER)
 from ..logging import logger
 from ..lib.schemas import schema_csv_dict
 
@@ -20,11 +20,13 @@ from ..lib.schemas import schema_csv_dict
 @click.option('--secret', default=False)
 @click.option('--production', default=True)
 @click.option('--loglevel', default=LOGLEVEL)
-@click.option('--prefix', default='')
+@click.option('--prefix', default='/')
 @click.option('--check', default=True)
 @click.argument('schema', type=click.File('r'), required=False)
+@click.argument('router', required=False)
+@click.argument('domain', required=False)
 @cli.command()
-def run(host, port, reload, secret, production, loglevel, prefix, check, schema):
+def run(host, port, reload, secret, production, loglevel, prefix, check, schema, router, domain):
     """
     The "halfapi run" command
     """
@@ -50,9 +52,12 @@ def run(host, port, reload, secret, production, loglevel, prefix, check, schema)
 
     sys.path.insert(0, os.getcwd())
 
+    CONFIG.get('domain')['name'] = domain
+    CONFIG.get('domain')['router'] = router
+
     if schema:
         # Populate the SCHEMA global with the data from the given file
-        for key, val in schema_csv_dict(schema).items():
+        for key, val in schema_csv_dict(schema, prefix).items():
             SCHEMA[key] = val
 
     # list_api_routes()

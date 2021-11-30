@@ -17,7 +17,7 @@ from types import ModuleType
 from starlette.schemas import SchemaGenerator
 
 from .. import __version__
-from .domain import gen_router_routes
+from .domain import gen_router_routes, domain_schema_list
 from ..logging import logger
 from .routes import gen_starlette_routes, api_routes, api_acls
 from .responses import ORJSONResponse
@@ -67,7 +67,7 @@ def schema_to_csv(module_name, header=True) -> str:
     lines should be unique in the result string;
     """
     # retrieve module
-    mod = importlib.import_module(module_name)
+    m_router = importlib.import_module(module_name)
     lines = []
     if header:
         lines.append([
@@ -79,35 +79,16 @@ def schema_to_csv(module_name, header=True) -> str:
             'out'
         ])
 
-
-    for path, verb, m_router, fct, parameters in gen_router_routes(mod, []):
-        """ Call route generator (.lib.domain)
-        """
-
-        for param in parameters:
-            """ Each parameters row represents rules for a specific ACL
-            """
-            fields = (
-                f'/{path}',
-                verb,
-                f'{m_router.__name__}:{fct.__name__}',
-                param['acl'].__name__,
-                ','.join((param.get('args', {}).get('required', set()))),
-                ','.join((param.get('args', {}).get('optional', set()))),
-                ','.join((param.get('out', set())))
-            )
-
-            if fields[0:4] in map(lambda elt: elt[0:4], lines):
-                raise Exception(
-                    'Already defined acl for this route \
-                    (path: {}, verb: {}, acl: {})'.format(
-                        path,
-                        verb,
-                        param['acl'].__name__
-                    )
-                )
-
-            lines.append(fields)
+    for line in domain_schema_list(m_router):
+        lines.append([
+            line[0],
+            line[1],
+            line[2],
+            line[3],
+            ','.join(line[4]),
+            ','.join(line[5]),
+            ','.join(line[6])
+        ])
 
     return '\n'.join(
         [ ';'.join(fields) for fields in lines ]
@@ -115,7 +96,7 @@ def schema_to_csv(module_name, header=True) -> str:
 
 
 
-def schema_csv_dict(csv: List[str]) -> Dict:
+def schema_csv_dict(csv: List[str], prefix='/') -> Dict:
     package = None
     schema_d = {}
 
@@ -125,8 +106,13 @@ def schema_csv_dict(csv: List[str]) -> Dict:
 
 
     for line in csv:
+        if not line:
+            continue
+
         path, verb, router, acl_fct_name, args_req, args_opt, out = line.strip().split(';')
         logger.info('schema_csv_dict %s %s %s', path, args_req, args_opt)
+        path = f'{prefix}{path}'
+
         if path not in schema_d:
             schema_d[path] = {}
 

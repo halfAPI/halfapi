@@ -9,7 +9,8 @@ def test_halfapi_dummy_domain():
     with patch('starlette.applications.Starlette') as mock:
         mock.return_value = MagicMock()
         halfapi = HalfAPI({
-            'domains': {
-                'dummy_domain': '.routers'
+            'domain': {
+                'name': 'dummy_domain',
+                'router': 'routers'
             }
         })

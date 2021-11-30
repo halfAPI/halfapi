@@ -40,7 +40,7 @@ TMPL_HALFAPI_CONFIG = """[project]
 name = {name}
 halfapi_version = {halfapi_version}
 
-[domains]
+[domain]
 """
 
 @click.argument('project')
