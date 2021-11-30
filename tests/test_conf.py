@@ -40,6 +40,4 @@ def test_conf_variables():
     assert isinstance(HOST, str)
     assert isinstance(PORT, str)
     assert str(int(PORT)) == PORT
-    PORT = 'abc'
-    assert str(int(PORT)) == PORT
     assert isinstance(CONF_DIR, str)

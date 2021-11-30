@@ -81,6 +81,7 @@ class HalfRoute(Route):
                         return PlainTextResponse(param['acl'].__name__)
 
                     logger.debug('acl_decorator %s', param)
+                    logger.debug('calling %s:%s %s %s', fct.__module__, fct.__name__, args, kwargs)
                     return await fct(
                         req, *args,
                         **{

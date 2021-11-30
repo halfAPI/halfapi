@@ -66,7 +66,7 @@ def args_check(fct):
             return ', '.join(array)
 
 
-        args_d = kwargs.get('args', None)
+        args_d = req.scope.get('args')
         if args_d is not None:
             required = args_d.get('required', set())
 
@@ -93,6 +93,8 @@ def args_check(fct):
             data = data_
 
         kwargs['data'] = data
+
+        logger.debug('args_check %s:%s %s %s', fct.__module__, fct.__name__, args, kwargs)
 
         return await fct(req, *args, **kwargs)
 

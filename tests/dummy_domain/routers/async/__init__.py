@@ -1,4 +1,4 @@
-from halfapi.lib.responses import ORJSONResponse
+from halfapi.lib.responses import ORJSONResponse, NotImplementedResponse
 from ... import acl
 
 ROUTES = {
@@ -26,26 +26,25 @@ async def get_abc_alphabet_TEST(request, *args, **kwargs):
     """
     description: Not implemented
     """
-    raise NotImplementedError
+    return NotImplementedResponse()
 
 async def get_abc_pinnochio(request, *args, **kwargs):
     """
     description: Not implemented
     """
-    raise NotImplementedError
+    return NotImplementedResponse()
 
 async def get_config(request, *args, **kwargs):
     """
     description: Not implemented
     """
-    raise NotImplementedError
+    return NotImplementedResponse()
 
 async def get_arguments(request, *args, **kwargs):
     """
     description: Liste des datatypes.
     """
-
     return ORJSONResponse({
-        'foo': kwargs.get('foo'),
-        'bar': kwargs.get('bar')
+        'foo': kwargs.get('data').get('foo'),
+        'bar': kwargs.get('data').get('bar')
     })

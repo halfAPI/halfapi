@@ -16,7 +16,6 @@ Cli = cli.cli
 PROJNAME = os.environ.get('PROJ','tmp_api')
 
 
-@pytest.mark.incremental
 class TestCli():
     def test_options(self, runner):
         # Wrong command

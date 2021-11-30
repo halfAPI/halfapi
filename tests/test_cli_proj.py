@@ -12,7 +12,6 @@ from configparser import ConfigParser
 PROJNAME = os.environ.get('PROJ','tmp_api')
 
 
-@pytest.mark.incremental
 class TestCliProj():
     def test_cmds(self, project_runner):
         assert project_runner('--help').exit_code == 0
@@ -24,7 +23,6 @@ class TestCliProj():
         r = project_runner('domain')
         assert r.exit_code == 0
 
-    @pytest.mark.skip
     def test_config_commands(self, project_runner):
         try:
             r = project_runner('config')

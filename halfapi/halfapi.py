@@ -11,6 +11,7 @@ It defines the following globals :
 """
 import logging
 import time
+import importlib
 from datetime import datetime
 
 # asgi framework
@@ -38,7 +39,7 @@ from halfapi.lib.responses import (ORJSONResponse, UnauthorizedResponse,
     NotFoundResponse, InternalServerErrorResponse, NotImplementedResponse,
     ServiceUnavailableResponse)
 
-from halfapi.lib.routes import gen_domain_routes, JSONRoute
+from halfapi.lib.routes import gen_domain_routes, gen_schema_routes, JSONRoute
 from halfapi.lib.schemas import get_api_routes, get_api_domain_routes, schema_json, get_acls
 from halfapi.logging import logger, config_logging
 from halfapi import __version__
@@ -68,7 +69,20 @@ class HalfAPI:
 
         """ The base route contains the route schema
         """
-        self.api_routes = get_api_routes(DOMAINS)
+        if routes_dict:
+            any_route = routes_dict[
+                list(routes_dict.keys())[0]
+            ]
+            domain, router = any_route[
+                list(any_route.keys())[0]
+            ]['module'].__name__.split('.')[0:2]
+
+            DOMAINS = {}
+            DOMAINS[domain] = importlib.import_module(f'{domain}.{router}')
+
+        if DOMAINS:
+            self.api_routes = get_api_routes(DOMAINS)
+
         routes = [ Route('/', JSONRoute(self.api_routes)) ]
 
         """ HalfAPI routes (if not PRODUCTION, includes debug routes)
@@ -77,9 +91,14 @@ class HalfAPI:
             Mount('/halfapi', routes=list(self.routes()))
         )
 
-        if DOMAINS:
-            """ Mount the domain routes
-            """
+        if routes_dict:
+            # Mount the routes from the routes_dict argument - domain-less mode
+            logger.info('Domain-less mode : the given schema defines the activated routes')
+            for route in gen_schema_routes(routes_dict):
+                routes.append(route)
+        elif DOMAINS:
+            # Mount the domain routes
+            logger.info('Domains mode : the list of domains is retrieves from the configuration file')
             for domain, m_domain in DOMAINS.items():
                 if domain not in self.api_routes.keys():
                     raise Exception(f'The domain does not have a schema: {domain}')

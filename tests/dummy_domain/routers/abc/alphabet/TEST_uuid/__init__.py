@@ -1,4 +1,5 @@
 from halfapi.lib import acl
+from halfapi.lib.responses import ORJSONResponse
 ACLS = {
     'GET': [{'acl':acl.public}],
     'POST': [{'acl':acl.public}],
@@ -7,12 +8,12 @@ ACLS = {
     'DELETE': [{'acl':acl.public}]
 }
 
-def get(test):
+async def get(test):
     """
     description:
         returns the path parameter
     """
-    return str(test)
+    return ORJSONResponse(str(test))
 
 def post(test):
     """

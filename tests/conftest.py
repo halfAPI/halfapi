@@ -285,26 +285,33 @@ def routers():
 
 @pytest.fixture
 def application_debug(routers):
-    return HalfAPI({
-        'SECRET':'turlututu',
-        'PRODUCTION':False,
-        'DOMAINS': {
+    halfAPI = HalfAPI({
+        'secret':'turlututu',
+        'production':False,
+        'domains': {
             'dummy_domain': routers
         },
-        'CONFIG':{
+        'config':{
             'domains': {'dummy_domain':routers},
             'domain_config': {'dummy_domain': {'test': True}}
         }
-    }).application
+    })
+
+    assert isinstance(halfAPI, HalfAPI)
+    return halfAPI.application
+
+def test_application_debug(application_debug):
+    assert application_debug is not None
+
 
 
 @pytest.fixture
 def application_domain(routers):
     return HalfAPI({
-        'SECRET':'turlututu',
-        'PRODUCTION':True,
-        'DOMAINS':{'dummy_domain':routers},
-        'CONFIG':{
+        'secret':'turlututu',
+        'production':True,
+        'domains':{'dummy_domain':routers},
+        'config':{
             'domains': {'dummy_domain':routers},
             'domain_config': {'dummy_domain': {'test': True}}
         }
