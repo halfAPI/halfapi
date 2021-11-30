@@ -12,6 +12,7 @@ from .domain import list_api_routes
 from ..conf import (PROJECT_NAME, HOST, PORT, SCHEMA,
     PRODUCTION, LOGLEVEL, DOMAINSDICT, CONFIG)
 from ..logging import logger
+from ..lib.schemas import schema_csv_dict
 
 @click.option('--host', default=HOST)
 @click.option('--port', default=PORT)
@@ -20,9 +21,10 @@ from ..logging import logger
 @click.option('--production', default=True)
 @click.option('--loglevel', default=LOGLEVEL)
 @click.option('--prefix', default='')
+@click.option('--check', default=True)
 @click.argument('schema', type=click.File('r'), required=False)
 @cli.command()
-def run(host, port, reload, secret, production, loglevel, prefix, schema):
+def run(host, port, reload, secret, production, loglevel, prefix, check, schema):
     """
     The "halfapi run" command
     """
@@ -48,7 +50,12 @@ def run(host, port, reload, secret, production, loglevel, prefix, schema):
 
     sys.path.insert(0, os.getcwd())
 
-    list_api_routes()
+    if schema:
+        # Populate the SCHEMA global with the data from the given file
+        for key, val in schema_csv_dict(schema).items():
+            SCHEMA[key] = val
+
+    # list_api_routes()
 
     click.echo(f'uvicorn.run("halfapi.app:application"\n' \
         f'host: {host}\n' \
