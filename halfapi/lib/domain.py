@@ -168,7 +168,7 @@ def gen_routes(m_router: ModuleType,
     if not inspect.iscoroutinefunction(fct):
         return route_decorator(fct), params
     else:
-        return fct, params
+        return acl.args_check(fct), params
 
 
 def gen_router_routes(m_router: ModuleType, path: List[str]) -> \
