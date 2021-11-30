@@ -49,10 +49,10 @@ class HalfAPI:
     def __init__(self, config, routes_dict=None):
         config_logging(logging.DEBUG)
 
-        SECRET = config.get('SECRET')
-        PRODUCTION = config.get('PRODUCTION', True)
-        DOMAINS = config.get('DOMAINS', {})
-        CONFIG = config.get('CONFIG', {
+        SECRET = config.get('secret')
+        PRODUCTION = config.get('production', True)
+        DOMAINS = config.get('domains', {})
+        CONFIG = config.get('config', {
             'domains': DOMAINS
         })
 
