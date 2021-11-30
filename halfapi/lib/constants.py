@@ -3,7 +3,7 @@ from schema import Schema, Optional
 VERBS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE')
 
 ACLS_SCHEMA = Schema([{
-    'acl': str,
+    'acl': lambda fct: isinstance(fct(), bool),
     Optional('args'): {
         Optional('required'): { str },
         Optional('optional'): { str }

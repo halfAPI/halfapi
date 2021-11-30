@@ -21,6 +21,7 @@ import yaml
 
 from .domain import gen_router_routes, domain_acls, route_decorator
 from .responses import ORJSONResponse
+from .acl import args_check
 from ..half_route import HalfRoute
 from ..conf import DOMAINSDICT
 
@@ -75,7 +76,7 @@ def gen_schema_routes(schema: Dict):
             if not inspect.iscoroutinefunction(fct):
                 yield HalfRoute(path, route_decorator(fct), acls, verb)
             else:
-                yield HalfRoute(path, fct, acls, verb)
+                yield HalfRoute(path, args_check(fct), acls, verb)
 
 
 def gen_starlette_routes(d_domains: Dict[str, ModuleType]) -> Generator:

@@ -51,9 +51,9 @@ def args_check(fct):
 
         data_ = {}
         if req.method == 'GET':
-            data_ = req.query_params
+            data_ = dict(req.query_params)
 
-        if req.method in ['POST', 'PATCH', 'PUT', 'DELETE']:
+        elif req.method in ['POST', 'PATCH', 'PUT', 'DELETE']:
             try:
                 data_ = await req.json()
             except JSONDecodeError as exc:
