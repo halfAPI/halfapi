@@ -40,7 +40,7 @@ from halfapi.lib.responses import (ORJSONResponse, UnauthorizedResponse,
     ServiceUnavailableResponse)
 
 from halfapi.lib.routes import gen_domain_routes, gen_schema_routes, JSONRoute
-from halfapi.lib.schemas import get_api_routes, get_api_domain_routes, schema_json, get_acls
+from halfapi.lib.schemas import schema_json, get_acls
 from halfapi.logging import logger, config_logging
 from halfapi import __version__
 
@@ -81,7 +81,7 @@ class HalfAPI:
             DOMAINS[domain] = importlib.import_module(f'{domain}.{router}')
 
         if DOMAINS:
-            self.api_routes = get_api_routes(DOMAINS)
+            self.api_routes = {}
 
         routes = [ Route('/', JSONRoute(self.api_routes)) ]
 

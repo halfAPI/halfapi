@@ -25,7 +25,7 @@ def test_error(application_debug):
     r = c.get('/halfapi/error/500')
     assert r.status_code == 500
 
-@pytest.skip
+@pytest.mark.skip
 def test_exception(application_debug):
     c = TestClient(application_debug)
     try:

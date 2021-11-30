@@ -16,7 +16,7 @@ def test_schemas_dict_dom():
         'dummy_domain':routers})
     assert isinstance(schema, dict)
 
-def test_get_api_routes(project_runner, application_debug):
+def test_get_api_schema(project_runner, application_debug):
     c = TestClient(application_debug)
     r = c.get('/')
     assert isinstance(c, TestClient)
