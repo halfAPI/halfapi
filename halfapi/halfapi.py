@@ -64,6 +64,8 @@ class HalfAPI:
         self.DOMAINS = DOMAINS
         self.SECRET = SECRET
 
+        self.__application = None
+
         """ The base route contains the route schema
         """
         self.api_routes = get_api_routes(DOMAINS)
@@ -89,7 +91,8 @@ class HalfAPI:
                 )
 
 
-        self.application = Starlette(
+
+        self.__application = Starlette(
             debug=not PRODUCTION,
             routes=routes,
             exception_handlers={
@@ -101,24 +104,24 @@ class HalfAPI:
             }
         )
 
-        self.application.add_middleware(
+        self.__application.add_middleware(
             DomainMiddleware,
             config=CONFIG
         )
 
         if SECRET:
             self.SECRET = SECRET
-            self.application.add_middleware(
+            self.__application.add_middleware(
                 AuthenticationMiddleware,
                 backend=JWTAuthenticationBackend(secret_key=SECRET)
             )
 
         if not PRODUCTION:
-            self.application.add_middleware(
+            self.__application.add_middleware(
                 TimingMiddleware,
                 client=HTimingClient(),
                 metric_namer=StarletteScopeToName(prefix="halfapi",
-                starlette_app=self.application)
+                starlette_app=self.__application)
             )
 
 
@@ -128,6 +131,10 @@ class HalfAPI:
 
     async def version_async(self, request, *args, **kwargs):
         return Response(self.version)
+
+    @property
+    def application(self):
+        return self.__application
 
     def routes(self):
         """ Halfapi default routes
