@@ -5,13 +5,10 @@ import sys
 import json
 from unittest import TestCase
 from click.testing import CliRunner
-from halfapi.cli.cli import cli
+from ..cli.cli import cli
 from pprint import pprint
 
 class TestDomain(TestCase):
-    DOMAIN = 'dummy_domain'
-    ROUTERS = 'routers'
-
     @property
     def router_module(self):
         return '.'.join((self.DOMAIN, self.ROUTERS))
@@ -44,11 +41,11 @@ class TestDomain(TestCase):
     def tearDown(self):
         pass
 
-    def test_routes(self):
+    def check_domain(self):
         result = self.runner.invoke(cli, '--version')
         self.assertEqual(result.exit_code, 0)
-        result = self.runner.invoke(cli, ['routes', '--export', self.router_module])
-        self.assertEqual(result.exit_code, 0)
         print(result.stdout)
-        # result_d = json.loads(result.stdout)
-        # self.assertTrue()
+        result = self.runner.invoke(cli, ['domain', self.DOMAIN])
+        self.assertEqual(result.exit_code, 0)
+        result_d = json.loads(result.stdout)
+        return result.stdout
