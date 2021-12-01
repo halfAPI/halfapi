@@ -17,7 +17,7 @@ is_callable_dotted_notation = lambda x: re.match(
     r'^(([a-zA-Z_])+\.?)*:[a-zA-Z_]+$', 'ab_c.TEST:get')
 
 ROUTE_SCHEMA = Schema({
-    str: { # path
+    Optional(str): { # path - Optional when no routes
         str: { # method
             'callable': is_callable_dotted_notation,
             'docs': lambda n: True, # Should validate an openAPI spec
