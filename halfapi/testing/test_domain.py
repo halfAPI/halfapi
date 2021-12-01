@@ -48,4 +48,8 @@ class TestDomain(TestCase):
         result = self.runner.invoke(cli, ['domain', self.DOMAIN])
         self.assertEqual(result.exit_code, 0)
         result_d = json.loads(result.stdout)
-        return result.stdout
+        result = self.runner.invoke(cli, ['run', '--dryrun', self.DOMAIN])
+        print(result.stdout)
+        self.assertEqual(result.exit_code, 0)
+
+        return result_d

@@ -52,11 +52,12 @@ class HalfAPI:
         SECRET = config.get('secret')
         PRODUCTION = config.get('production', True)
         CONFIG = config.get('config', {})
+        DRYRUN = config.get('dryrun', False)
 
         domain = config.get('domain')['name']
         router = config.get('domain').get('router', None)
 
-        if not (domain and router):
+        if not (domain):
             raise NoDomainsException()
 
         self.PRODUCTION = PRODUCTION
@@ -95,6 +96,13 @@ class HalfAPI:
             for route in gen_domain_routes(m_domain_router):
                 routes.append(route)
 
+        startup_fcts = []
+
+        if DRYRUN:
+            startup_fcts.append(
+                HalfAPI.wait_quit()
+            )
+
         self.__application = Starlette(
             debug=not PRODUCTION,
             routes=routes,
@@ -104,7 +112,8 @@ class HalfAPI:
                 500: InternalServerErrorResponse,
                 501: NotImplementedResponse,
                 503: ServiceUnavailableResponse
-            }
+            },
+            on_startup=startup_fcts
         )
 
         self.__application.add_middleware(
@@ -181,3 +190,12 @@ class HalfAPI:
     @staticmethod
     def api_schema(domain):
         pass
+
+    @staticmethod
+    def wait_quit():
+        """ sleeps 1 second and quits. used in dry-run mode
+        """
+        import time
+        import sys
+        time.sleep(1)
+        sys.exit(0)

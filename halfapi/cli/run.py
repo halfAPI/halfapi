@@ -22,11 +22,11 @@ from ..lib.schemas import schema_csv_dict
 @click.option('--loglevel', default=LOGLEVEL)
 @click.option('--prefix', default='/')
 @click.option('--check', default=True)
+@click.option('--dryrun', default=False, is_flag=True)
 @click.argument('schema', type=click.File('r'), required=False)
-@click.argument('router', required=False)
 @click.argument('domain', required=False)
 @cli.command()
-def run(host, port, reload, secret, production, loglevel, prefix, check, schema, router, domain):
+def run(host, port, reload, secret, production, loglevel, prefix, check, dryrun, schema, domain):
     """
     The "halfapi run" command
     """
@@ -51,7 +51,6 @@ def run(host, port, reload, secret, production, loglevel, prefix, check, schema,
     click.echo(f'Launching application {PROJECT_NAME}')
 
     CONFIG.get('domain')['name'] = domain
-    CONFIG.get('domain')['router'] = router
 
     if schema:
         # Populate the SCHEMA global with the data from the given file
@@ -66,6 +65,9 @@ def run(host, port, reload, secret, production, loglevel, prefix, check, schema,
         f'log_level: {log_level}\n' \
         f'reload: {reload}\n'
     )
+
+    if dryrun:
+        CONFIG['dryrun'] = True
 
     uvicorn.run('halfapi.app:application',
         host=host,

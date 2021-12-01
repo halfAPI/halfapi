@@ -17,6 +17,7 @@ It defines the following globals :
     - HOST (str) - HALFAPI_HOST
     - PORT (int) - HALFAPI_PORT
     - CONF_DIR (str) - HALFAPI_CONF_DIR
+    - DRYRUN (bool) - HALFAPI_DRYRUN
     - config (ConfigParser)
 
 It reads the following ressource :
@@ -53,6 +54,7 @@ HOST = '127.0.0.1'
 PORT = '3000'
 SECRET = ''
 CONF_FILE = os.environ.get('HALFAPI_CONF_FILE', '.halfapi/config')
+DRYRUN = bool(os.environ.get('HALFAPI_DRYRUN', False))
 
 DOMAIN = None
 ROUTER = None
@@ -143,6 +145,7 @@ CONFIG = {
     'secret': SECRET,
     'host': HOST,
     'port': PORT,
+    'dryrun': DRYRUN,
     'domain': {
         'name': None,
         'router': None
