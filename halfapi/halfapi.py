@@ -76,7 +76,7 @@ class HalfAPI:
         self.schema['domain'] = {
             'name': domain,
             'version': getattr(m_domain, '__version__', ''),
-            'patch_release': getattr(m_domain, '__path_release__', ''),
+            'patch_release': getattr(m_domain, '__patch_release__', ''),
             'acls': tuple(getattr(m_domain_acl, 'ACLS', ()))
         }
 
