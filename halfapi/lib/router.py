@@ -27,19 +27,13 @@ def read_router(m_router: ModuleType) -> Dict:
             acls = getattr(m_router, 'ACLS') if hasattr(m_router, 'ACLS') else None
 
             if acls is not None:
-                for verb in VERBS:
-                    if not hasattr(m_router, verb.lower()):
-                        # verb in function names are lowercase
-                        continue
+                for method in acls.keys():
+                    if method not in VERBS:
+                        raise Exception(
+                            'This method is not handled: {}'.format(method))
 
-                    """ There is a "verb" route in the router
-                    """
-
-                    if verb.upper() not in acls:
-                        continue
-
-                    routes[''][verb.upper()] = []
-                    routes[''][verb.upper()] = acls[verb.upper()].copy()
+                    routes[''][method] = []
+                    routes[''][method] = acls[method].copy()
 
             routes['']['SUBROUTES'] = []
             if hasattr(m_router, '__path__'):
