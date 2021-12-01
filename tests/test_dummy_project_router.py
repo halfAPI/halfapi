@@ -10,14 +10,14 @@ from starlette.testclient import TestClient
 
 from halfapi.lib.domain import gen_router_routes
 
-def test_get_config_route(dummy_project, application_domain, routers):
+def test_get_config_route(dummy_project, application_domain):
     c = TestClient(application_domain)
     r = c.get('/config')
     assert r.status_code == 200
     pprint(r.json())
     assert 'test' in r.json()
 
-def test_get_route(dummy_project, application_domain, routers):
+def test_get_route(dummy_project, application_domain):
     c = TestClient(application_domain)
     path = verb = params = None
     dummy_domain_routes = [
@@ -73,7 +73,7 @@ def test_get_route(dummy_project, application_domain, routers):
             assert r.status_code == 200
 
 
-def test_delete_route(dummy_project, application_domain, routers):
+def test_delete_route(dummy_project, application_domain):
     c = TestClient(application_domain)
     from uuid import uuid4
     arg = str(uuid4())
@@ -81,7 +81,7 @@ def test_delete_route(dummy_project, application_domain, routers):
     assert r.status_code == 200
     assert isinstance(r.json(), str)
 
-def test_arguments_route(dummy_project, application_domain, routers):
+def test_arguments_route(dummy_project, application_domain):
     c = TestClient(application_domain)
 
     path = '/arguments'

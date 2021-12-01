@@ -36,6 +36,13 @@ from halfapi.lib.jwt_middleware import (
     JWTWebSocketAuthenticationBackend)
 
 @pytest.fixture
+def dummy_domain():
+    yield {
+        'name': 'dummy_domain',
+        'router': 'dummy_domain.routers'
+    }
+
+@pytest.fixture
 def token_builder():
     yield jwt.encode({
         'name':'xxx',
@@ -290,31 +297,24 @@ def application_debug(routers):
         'secret':'turlututu',
         'production':False,
         'domain': {
-            'name': 'dummy_domain',
-            'router': 'routers'
+            'name': 'test_domain',
+            'router': 'test_domain.routers'
         },
         'config':{
-            'domain_config': {'dummy_domain': {'test': True}}
+            'domain_config': {'test_domain': {'test': True}}
         }
     })
 
     assert isinstance(halfAPI, HalfAPI)
-    return halfAPI.application
-
-def test_application_debug(application_debug):
-    assert application_debug is not None
-
+    yield halfAPI.application
 
 
 @pytest.fixture
-def application_domain(routers):
+def application_domain(dummy_domain):
     return HalfAPI({
         'secret':'turlututu',
         'production':True,
-        'domain': {
-            'name': 'dummy_domain',
-            'router': 'routers'
-        },
+        'domain': dummy_domain,
         'config':{
             'domain_config': {'dummy_domain': {'test': True}}
         }

@@ -5,12 +5,9 @@ from halfapi.halfapi import HalfAPI
 
 from halfapi.lib.domain import NoDomainsException
 
-def test_halfapi_dummy_domain():
+def test_halfapi_dummy_domain(dummy_domain):
     with patch('starlette.applications.Starlette') as mock:
         mock.return_value = MagicMock()
         halfapi = HalfAPI({
-            'domain': {
-                'name': 'dummy_domain',
-                'router': 'routers'
-            }
+            'domain': dummy_domain
         })
