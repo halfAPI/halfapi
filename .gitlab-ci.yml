@@ -6,7 +6,7 @@
 
 # Official language image. Look for the different tagged releases at:
 # https://hub.docker.com/r/library/python/tags/
-image: python:3.8
+image: python:3.9-bullseye
 
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
@@ -29,6 +29,7 @@ cache:
 
 test:
   script:
+    - apt-get update && apt-get -y install python3-venv
     - python3 -V  # Print out python version for debugging
     - pip3 install pipenv
     - pipenv install  --dev --skip-lock
@@ -38,6 +39,7 @@ test:
 
 run:
   script:
+    - apt-get update && apt-get -y install python3-venv
     - python3 -V  # Print out python version for debugging
     - pip3 install pipenv
     - pipenv install  --dev --skip-lock
