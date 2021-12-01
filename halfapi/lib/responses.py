@@ -13,10 +13,13 @@ Classes :
     - PlainTextResponse
     - ServiceUnavailableResponse
     - UnauthorizedResponse
+    - ODSResponse
 
 """
+from datetime import date
 import decimal
 import typing
+from io import BytesIO
 import orjson
 
 # asgi framework
@@ -110,3 +113,32 @@ class HJSONResponse(ORJSONResponse):
     """
     def render(self, content: typing.Generator):
         return super().render(list(content))
+
+class ODSResponse(Response):
+    def __init__(self, d_rows: typing.List[typing.Dict]):
+        try:
+            import pyexcel as pe
+        except ImportError:
+            """ ODSResponse is not handled
+            """
+            super().__init__(content=
+                'pyexcel is not installed, ods format not available'
+            )
+            return
+
+        with BytesIO() as ods_file:
+            # rows.insert(0, rownames)
+            self.sheet = pe.Sheet(d_rows)
+            self.sheet.save_to_memory(
+                file_type='ods',
+                stream=ods_file)
+
+            filename = f'{date.today()}.ods'
+
+            super().__init__(
+                content=ods_file.getvalue(),
+                headers={
+                    'Content-Type': 'application/vnd.oasis.opendocument.spreadsheet; charset=UTF-8',
+                    'Content-Disposition': f'attachment; filename="{filename}"'},
+                status_code = 200)
+

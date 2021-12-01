@@ -17,7 +17,7 @@ import yaml
 from starlette.exceptions import HTTPException
 
 from halfapi.lib import acl
-from halfapi.lib.responses import ORJSONResponse
+from halfapi.lib.responses import ORJSONResponse, ODSResponse
 from halfapi.lib.router import read_router
 from halfapi.lib.constants import VERBS
 
@@ -46,39 +46,48 @@ class NoDomainsException(Exception):
 def route_decorator(fct: FunctionType, ret_type: str = 'json') -> Coroutine:
     """ Returns an async function that can be mounted on a router
     """
-    if ret_type == 'json':
-        @wraps(fct)
-        @acl.args_check
-        async def wrapped(request, *args, **kwargs):
-            fct_args_spec = inspect.getfullargspec(fct).args
-            fct_args = request.path_params.copy()
+    @wraps(fct)
+    @acl.args_check
+    async def wrapped(request, *args, **kwargs):
+        fct_args_spec = inspect.getfullargspec(fct).args
+        fct_args = request.path_params.copy()
 
-            if 'halfapi' in fct_args_spec:
-                fct_args['halfapi'] = {
-                    'user': request.user if
-                        'user' in request else None,
-                    'config': request.scope['config'],
-                    'domain': request.scope['domain'],
+        if 'halfapi' in fct_args_spec:
+            fct_args['halfapi'] = {
+                'user': request.user if
+                    'user' in request else None,
+                'config': request.scope['config'],
+                'domain': request.scope['domain'],
 
-                }
+            }
 
 
-            if 'data' in fct_args_spec:
-                fct_args['data'] = kwargs.get('data')
+        if 'data' in fct_args_spec:
+            fct_args['data'] = kwargs.get('data')
 
-            try:
+        """ If format argument is specified (either by get or by post param)
+        """
+        ret_type = fct_args.get('data', {}).get('format', 'json')
+
+        try:
+            if ret_type == 'json':
                 return ORJSONResponse(fct(**fct_args))
-            except NotImplementedError as exc:
-                raise HTTPException(501) from exc
-            except Exception as exc:
-                # TODO: Write tests
-                if not isinstance(exc, HTTPException):
-                    raise HTTPException(500) from exc
-                raise exc
+            elif ret_type == 'ods':
+                res = fct(**fct_args)
+                assert isinstance(res, list)
+                for elt in res:
+                    assert isinstance(elt, dict)
 
-
-    else:
-        raise Exception('Return type not available')
+                return ODSResponse(res)
+            else:
+                raise NotImplementedError
+        except NotImplementedError as exc:
+            raise HTTPException(501) from exc
+        except Exception as exc:
+            # TODO: Write tests
+            if not isinstance(exc, HTTPException):
+                raise HTTPException(500) from exc
+            raise exc
 
     return wrapped
 
