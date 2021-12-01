@@ -1,17 +1,28 @@
 import re
-from schema import Schema, Optional
+from schema import Schema, Optional, Or
 from .. import __version__
 
 VERBS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE')
 
+ITERABLE_STR = Or([ str ], { str }, ( str ))
+
 ACLS_SCHEMA = Schema([{
     'acl': str,
     Optional('args'): {
-        Optional('required'): [ str ],
-        Optional('optional'): [ str ]
+        Optional('required'): ITERABLE_STR,
+        Optional('optional'): ITERABLE_STR
     },
-    Optional('out'): [ str ]
+    Optional('out'): ITERABLE_STR
 }])
+ROUTER_ACLS_SCHEMA = Schema([{
+    'acl': lambda n: callable(n),
+    Optional('args'): {
+        Optional('required'): ITERABLE_STR,
+        Optional('optional'): ITERABLE_STR
+    },
+    Optional('out'): ITERABLE_STR
+}])
+
 
 is_callable_dotted_notation = lambda x: re.match(
     r'^(([a-zA-Z_])+\.?)*:[a-zA-Z_]+$', 'ab_c.TEST:get')
@@ -47,4 +58,12 @@ API_SCHEMA = Schema({
     **API_SCHEMA_DICT,
     'domain': DOMAIN_SCHEMA,
     'paths': ROUTE_SCHEMA
+})
+
+ROUTER_SCHEMA = Schema({
+    Or('', str): {
+        # Optional('GET'): [],#ACLS_SCHEMA,
+        Optional(Or(*VERBS)): ROUTER_ACLS_SCHEMA,
+        Optional('SUBROUTES'): [Optional(str)]
+    }
 })

@@ -16,7 +16,7 @@ ROUTES = {
             'acl': acl.public,
             'args': {
                 'required': {'foo', 'bar'},
-                'optional': {}
+                'optional': set()
             }
         }]
     },

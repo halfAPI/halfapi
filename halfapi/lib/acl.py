@@ -99,3 +99,10 @@ def args_check(fct):
         return await fct(req, *args, **kwargs)
 
     return caller
+
+# ACLS list for doc and priorities
+# Write your own constant in your domain or import this one
+ACLS = (
+    ('private', public.__doc__, 0),
+    ('public', public.__doc__, 999)
+)

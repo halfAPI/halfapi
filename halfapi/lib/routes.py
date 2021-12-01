@@ -48,8 +48,6 @@ def JSONRoute(data: Any) -> Coroutine:
     return wrapped
 
 
-
-
 def gen_domain_routes(m_domain: ModuleType):
     """
     Yields the Route objects for a domain
