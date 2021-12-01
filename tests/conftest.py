@@ -258,7 +258,6 @@ def create_route():
 
 @pytest.fixture
 def dummy_project():
-    sys.path.insert(0, './tests')
     halfapi_config = tempfile.mktemp()
     halfapi_secret = tempfile.mktemp()
     domain = 'dummy_domain'
@@ -281,18 +280,10 @@ def dummy_project():
     with open(halfapi_secret, 'w') as f:
         f.write('turlututu')
 
-    return (halfapi_config, 'dummy_domain', 'routers')
+    return (halfapi_config, 'dummy_domain', 'dummy_domain.routers')
 
 @pytest.fixture
-def routers():
-    sys.path.insert(0, './tests')
-
-    from .dummy_domain import routers
-    return routers
-
-
-@pytest.fixture
-def application_debug(routers):
+def application_debug(project_runner):
     halfAPI = HalfAPI({
         'secret':'turlututu',
         'production':False,

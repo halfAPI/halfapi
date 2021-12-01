@@ -50,8 +50,6 @@ def run(host, port, reload, secret, production, loglevel, prefix, check, schema,
 
     click.echo(f'Launching application {PROJECT_NAME}')
 
-    sys.path.insert(0, os.getcwd())
-
     CONFIG.get('domain')['name'] = domain
     CONFIG.get('domain')['router'] = router
 

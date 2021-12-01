@@ -303,7 +303,6 @@ def d_domains(config) -> Dict[str, ModuleType]:
         domains = dict(config['domains'].items())
 
     try:
-        sys.path.append('.')
         return {
             domain: importlib.import_module(''.join((domain, module)))
             for domain, module in domains.items()
