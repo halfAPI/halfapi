@@ -9,6 +9,7 @@ requests = "*"
 pytest-asyncio = "*"
 pylint = "*"
 build = "*"
+pytest-pythonpath = "*"
 
 [packages]
 click = ">=7.1,<8"
