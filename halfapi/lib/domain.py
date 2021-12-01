@@ -253,7 +253,12 @@ def domain_schema_dict(m_router: ModuleType) -> Dict:
             d_res[path][verb] = {}
 
         d_res[path][verb]['callable'] = f'{m_router.__name__}:{fct.__name__}'
-        d_res[path][verb]['docs'] = yaml.safe_load(fct.__doc__)
+        try:
+            d_res[path][verb]['docs'] = yaml.safe_load(fct.__doc__)
+        except AttributeError:
+            logger.error(
+                'Cannot read docstring from fct (fct=%s path=%s verb=%s', fct.__name__, path, verb)
+
         d_res[path][verb]['acls'] = list(map(lambda elt: { **elt, 'acl': elt['acl'].__name__ },
             parameters))
 
