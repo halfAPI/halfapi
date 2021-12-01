@@ -68,10 +68,10 @@ class HalfAPI:
 
         m_domain = m_domain_router = m_domain_acl = None
         if domain:
-            m_domain = importlib.import_module(f'{domain}')
+            m_domain = importlib.import_module(domain)
             if not router:
                 router = getattr('__router__', domain, '.routers')
-            m_domain_router = importlib.import_module(router)
+            m_domain_router = importlib.import_module(router, domain)
             m_domain_acl = importlib.import_module(f'{domain}.acl')
 
         if not(m_domain and m_domain_router and m_domain_acl):
