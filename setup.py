@@ -43,8 +43,8 @@ setup(
     packages=get_packages(module_name),
     python_requires=">=3.8",
     install_requires=[
-        "PyJWT>=2.0.1",
-        "starlette>=0.16,<0.17",
+        "PyJWT>=2.3.0,<2.4.0",
+        "starlette>=0.17,<0.18",
         "click>=7.1,<8",
         "uvicorn>=0.13,<1",
         "orjson>=3.4.7,<4",
