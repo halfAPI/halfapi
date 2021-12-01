@@ -110,24 +110,6 @@ def halfapicli(cli_runner):
 
     yield caller
 
-@pytest.fixture
-def halfapi_conf_dir():
-    return confdir('HALFAPI_CONF_DIR')
-
-
-
-def confdir(dirname):
-    d = os.environ.get(dirname)
-    if not d:
-        os.environ[dirname] = tempfile.mkdtemp(prefix='halfapi_')
-        return os.environ.get(dirname)
-    if not os.path.isdir(d):
-        os.mkdir(d)
-    return d
-
-@pytest.fixture
-def halform_conf_dir():
-    return confdir('HALFORM_CONF_DIR')
 
 # store history of failures per test class name and per index in parametrize (if
 # parametrize used)
@@ -179,23 +161,21 @@ def pytest_runtest_setup(item):
                 pytest.xfail("previous test failed ({})".format(test_name))
 
 @pytest.fixture
-def project_runner(runner, halfapicli, halfapi_conf_dir):
+def project_runner(runner, halfapicli, tree):
     with runner.isolated_filesystem():
         res = halfapicli('init', PROJNAME)
 
-        try:
-            os.chdir(PROJNAME)
-        except FileNotFoundError as exc:
-            subprocess.call('tree')
-            raise exc
+        os.chdir(PROJNAME)
 
+        fs_path = os.getcwd()
+        sys.path.insert(0, fs_path)
 
         secret = tempfile.mkstemp()
         SECRET_PATH = secret[1]
         with open(SECRET_PATH, 'w') as f:
             f.write(str(uuid1()))
 
-        with open(os.path.join(halfapi_conf_dir, PROJNAME), 'w') as halfapi_etc:
+        with open(os.path.join('.halfapi', PROJNAME), 'w') as halfapi_etc:
             PROJ_CONFIG = re.sub('secret = .*', f'secret = {SECRET_PATH}',
                 format_halfapi_etc(PROJNAME, os.getcwd()))
             halfapi_etc.write(PROJ_CONFIG)
@@ -204,10 +184,13 @@ def project_runner(runner, halfapicli, halfapi_conf_dir):
         ###
         # add dummy domain
         ###
-        create_domain('dummy_domain', '.routers')
+        create_domain('test_domain', 'test_domain.routers')
         ###
 
         yield halfapicli
+
+        while fs_path in sys.path:
+            sys.path.remove(fs_path)
 
 @pytest.fixture
 def dummy_app():
@@ -272,7 +255,7 @@ def dummy_project():
             'loglevel = debug\n',
             '[domain]\n',
             f'name = {domain}\n',
-            'router = routers\n',
+            'router = dummy_domain.routers\n',
             f'[{domain}]\n',
             'test = True'
         ])
@@ -312,3 +295,13 @@ def application_domain(dummy_domain):
     }).application
 
 
+@pytest.fixture
+def tree():
+    def wrapped(path):
+        list_dirs = os.walk(path)
+        for root, dirs, files in list_dirs:
+            for d in dirs:
+                print(os.path.join(root, d))
+            for f in files:
+                print(os.path.join(root, f))
+    return wrapped
