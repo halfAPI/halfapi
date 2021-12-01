@@ -156,3 +156,4 @@ def domain(domain, delete, update, create, read):  #, domains, read, create, upd
             default=ORJSONResponse.default_cast)
         )
 
+    sys.exit(0)
