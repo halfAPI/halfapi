@@ -230,6 +230,7 @@ def gen_router_routes(m_router: ModuleType, path: List[str]) -> \
         path.pop()
 
 
+
 def domain_schema_dict(m_router: ModuleType) -> Dict:
     """ gen_router_routes return values as a dict
     Parameters:
@@ -239,6 +240,8 @@ def domain_schema_dict(m_router: ModuleType) -> Dict:
     Returns:
 
        Dict: Schema of dict is halfapi.lib.constants.DOMAIN_SCHEMA
+
+    @TODO: Should be a "router_schema_dict" function
     """
     d_res = {}
 
@@ -255,6 +258,24 @@ def domain_schema_dict(m_router: ModuleType) -> Dict:
             parameters))
 
     return d_res
+
+from .constants import API_SCHEMA_DICT
+def domain_schema(m_domain: ModuleType) -> Dict:
+    schema = { **API_SCHEMA_DICT }
+    routers_submod_str = getattr(m_domain, '__routers__', '.routers')
+    m_domain_acl = importlib.import_module('.acl', m_domain.__package__)
+    m_domain_routers = importlib.import_module(
+        routers_submod_str, m_domain.__package__
+    )
+    schema['domain'] = {
+        'name': getattr(m_domain, '__name__'),
+        'version': getattr(m_domain, '__version__', ''),
+        'patch_release': getattr(m_domain, '__patch_release__', ''),
+        'routers': routers_submod_str,
+        'acls': tuple(getattr(m_domain_acl, 'ACLS', ()))
+    }
+    schema['paths'] = domain_schema_dict(m_domain_routers)
+    return schema
 
 def domain_schema_list(m_router: ModuleType) -> List:
     """ Schema as list, one row by route/acl

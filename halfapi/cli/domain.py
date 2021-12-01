@@ -9,13 +9,16 @@ import importlib
 import subprocess
 
 import click
+import orjson
 
 
 from .cli import cli
 from ..conf import config, write_config, DOMAINSDICT
 
+from ..lib.domain import domain_schema
 from ..lib.schemas import schema_dict_dom
 from ..lib.routes import api_routes
+from ..lib.responses import ORJSONResponse
 
 
 from ..logging import logger
@@ -117,49 +120,39 @@ def list_api_routes():
         list_routes(domain, m_dom)
 
 
-@click.option('--read',default=False, is_flag=True)
+@click.option('--read',default=True, is_flag=True)
 @click.option('--create',default=False, is_flag=True)
 @click.option('--update',default=False, is_flag=True)
 @click.option('--delete',default=False, is_flag=True)
-@click.option('--domains',default=None)
+@click.argument('domain',default=None, required=False)
 @cli.command()
-def domain(domains, delete, update, create, read):  #, domains, read, create, update, delete):
+def domain(domain, delete, update, create, read):  #, domains, read, create, update, delete):
     """
     The "halfapi domain" command
 
     Parameters:
-        domain (List[str]|None): The list of the domains to list/update
+        domain (str|None): The domain name
 
         The parameter has a misleading name as it is a multiple option
         but this would be strange to use it several times named as "domains"
 
         update (boolean): If set, update the database for the selected domains
     """
-
-    dom_dict = DOMAINSDICT()
-
-    if not domains:
+    if not domain:
         if create:
             # TODO: Connect to the create_domain function
             raise NotImplementedError
-    else:
-        dom_dict_ = {}
+        raise Exception('Missing domain name')
+    if update:
+        raise NotImplementedError
+    if delete:
+        raise NotImplementedError
+    if read:
+        m_domain = importlib.import_module(domain)
 
-        for domain_name in domains.split(','):
-            if domain_name in dom_dict.keys():
-                dom_dict_[domain_name] = dom_dict[domain_name]
-                continue
+        click.echo(orjson.dumps(
+            domain_schema(m_domain),
+            option=orjson.OPT_NON_STR_KEYS,
+            default=ORJSONResponse.default_cast)
+        )
 
-            click.echo(
-                f'Domain {domain_name}s is not activated in the configuration')
-
-        dom_dict = dom_dict_
-
-    for domain_name, m_dom in dom_dict.items():
-        if update:
-            raise NotImplementedError
-        if delete:
-            raise NotImplementedError
-
-        if read:
-            list_routes(domain_name, m_dom)

@@ -32,12 +32,11 @@ from timing_asgi.integrations import StarletteScopeToName
 from .lib.constants import API_SCHEMA_DICT
 from .lib.domain_middleware import DomainMiddleware
 from .lib.timing import HTimingClient
-from .lib.domain import NoDomainsException
 from .lib.jwt_middleware import JWTAuthenticationBackend
 from .lib.responses import (ORJSONResponse, UnauthorizedResponse,
     NotFoundResponse, InternalServerErrorResponse, NotImplementedResponse,
     ServiceUnavailableResponse)
-from .lib.domain import domain_schema_dict
+from .lib.domain import domain_schema_dict, NoDomainsException, domain_schema
 from .lib.routes import gen_domain_routes, gen_schema_routes, JSONRoute
 from .lib.schemas import schema_json, get_acls
 from .logging import logger, config_logging
@@ -55,7 +54,7 @@ class HalfAPI:
         CONFIG = config.get('config', {})
 
         domain = config.get('domain')['name']
-        router = config.get('domain')['router']
+        router = config.get('domain').get('router', None)
 
         if not (domain and router):
             raise NoDomainsException()
@@ -66,22 +65,18 @@ class HalfAPI:
 
         self.__application = None
 
-        if domain and router:
+        m_domain = m_domain_router = m_domain_acl = None
+        if domain:
             m_domain = importlib.import_module(f'{domain}')
-            m_domain_router = importlib.import_module(f'{domain}.{router}')
+            if not router:
+                router = getattr('__router__', domain, '.routers')
+            m_domain_router = importlib.import_module(router)
             m_domain_acl = importlib.import_module(f'{domain}.acl')
 
-        self.schema = { **API_SCHEMA_DICT }
+        if not(m_domain and m_domain_router and m_domain_acl):
+            raise Exception('Cannot import domain')
 
-        self.schema['domain'] = {
-            'name': domain,
-            'version': getattr(m_domain, '__version__', ''),
-            'patch_release': getattr(m_domain, '__patch_release__', ''),
-            'acls': tuple(getattr(m_domain_acl, 'ACLS', ()))
-        }
-
-        self.schema['paths'] = domain_schema_dict(m_domain_router)
-
+        self.schema = domain_schema(m_domain)
 
         routes = [ Route('/', JSONRoute(self.schema)) ]
 

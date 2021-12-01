@@ -20,8 +20,15 @@ class TestCliProj():
 
 
     def test_domain_commands(self, project_runner):
+        """ TODO: Test create command
+        """
         r = project_runner('domain')
+        print(r.stdout)
+        assert r.exit_code == 1
+        r = project_runner('domain dummy_domain')
+        print(r.stdout)
         assert r.exit_code == 0
+
 
     def test_config_commands(self, project_runner):
         try:
