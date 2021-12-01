@@ -3,7 +3,10 @@
 cli/domain.py Defines the "halfapi domain" cli commands
 """
 # builtins
+import os
 import sys
+import importlib
+import subprocess
 
 import click
 
@@ -28,12 +31,59 @@ def create_domain(domain_name: str, module_path: str):
     #    logger.warning('Domain **%s** is already in project', domain_name)
     #    sys.exit(1)
 
+    def domain_tree_create():
+        def create_init(path):
+            with open(os.path.join(os.getcwd(), path, '__init__.py'), 'w') as f:
+                f.writelines([
+                    '"""',
+                    f'name: {domain_name}',
+                    f'router: {module_path}',
+                    '"""'
+                ])
+                logger.debug('created %s', os.path.join(os.getcwd(), path, '__init__.py'))
+
+        def create_acl(path):
+            with open(os.path.join(path, 'acl.py'), 'w') as f:
+                f.writelines([
+                    'from halfapi.lib.acl import public, ACLS',
+
+                ])
+                logger.debug('created %s', os.path.join(path, 'acl.py'))
+
+
+        os.mkdir(domain_name)
+        create_init(domain_name)
+        router_path = os.path.join(domain_name, 'routers')
+        create_acl(domain_name)
+        os.mkdir(router_path)
+        create_init(router_path)
+
+
     if not config.has_section('domain'):
         config.add_section('domain')
 
     config.set('domain', 'name', domain_name)
     config.set('domain', 'router', module_path)
     write_config()
+
+    domain_tree_create()
+    """
+    try:
+        importlib.import_module(module_path)
+    except ImportError:
+        logger.error('cannot import %s', domain_name)
+        domain_tree_create()
+    """
+
+    """
+    try:
+        importlib.import_module(domain_name)
+    except ImportError:
+        click.echo('Error in domain creation')
+        logger.debug('%s', subprocess.run(['tree', 'a', os.getcwd()]))
+        raise Exception('cannot create domain {}'.format(domain_name))
+    """
+
 
 
 ###############
