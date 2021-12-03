@@ -50,7 +50,8 @@ def run(host, port, reload, secret, production, loglevel, prefix, check, dryrun,
 
     click.echo(f'Launching application {PROJECT_NAME}')
 
-    CONFIG.get('domain')['name'] = domain
+    if secret:
+        CONFIG['secret'] = secret
 
     if schema:
         # Populate the SCHEMA global with the data from the given file

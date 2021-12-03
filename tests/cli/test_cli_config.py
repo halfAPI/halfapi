@@ -7,4 +7,3 @@ def test_config(cli_runner):
         cp = ConfigParser()
         cp.read_string(result.output)
         assert cp.has_section('project')
-        assert cp.has_section('domain')

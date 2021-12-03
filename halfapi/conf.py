@@ -146,15 +146,4 @@ CONFIG = {
     'host': HOST,
     'port': PORT,
     'dryrun': DRYRUN,
-    'domain': {
-        'name': None,
-        'router': None
-    },
-    'domain_config': {}
 }
-
-for domain in DOMAINS:
-    if domain not in config.sections():
-        continue
-
-    CONFIG['domain_config'][domain] = dict(config.items(domain))

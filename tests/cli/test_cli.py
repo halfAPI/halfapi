@@ -81,7 +81,8 @@ def test_init_project(runner):
             assert cp.has_option('project', 'name')
             assert cp.get('project', 'name') == PROJNAME
             assert cp.get('project', 'halfapi_version') == __version__
-            assert cp.has_section('domain')
+            # removal of domain section (0.6)
+            # assert cp.has_section('domain')
         except AssertionError as exc:
             subprocess.run(['tree', '-a', os.getcwd()])
             raise exc

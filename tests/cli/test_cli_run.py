@@ -6,8 +6,16 @@ from unittest.mock import patch
 
 def test_run_noproject(cli_runner):
     with cli_runner.isolated_filesystem():
+        result = cli_runner.invoke(cli, ['config'])
+        print(result.stdout)
+        assert result.exit_code == 0
+
         result = cli_runner.invoke(cli, ['run'])
-        assert result.exit_code == 1
+        try:
+            assert result.exit_code == 1
+        except AssertionError as exc:
+            print(result.stdout)
+            raise exc
 
 """
 def test_run_empty_project(cli_runner):

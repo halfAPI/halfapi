@@ -9,16 +9,18 @@ import click
 from .cli import cli
 from ..conf import CONFIG
 
+DOMAIN_CONF_STR="""
+[domain]
+name = {name}
+router = {router}
+"""
+
 CONF_STR="""
 [project]
 name = {project_name}
 host = {host}
 port = {port}
 production = {production}
-
-[domain]
-name = {domain_name}
-router = {router}
 """
 
 
@@ -27,4 +29,4 @@ def config():
     """
     Lists config parameters and their values
     """
-    click.echo(CONF_STR)
+    click.echo(CONF_STR.format(**CONFIG))

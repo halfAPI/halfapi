@@ -54,35 +54,20 @@ class HalfAPI:
         CONFIG = config.get('config', {})
         DRYRUN = config.get('dryrun', False)
 
-        domain = config.get('domain')['name']
-        router = config.get('domain').get('router', None)
-
-        if not (domain):
-            raise NoDomainsException()
-
         self.PRODUCTION = PRODUCTION
         self.CONFIG = CONFIG
         self.SECRET = SECRET
 
         self.__application = None
 
-        m_domain = m_domain_router = m_domain_acl = None
-        if domain:
-            m_domain = importlib.import_module(domain)
-            if not router:
-                router = getattr('__router__', domain, '.routers')
-            m_domain_router = importlib.import_module(router, domain)
-            m_domain_acl = importlib.import_module(f'{domain}.acl')
-
-        if not(m_domain and m_domain_router and m_domain_acl):
-            raise Exception('Cannot import domain')
-
-        self.schema = domain_schema(m_domain)
-
-        routes = [ Route('/', JSONRoute(self.schema)) ]
 
         """ HalfAPI routes (if not PRODUCTION, includes debug routes)
         """
+        routes = []
+        routes.append(
+            Route('/', JSONRoute({}))
+        )
+
         routes.append(
             Mount('/halfapi', routes=list(self.routes()))
         )
@@ -93,8 +78,11 @@ class HalfAPI:
             for route in gen_schema_routes(routes_dict):
                 routes.append(route)
         else:
+            """
             for route in gen_domain_routes(m_domain_router):
                 routes.append(route)
+            """
+            pass
 
         startup_fcts = []
 
@@ -116,11 +104,13 @@ class HalfAPI:
             on_startup=startup_fcts
         )
 
+        """
         self.__application.add_middleware(
             DomainMiddleware,
             domain=domain,
             config=CONFIG
         )
+        """
 
         if SECRET:
             self.SECRET = SECRET
