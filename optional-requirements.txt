@@ -1,0 +1,2 @@
+pyexcel>=0.6.3,<1
+pyexcel-ods>=0.5.6,<1
