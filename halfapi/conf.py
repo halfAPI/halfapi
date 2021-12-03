@@ -10,7 +10,6 @@ It uses the following environment variables :
 It defines the following globals :
 
     - PROJECT_NAME (str) - HALFAPI_PROJECT_NAME
-    - DOMAINSDICT ({domain_name: domain_module}) - HALFAPI_DOMAIN_NAME / HALFAPI_DOMAIN_MODULE
     - PRODUCTION (bool) - HALFAPI_PRODUCTION
     - LOGLEVEL (string) - HALFAPI_LOGLEVEL
     - BASE_DIR (str) - HALFAPI_BASE_DIR
@@ -18,7 +17,6 @@ It defines the following globals :
     - PORT (int) - HALFAPI_PORT
     - CONF_DIR (str) - HALFAPI_CONF_DIR
     - DRYRUN (bool) - HALFAPI_DRYRUN
-    - config (ConfigParser)
 
 It reads the following ressource :
 
@@ -30,43 +28,41 @@ It follows the following format :
     name = PROJECT_NAME
     halfapi_version = HALFAPI_VERSION
 
-    [domains]
-    domain_name = requirements-like-url
+    [domain.domain_name]
+    name = domain_name
+    routers = routers
+
+    [domain.domain_name.config]
+    option = Argh
+
 """
 
 import logging
 import os
 from os import environ
 import sys
-from configparser import ConfigParser
 import importlib
+import tempfile
+import uuid
+
+import toml
 
 from .lib.domain import d_domains
 from .logging import logger
 
+CONFIG = {}
 
-PROJECT_NAME = environ.get('HALFAPI_PROJECT_NAME') or os.path.basename(os.getcwd())
-DOMAINSDICT = lambda: {}
-DOMAINS = {}
 PRODUCTION = True
 LOGLEVEL = 'info'
-HOST = '127.0.0.1'
-PORT = '3000'
-SECRET = ''
 CONF_FILE = os.environ.get('HALFAPI_CONF_FILE', '.halfapi/config')
 DRYRUN = bool(os.environ.get('HALFAPI_DRYRUN', False))
 
-DOMAIN = None
-ROUTER = None
 SCHEMA = {}
-
-config = ConfigParser(allow_no_value=True)
 
 CONF_DIR = environ.get('HALFAPI_CONF_DIR', '/etc/half_api')
 HALFAPI_ETC_FILE=os.path.join(
-    CONF_DIR, 'default.ini'
+    CONF_DIR, 'config'
 )
-
 HALFAPI_DOT_FILE=os.path.join(
     os.getcwd(), '.halfapi', 'config')
 
@@ -85,59 +81,65 @@ def write_config():
     """
     Writes the current config to the highest priority config file
     """
-    with open(conf_files()[-1], 'w') as halfapi_config:
-        config.write(halfapi_config)
+    # with open(conf_files()[-1], 'w') as halfapi_config:
+    #     config.write(halfapi_config)
+    pass
 
-def config_dict():
-    """
-    The config object as a dict
-    """
-    return {
-            section: dict(config.items(section))
-            for section in config.sections()
-    }
 
 def read_config():
     """
     The highest index in "filenames" are the highest priorty
     """
-    config.read(HALFAPI_CONFIG_FILES)
-
-
+    return toml.load(HALFAPI_CONFIG_FILES)
 
 CONFIG = {}
-read_config()
 
-PROJECT_NAME = config.get('project', 'name', fallback=PROJECT_NAME)
+PROJECT_NAME = CONFIG.get('project', {}).get(
+    'name',
+    environ.get('HALFAPI_PROJECT_NAME', os.path.basename(os.getcwd())))
 
-if len(PROJECT_NAME) == 0:
-    raise Exception('Need a project name as argument')
+if len(CONFIG.get('domain', {}).keys()) == 0:
+    logger.info('No domains')
+    # logger.info('Running without domains: %s', d_domains(config) or 'empty domain dictionary')
 
-DOMAINSDICT = lambda: d_domains(config)
-DOMAINS = DOMAINSDICT()
-if len(DOMAINS) == 0:
-    logger.info('Running without domains: %s', d_domains(config) or 'empty domain dictionary')
 
-HOST = config.get('project', 'host', fallback=environ.get('HALFAPI_HOST', '127.0.0.1'))
-PORT = config.getint('project', 'port', fallback=environ.get('HALFAPI_PORT', '3000'))
+# Bind
+HOST = CONFIG.get('project', {}).get(
+    'host',
+    environ.get('HALFAPI_HOST', '127.0.0.1'))
+PORT = int(CONFIG.get('project', {}).get(
+    'port',
+    environ.get('HALFAPI_PORT', '3000')))
 
-secret_path = config.get('project', 'secret', fallback=environ.get('HALFAPI_SECRET', ''))
+
+# Secret
+SECRET = CONFIG.get('project', {}).get(
+    'secret',
+    environ.get('HALFAPI_SECRET'))
+
+if not SECRET:
+    # TODO: Create a temporary secret
+    _, SECRET = tempfile.mkstemp()
+    with open('SECRET', 'w') as secret_file:
+        secret_file.write(str(uuid.uuid4()))
+
 try:
-    with open(secret_path, 'r') as secret_file:
-
-        SECRET = secret_file.read().strip()
+    with open(SECRET, 'r') as secret_file:
         CONFIG['secret'] = SECRET.strip()
 except FileNotFoundError as exc:
-    logger.info('Running without secret file: %s', secret_path or 'no file specified')
+    logger.info('Running without secret file: %s', SECRET or 'no file specified')
 
-PRODUCTION = config.getboolean('project', 'production',
-    fallback=environ.get('HALFAPI_PROD', True))
+PRODUCTION = bool(CONFIG.get('project', {}).get(
+    'production',
+    environ.get('HALFAPI_PROD', True)))
 
-LOGLEVEL = config.get('project', 'loglevel',
-    fallback=environ.get('HALFAPI_LOGLEVEL', 'info')).lower()
+LOGLEVEL = CONFIG.get('project', {}).get(
+    'loglevel',
+    environ.get('HALFAPI_LOGLEVEL', 'info')).lower()
 
-BASE_DIR = config.get('project', 'base_dir',
-    fallback=environ.get('HALFAPI_BASE_DIR', '.'))
+BASE_DIR = CONFIG.get('project', {}).get(
+    'base_dir',
+    environ.get('HALFAPI_BASE_DIR', '.'))
 
 CONFIG = {
     'project_name': PROJECT_NAME,
@@ -146,4 +148,5 @@ CONFIG = {
     'host': HOST,
     'port': PORT,
     'dryrun': DRYRUN,
+    'domain': {}
 }

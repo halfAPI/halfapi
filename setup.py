@@ -50,7 +50,8 @@ setup(
         "orjson>=3.4.7,<4",
         "pyyaml>=5.3.1,<6",
         "timing-asgi>=0.2.1,<1",
-        "schema>=0.7.4,<1"
+        "schema>=0.7.4,<1",
+        "toml>=0.7.1,<0.8"
     ],
     classifiers=[
         "Development Status :: 3 - Alpha",

@@ -19,11 +19,11 @@ from types import ModuleType, FunctionType
 
 import yaml
 
-from .domain import gen_router_routes, domain_acls, route_decorator
+from .domain import gen_router_routes, domain_acls, route_decorator, domain_schema_dict
 from .responses import ORJSONResponse
 from .acl import args_check
 from ..half_route import HalfRoute
-from ..conf import DOMAINSDICT
+from . import acl
 
 from ..logging import logger
 
@@ -58,6 +58,11 @@ def gen_domain_routes(m_domain: ModuleType):
     Returns:
         Generator(HalfRoute)
     """
+    yield HalfRoute(f'/',
+        JSONRoute(domain_schema_dict(m_domain)),
+        [{'acl': acl.public}],
+        'GET'
+    )
     for path, method, m_router, fct, params in gen_router_routes(m_domain, []):
         yield HalfRoute(f'/{path}', fct, params, method)
 
@@ -144,9 +149,11 @@ def api_routes(m_dom: ModuleType) -> Tuple[Dict, Dict]:
 
 def api_acls(request):
     """ Returns the list of possible ACLs
+
+    # TODO: Rewrite
     """
     res = {}
-    domains = DOMAINSDICT()
+    domains = {}
     doc = 'doc' in request.query_params
     for domain, m_domain in domains.items():
         res[domain] = {}

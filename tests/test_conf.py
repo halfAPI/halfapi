@@ -5,10 +5,12 @@ from halfapi.halfapi import HalfAPI
 
 class TestConf(TestCase):
     def setUp(self):
-        self.args = { 
+        self.args = {
             'domain': {
-                'name': 'dummy_domain',
-                'router': 'dummy_domain.routers'
+                'dummy_domain': {
+                    'name': 'dummy_domain',
+                    'router': '.routers'
+                }
             }
         }
     def tearDown(self):
@@ -39,7 +41,6 @@ class TestConf(TestCase):
             CONFIG,
             SCHEMA,
             SECRET,
-            DOMAINSDICT,
             PROJECT_NAME,
             HOST,
             PORT,
@@ -49,9 +50,8 @@ class TestConf(TestCase):
         assert isinstance(CONFIG, dict)
         assert isinstance(SCHEMA, dict)
         assert isinstance(SECRET, str)
-        assert isinstance(DOMAINSDICT(), dict)
         assert isinstance(PROJECT_NAME, str)
         assert isinstance(HOST, str)
-        assert isinstance(PORT, str)
-        assert str(int(PORT)) == PORT
+        assert isinstance(PORT, int)
+        assert int(str(int(PORT))) == PORT
         assert isinstance(CONF_DIR, str)

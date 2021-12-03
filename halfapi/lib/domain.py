@@ -56,9 +56,8 @@ def route_decorator(fct: FunctionType, ret_type: str = 'json') -> Coroutine:
             fct_args['halfapi'] = {
                 'user': request.user if
                     'user' in request else None,
-                'config': request.scope['config'],
-                'domain': request.scope['domain'],
-
+                'config': request.scope.get('config', {}),
+                'domain': request.scope.get('domain', 'unknown'),
             }
 
 

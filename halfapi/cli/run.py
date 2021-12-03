@@ -10,9 +10,10 @@ import uvicorn
 from .cli import cli
 from .domain import list_api_routes
 from ..conf import (PROJECT_NAME, HOST, PORT, SCHEMA,
-    PRODUCTION, LOGLEVEL, DOMAINSDICT, CONFIG, DOMAIN, ROUTER)
+    PRODUCTION, LOGLEVEL, CONFIG)
 from ..logging import logger
 from ..lib.schemas import schema_csv_dict
+from ..half_domain import HalfDomain
 
 @click.option('--host', default=HOST)
 @click.option('--port', default=PORT)
@@ -26,7 +27,8 @@ from ..lib.schemas import schema_csv_dict
 @click.argument('schema', type=click.File('r'), required=False)
 @click.argument('domain', required=False)
 @cli.command()
-def run(host, port, reload, secret, production, loglevel, prefix, check, dryrun, schema, domain):
+def run(host, port, reload, secret, production, loglevel, prefix, check, dryrun,
+        schema, domain):
     """
     The "halfapi run" command
     """
@@ -57,6 +59,19 @@ def run(host, port, reload, secret, production, loglevel, prefix, check, dryrun,
         # Populate the SCHEMA global with the data from the given file
         for key, val in schema_csv_dict(schema, prefix).items():
             SCHEMA[key] = val
+
+    if domain:
+        # If we specify a domain to run as argument
+
+        for key in CONFIG['domain']:
+            # Disable all domains
+            CONFIG['domain'].pop(key)
+
+        # And activate the desired one, mounted without prefix
+        CONFIG['domain'][domain] = {
+            'name': domain,
+            'prefix': False
+        }
 
     # list_api_routes()
 

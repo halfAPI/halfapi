@@ -13,7 +13,7 @@ import orjson
 
 
 from .cli import cli
-from ..conf import config, write_config, DOMAINSDICT
+from ..conf import write_config
 
 from ..lib.domain import domain_schema
 from ..lib.schemas import schema_dict_dom
@@ -61,13 +61,7 @@ def create_domain(domain_name: str, module_path: str):
         os.mkdir(router_path)
         create_init(router_path)
 
-
-    if not config.has_section('domain'):
-        config.add_section('domain')
-
-    config.set('domain', 'name', domain_name)
-    config.set('domain', 'router', module_path)
-    write_config()
+    # TODO: Generate config file
 
     domain_tree_create()
     """
@@ -113,11 +107,13 @@ def list_routes(domain, m_dom):
 def list_api_routes():
     """
     Echoes the list of all active domains.
+
+    TODO: Rewrite function
     """
 
     click.echo('# API Routes')
-    for domain, m_dom in DOMAINSDICT().items():
-        list_routes(domain, m_dom)
+    # for domain, m_dom in DOMAINSDICT().items():
+    #     list_routes(domain, m_dom)
 
 
 @click.option('--read',default=True, is_flag=True)

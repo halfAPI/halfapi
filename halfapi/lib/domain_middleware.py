@@ -32,8 +32,7 @@ class DomainMiddleware(BaseHTTPMiddleware):
         """
 
         request.scope['domain'] = self.domain
-        request.scope['config'] = self.config['domain_config'][self.domain] \
-            if self.domain in self.config.get('domain_config', {}) else {}
+        request.scope['config'] = self.config.copy()
 
         response = await call_next(request)
 

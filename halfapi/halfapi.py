@@ -40,13 +40,14 @@ from .lib.domain import domain_schema_dict, NoDomainsException, domain_schema
 from .lib.routes import gen_domain_routes, gen_schema_routes, JSONRoute
 from .lib.schemas import schema_json, get_acls
 from .logging import logger, config_logging
+from .half_domain import HalfDomain
 from halfapi import __version__
 
 
 
 class HalfAPI:
     def __init__(self, config,
-        routes_dict=None):
+        d_routes=None):
         config_logging(logging.DEBUG)
 
         SECRET = config.get('secret')
@@ -55,27 +56,28 @@ class HalfAPI:
         DRYRUN = config.get('dryrun', False)
 
         self.PRODUCTION = PRODUCTION
-        self.CONFIG = CONFIG
+        self.CONFIG = config
         self.SECRET = SECRET
 
         self.__application = None
 
 
+        # Domains
+
         """ HalfAPI routes (if not PRODUCTION, includes debug routes)
         """
         routes = []
         routes.append(
-            Route('/', JSONRoute({}))
+            Mount('/halfapi', routes=list(self.halfapi_routes()))
         )
 
-        routes.append(
-            Mount('/halfapi', routes=list(self.routes()))
-        )
+        logger.info('Config: %s', config)
+        logger.info('Active domains: %s', config.get('domain', {}))
 
-        if routes_dict:
-            # Mount the routes from the routes_dict argument - domain-less mode
+        if d_routes:
+            # Mount the routes from the d_routes argument - domain-less mode
             logger.info('Domain-less mode : the given schema defines the activated routes')
-            for route in gen_schema_routes(routes_dict):
+            for route in gen_schema_routes(d_routes):
                 routes.append(route)
         else:
             """
@@ -103,6 +105,24 @@ class HalfAPI:
             },
             on_startup=startup_fcts
         )
+
+        for key, domain in config.get('domain', {}).items():
+            dom_name = domain.get('name', key)
+            if domain.get('prefix', False):
+                path = f'/{dom_name}'
+            else:
+                path = '/'
+
+            self.__application.mount(path,
+                Mount('/',
+                    HalfDomain(
+                        self.application,
+                        domain.get('name', key),
+                        domain.get('router'),
+                        config=domain.get('config', {})
+                    )
+                )
+            )
 
         """
         self.__application.add_middleware(
@@ -139,7 +159,7 @@ class HalfAPI:
     def application(self):
         return self.__application
 
-    def routes(self):
+    def halfapi_routes(self):
         """ Halfapi default routes
         """
 

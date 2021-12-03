@@ -39,7 +39,10 @@ from halfapi.lib.jwt_middleware import (
 def dummy_domain():
     yield {
         'name': 'dummy_domain',
-        'router': 'dummy_domain.routers'
+        'router': 'dummy_domain.routers',
+        'config': {
+            'test': True
+        }
     }
 
 @pytest.fixture
@@ -253,10 +256,10 @@ def dummy_project():
             f'secret = {halfapi_secret}\n',
             'port = 3050\n',
             'loglevel = debug\n',
-            '[domain]\n',
+            '[domain.dummy_domain]\n',
             f'name = {domain}\n',
             'router = dummy_domain.routers\n',
-            f'[{domain}]\n',
+            f'[domain.dummy_domain.config]\n',
             'test = True'
         ])
 
@@ -271,8 +274,10 @@ def application_debug(project_runner):
         'secret':'turlututu',
         'production':False,
         'domain': {
-            'name': 'test_domain',
-            'router': 'test_domain.routers'
+            'domain': {
+                'name': 'test_domain',
+                'router': 'test_domain.routers'
+            }
         },
         'config':{
             'domain_config': {'test_domain': {'test': True}}
@@ -288,9 +293,13 @@ def application_domain(dummy_domain):
     return HalfAPI({
         'secret':'turlututu',
         'production':True,
-        'domain': dummy_domain,
-        'config':{
-            'domain_config': {'dummy_domain': {'test': True}}
+        'domain': {
+            'domain': {
+                **dummy_domain,
+                'config': {
+                    'test': True
+                }
+            }
         }
     }).application
 
