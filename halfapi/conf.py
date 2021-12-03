@@ -120,7 +120,7 @@ SECRET = CONFIG.get('project', {}).get(
 if not SECRET:
     # TODO: Create a temporary secret
     _, SECRET = tempfile.mkstemp()
-    with open('SECRET', 'w') as secret_file:
+    with open(SECRET, 'w') as secret_file:
         secret_file.write(str(uuid.uuid4()))
 
 try:
