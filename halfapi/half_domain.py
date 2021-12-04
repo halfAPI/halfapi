@@ -55,3 +55,12 @@ class HalfDomain(Starlette):
             ]
         )
 
+    @staticmethod
+    def acls(domain):
+        """ Returns the ACLS constant for the given domain
+        """
+        m_acl = importlib.import_module(f'{domain}.acl')
+        try:
+            return getattr(m_acl, 'ACLS')
+        except AttributeError:
+            raise Exception(f'Missing acl.ACLS constant in {domain} module')

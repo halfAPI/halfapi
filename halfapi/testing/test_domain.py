@@ -4,8 +4,11 @@ import os
 import sys
 import json
 from unittest import TestCase
+from starlette.testclient import TestClient
 from click.testing import CliRunner
 from ..cli.cli import cli
+from ..halfapi import HalfAPI
+from ..half_domain import HalfDomain
 from pprint import pprint
 
 class TestDomain(TestCase):
@@ -53,3 +56,34 @@ class TestDomain(TestCase):
         self.assertEqual(result.exit_code, 0)
 
         return result_d
+
+    def check_routes(self):
+        halfapi = HalfAPI({
+            'domain': {
+                'dummy_domain': {
+                    'name': 'dummy_domain',
+                    'router': 'dummy_domain.routers',
+                    'prefix': False,
+                    'config': {
+                        'test': True
+                    }
+                }
+            }
+        })
+
+        client = TestClient(halfapi.application)
+        r = client.get('/')
+        assert r.status_code == 200
+        d_r = r.json()
+        assert isinstance(d_r, dict)
+        r = client.get('/halfapi/acls')
+        assert r.status_code == 200
+        d_r = r.json()
+        assert isinstance(d_r, dict)
+
+        ACLS = HalfDomain.acls(self.DOMAIN)
+        assert len(ACLS) == len(d_r.keys())
+        for acl_name in ACLS:
+            assert acl_name in d_r.keys()
+
+            

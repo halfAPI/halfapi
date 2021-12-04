@@ -8,3 +8,6 @@ class TestDummyDomain(TestDomain):
 
     def test_domain(self):
         self.check_domain()
+
+    def test_routes(self):
+        self.check_routes()
