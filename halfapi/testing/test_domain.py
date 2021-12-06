@@ -61,9 +61,10 @@ class TestDomain(TestCase):
         halfapi = HalfAPI({
             'domain': {
                 'dummy_domain': {
-                    'name': 'dummy_domain',
-                    'router': 'dummy_domain.routers',
+                    'name': self.DOMAIN,
+                    'router': self.ROUTERS,
                     'prefix': False,
+                    'enabled': True,
                     'config': {
                         'test': True
                     }
@@ -76,14 +77,20 @@ class TestDomain(TestCase):
         assert r.status_code == 200
         d_r = r.json()
         assert isinstance(d_r, dict)
+        assert 'openapi' in d_r
+        assert 'info' in d_r
+        assert 'paths' in d_r
+        assert 'domain' in d_r
+
         r = client.get('/halfapi/acls')
         assert r.status_code == 200
         d_r = r.json()
         assert isinstance(d_r, dict)
 
-        ACLS = HalfDomain.acls(self.DOMAIN)
-        assert len(ACLS) == len(d_r.keys())
-        for acl_name in ACLS:
-            assert acl_name in d_r.keys()
+        assert self.DOMAIN in d_r.keys()
 
-            
+        ACLS = HalfDomain.acls(self.DOMAIN)
+        assert len(ACLS) == len(d_r[self.DOMAIN])
+
+        for acl_name in ACLS:
+            assert acl_name[0] in d_r[self.DOMAIN]

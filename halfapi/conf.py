@@ -11,7 +11,7 @@ It defines the following globals :
 
     - PROJECT_NAME (str) - HALFAPI_PROJECT_NAME
     - PRODUCTION (bool) - HALFAPI_PRODUCTION
-    - LOGLEVEL (string) - HALFAPI_LOGLEVEL
+    - LOGLEVEL (str) - HALFAPI_LOGLEVEL
     - BASE_DIR (str) - HALFAPI_BASE_DIR
     - HOST (str) - HALFAPI_HOST
     - PORT (int) - HALFAPI_PORT
@@ -25,7 +25,6 @@ It reads the following ressource :
 It follows the following format :
 
     [project]
-    name = PROJECT_NAME
     halfapi_version = HALFAPI_VERSION
 
     [domain.domain_name]
@@ -50,8 +49,6 @@ import toml
 from .lib.domain import d_domains
 from .logging import logger
 
-CONFIG = {}
-
 PRODUCTION = True
 LOGLEVEL = 'info'
 CONF_FILE = os.environ.get('HALFAPI_CONF_FILE', '.halfapi/config')
@@ -66,7 +63,19 @@ HALFAPI_ETC_FILE=os.path.join(
 HALFAPI_DOT_FILE=os.path.join(
     os.getcwd(), '.halfapi', 'config')
 
-HALFAPI_CONFIG_FILES = [ CONF_FILE, HALFAPI_DOT_FILE ]
+HALFAPI_CONFIG_FILES = []
+
+try:
+    with open(HALFAPI_ETC_FILE, 'r'):
+        HALFAPI_CONFIG_FILES.append(HALFAPI_ETC_FILE)
+except FileNotFoundError:
+    logger.error('Cannot find a configuration file under %s', HALFAPI_DOT_FILE)
+
+try:
+    with open(HALFAPI_DOT_FILE, 'r'):
+        HALFAPI_CONFIG_FILES.append(HALFAPI_DOT_FILE)
+except FileNotFoundError:
+    logger.error('Cannot find a configuration file under %s', HALFAPI_DOT_FILE)
 
 def conf_files():
     return [
@@ -90,30 +99,33 @@ def read_config():
     """
     The highest index in "filenames" are the highest priorty
     """
-    return toml.load(HALFAPI_CONFIG_FILES)
+    d_res = {}
 
-CONFIG = {}
+    logger.info('Reading config files %s', HALFAPI_CONFIG_FILES)
+    for CONF_FILE in HALFAPI_CONFIG_FILES:
+        d_res.update( toml.load(HALFAPI_CONFIG_FILES) )
 
-PROJECT_NAME = CONFIG.get('project', {}).get(
-    'name',
-    environ.get('HALFAPI_PROJECT_NAME', os.path.basename(os.getcwd())))
+    logger.info('Reading config files (result) %s', d_res)
+    return { **d_res.get('project', {}), 'domain': d_res.get('domain', {}) }
+
+CONFIG = read_config()
+
+PROJECT_NAME = CONFIG.get('project_name',
+    environ.get('HALFAPI_PROJECT_NAME', os.getcwd().split('/')[-1]))
 
 if len(CONFIG.get('domain', {}).keys()) == 0:
     logger.info('No domains')
-    # logger.info('Running without domains: %s', d_domains(config) or 'empty domain dictionary')
-
 
 # Bind
-HOST = CONFIG.get('project', {}).get(
-    'host',
+HOST = CONFIG.get('host',
     environ.get('HALFAPI_HOST', '127.0.0.1'))
-PORT = int(CONFIG.get('project', {}).get(
+PORT = int(CONFIG.get(
     'port',
     environ.get('HALFAPI_PORT', '3000')))
 
 
 # Secret
-SECRET = CONFIG.get('project', {}).get(
+SECRET = CONFIG.get(
     'secret',
     environ.get('HALFAPI_SECRET'))
 
@@ -129,24 +141,21 @@ try:
 except FileNotFoundError as exc:
     logger.info('Running without secret file: %s', SECRET or 'no file specified')
 
-PRODUCTION = bool(CONFIG.get('project', {}).get(
+PRODUCTION = bool(CONFIG.get(
     'production',
     environ.get('HALFAPI_PROD', True)))
 
-LOGLEVEL = CONFIG.get('project', {}).get(
+LOGLEVEL = CONFIG.get(
     'loglevel',
     environ.get('HALFAPI_LOGLEVEL', 'info')).lower()
 
-BASE_DIR = CONFIG.get('project', {}).get(
+BASE_DIR = CONFIG.get(
     'base_dir',
     environ.get('HALFAPI_BASE_DIR', '.'))
 
-CONFIG = {
-    'project_name': PROJECT_NAME,
-    'production': PRODUCTION,
-    'secret': SECRET,
-    'host': HOST,
-    'port': PORT,
-    'dryrun': DRYRUN,
-    'domain': {}
-}
+CONFIG['project_name'] = PROJECT_NAME
+CONFIG['production'] = PRODUCTION
+CONFIG['secret'] = SECRET
+CONFIG['host'] = HOST
+CONFIG['port'] = PORT
+CONFIG['dryrun'] = DRYRUN

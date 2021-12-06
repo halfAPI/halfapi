@@ -37,7 +37,7 @@ from .lib.responses import (ORJSONResponse, UnauthorizedResponse,
     NotFoundResponse, InternalServerErrorResponse, NotImplementedResponse,
     ServiceUnavailableResponse)
 from .lib.domain import domain_schema_dict, NoDomainsException, domain_schema
-from .lib.routes import gen_domain_routes, gen_schema_routes, JSONRoute
+from .lib.routes import gen_schema_routes, JSONRoute
 from .lib.schemas import schema_json, get_acls
 from .logging import logger, config_logging
 from .half_domain import HalfDomain
@@ -49,14 +49,13 @@ class HalfAPI:
     def __init__(self, config,
         d_routes=None):
         config_logging(logging.DEBUG)
+        self.config = config
 
-        SECRET = config.get('secret')
-        PRODUCTION = config.get('production', True)
-        CONFIG = config.get('config', {})
-        DRYRUN = config.get('dryrun', False)
+        SECRET = self.config.get('secret')
+        PRODUCTION = self.config.get('production', True)
+        DRYRUN = self.config.get('dryrun', False)
 
         self.PRODUCTION = PRODUCTION
-        self.CONFIG = config
         self.SECRET = SECRET
 
         self.__application = None
@@ -71,8 +70,11 @@ class HalfAPI:
             Mount('/halfapi', routes=list(self.halfapi_routes()))
         )
 
-        logger.info('Config: %s', config)
-        logger.info('Active domains: %s', config.get('domain', {}))
+        logger.info('Config: %s', self.config)
+        logger.info('Active domains: %s',
+            filter(
+                lambda n: n.get('enabled', False),
+                self.config.get('domain', {})))
 
         if d_routes:
             # Mount the routes from the d_routes argument - domain-less mode
@@ -80,10 +82,6 @@ class HalfAPI:
             for route in gen_schema_routes(d_routes):
                 routes.append(route)
         else:
-            """
-            for route in gen_domain_routes(m_domain_router):
-                routes.append(route)
-            """
             pass
 
         startup_fcts = []
@@ -106,21 +104,25 @@ class HalfAPI:
             on_startup=startup_fcts
         )
 
-        for key, domain in config.get('domain', {}).items():
+        for key, domain in self.config.get('domain', {}).items():
             dom_name = domain.get('name', key)
-            if domain.get('prefix', False):
-                path = f'/{dom_name}'
-            else:
-                path = '/'
+            if not domain.get('enabled', False):
+                continue
 
+            if not domain.get('prefix', False):
+                if len(self.config.get('domain').keys()) > 1:
+                    raise Exception('Cannot use multiple domains and set prefix to false')
+                path = '/'
+            else:
+                path = f'/{dom_name}'
+
+            logger.debug('Mounting domain %s on %s', domain.get('name'), path)
             self.__application.mount(path,
-                Mount('/',
-                    HalfDomain(
-                        self.application,
-                        domain.get('name', key),
-                        domain.get('router'),
-                        config=domain.get('config', {})
-                    )
+                HalfDomain(
+                    self.application,
+                    domain.get('name', key),
+                    domain.get('router'),
+                    config=domain.get('config', {})
                 )
             )
 
@@ -132,12 +134,10 @@ class HalfAPI:
         )
         """
 
-        if SECRET:
-            self.SECRET = SECRET
-            self.__application.add_middleware(
-                AuthenticationMiddleware,
-                backend=JWTAuthenticationBackend(secret_key=SECRET)
-            )
+        self.__application.add_middleware(
+            AuthenticationMiddleware,
+            backend=JWTAuthenticationBackend()
+        )
 
         if not PRODUCTION:
             self.__application.add_middleware(
@@ -146,6 +146,7 @@ class HalfAPI:
                 metric_namer=StarletteScopeToName(prefix="halfapi",
                 starlette_app=self.__application)
             )
+
 
 
     @property
@@ -168,7 +169,7 @@ class HalfAPI:
 
         yield Route('/whoami', get_user)
         yield Route('/schema', schema_json)
-        yield Route('/acls', get_acls)
+        yield Route('/acls', self.acls_route())
         yield Route('/version', self.version_async)
         """ Halfapi debug routes definition
         """
@@ -209,3 +210,29 @@ class HalfAPI:
         import sys
         time.sleep(1)
         sys.exit(0)
+
+    def acls_route(self):
+        res = {
+            domain: HalfDomain.acls_route(domain)
+            for domain, domain_conf in self.config.get('domain', {}).items()
+            if domain_conf.get('enabled', False)
+        }
+
+        async def wrapped(req, *args, **kwargs):
+            for domain, domain_acls in res.items():
+                for acl_name, d_acl in domain_acls.items():
+                    fct = d_acl['callable']
+                    if not callable(fct):
+                        raise Exception(
+                            'No callable function in acl definition %s',
+                            acl_name)
+
+                    fct_result = fct(req, *args, **kwargs)
+                    if callable(fct_result):
+                        fct_result = fct()(req, *args, **kwargs)
+
+                    d_acl['result'] = fct_result
+
+            return ORJSONResponse(res)
+
+        return wrapped

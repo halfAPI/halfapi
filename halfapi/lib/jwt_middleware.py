@@ -23,14 +23,16 @@ from starlette.exceptions import HTTPException
 
 from .user import CheckUser, JWTUser, Nobody
 from ..logging import logger
+from ..conf import CONFIG
 
 SECRET=None
-try:
-    from ..conf import SECRET
-except ImportError as exc:
-    logger.error('Could not import SECRET variable from conf module,'\
-        ' using HALFAPI_SECRET environment variable')
 
+try:
+    with open(CONFIG.get('secret', ''), 'r') as secret_file:
+        SECRET = secret_file.read().strip()
+except FileNotFoundError:
+        logger.error('Could not import SECRET variable from conf module,'\
+            ' using HALFAPI_SECRET environment variable')
 
 class JWTAuthenticationBackend(AuthenticationBackend):
     def __init__(self, secret_key: str = SECRET,

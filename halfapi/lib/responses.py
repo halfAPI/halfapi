@@ -98,6 +98,8 @@ class ORJSONResponse(JSONResponse):
             JWTUser, Nobody
         }
 
+        if callable(typ):
+            return typ.__name__
         if type(typ) in str_types:
             return str(typ)
         if type(typ) in list_types:

@@ -18,7 +18,7 @@ class HalfRoute(Route):
     """ HalfRoute
     """
     def __init__(self, path, fct, params, method):
-        logger.info('HalfRoute creation: %s', params)
+        logger.info('HalfRoute creation: %s %s %s %s', path, fct, params, method)
         super().__init__(
             path,
             HalfRoute.acl_decorator(

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-cli/config.py Contains the .halfapi/config and HALFAPI_CONF_DIR/project_name templates
+cli/config.py Contains the .halfapi/config
 
 Defines the "halfapi config" command
 """
@@ -17,7 +17,6 @@ router = {router}
 
 CONF_STR="""
 [project]
-name = {project_name}
 host = {host}
 port = {port}
 production = {production}

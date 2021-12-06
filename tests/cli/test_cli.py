@@ -36,6 +36,7 @@ def test_options(runner):
         assert r.exit_code == 0
 
 
+@pytest.mark.skip
 def test_init_project_fail(runner):
     # Missing argument (project)
     testproject = 'testproject'
@@ -59,6 +60,7 @@ def test_init_project_fail(runner):
         r = runner.invoke(Cli, ['init', testproject])
         assert r.exit_code == 1
 
+@pytest.mark.skip
 def test_init_project(runner):
     """
     """

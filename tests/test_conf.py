@@ -9,7 +9,9 @@ class TestConf(TestCase):
             'domain': {
                 'dummy_domain': {
                     'name': 'dummy_domain',
-                    'router': '.routers'
+                    'router': '.routers',
+                    'enabled': True,
+                    'prefix': False,
                 }
             }
         }
@@ -40,18 +42,11 @@ class TestConf(TestCase):
         from halfapi.conf import (
             CONFIG,
             SCHEMA,
-            SECRET,
-            PROJECT_NAME,
-            HOST,
-            PORT,
-            CONF_DIR
         )
 
         assert isinstance(CONFIG, dict)
+        assert isinstance(CONFIG.get('project_name'), str)
         assert isinstance(SCHEMA, dict)
-        assert isinstance(SECRET, str)
-        assert isinstance(PROJECT_NAME, str)
-        assert isinstance(HOST, str)
-        assert isinstance(PORT, int)
-        assert int(str(int(PORT))) == PORT
-        assert isinstance(CONF_DIR, str)
+        assert isinstance(CONFIG.get('secret'), str)
+        assert isinstance(CONFIG.get('host'), str)
+        assert isinstance(CONFIG.get('port'), int)

@@ -19,7 +19,6 @@ from .cli import cli
 from ..logging import logger
 
 TMPL_HALFAPI_ETC = """[project]
-name = {project}
 host = 127.0.0.1
 port = 8000
 secret = /path/to/secret_file
@@ -27,17 +26,7 @@ production = False
 base_dir = {base_dir}
 """
 
-def format_halfapi_etc(project, path):
-    """
-    Returns the formatted template for /etc/half_api/PROJECT_NAME
-    """
-    return TMPL_HALFAPI_ETC.format(
-        project=project,
-        base_dir=path
-    )
-
 TMPL_HALFAPI_CONFIG = """[project]
-name = {name}
 halfapi_version = {halfapi_version}
 
 [domain]
@@ -66,9 +55,7 @@ def init(project):
 
     with open(f'{project}/.halfapi/config', 'w') as conf_file:
         conf_file.write(TMPL_HALFAPI_CONFIG.format(
-            name=project,
             halfapi_version=__version__))
 
 
     click.echo(f'Configure halfapi project in {CONF_DIR}/{project}')
-    click.echo(format_halfapi_etc(project, CONF_DIR))

@@ -20,7 +20,7 @@ from starlette.testclient import TestClient
 from halfapi import __version__
 from halfapi.halfapi import HalfAPI
 from halfapi.cli.cli import cli
-from halfapi.cli.init import init, format_halfapi_etc
+from halfapi.cli.init import init
 from halfapi.cli.domain import domain, create_domain
 from halfapi.lib.responses import ORJSONResponse
 from halfapi.lib.jwt_middleware import JWTAuthenticationBackend
@@ -39,7 +39,9 @@ from halfapi.lib.jwt_middleware import (
 def dummy_domain():
     yield {
         'name': 'dummy_domain',
-        'router': 'dummy_domain.routers',
+        'router': '.routers',
+        'enabled': True,
+        'prefix': False,
         'config': {
             'test': True
         }
@@ -178,10 +180,12 @@ def project_runner(runner, halfapicli, tree):
         with open(SECRET_PATH, 'w') as f:
             f.write(str(uuid1()))
 
+        """
         with open(os.path.join('.halfapi', PROJNAME), 'w') as halfapi_etc:
             PROJ_CONFIG = re.sub('secret = .*', f'secret = {SECRET_PATH}',
                 format_halfapi_etc(PROJNAME, os.getcwd()))
             halfapi_etc.write(PROJ_CONFIG)
+        """
 
 
         ###
@@ -276,12 +280,14 @@ def application_debug(project_runner):
         'domain': {
             'domain': {
                 'name': 'test_domain',
-                'router': 'test_domain.routers'
+                'router': 'test_domain.routers',
+                'enabled': True,
+                'prefix': False,
+                'config':{
+                    'test': True
+                }
             }
         },
-        'config':{
-            'domain_config': {'test_domain': {'test': True}}
-        }
     })
 
     assert isinstance(halfAPI, HalfAPI)
@@ -294,7 +300,7 @@ def application_domain(dummy_domain):
         'secret':'turlututu',
         'production':True,
         'domain': {
-            'domain': {
+            'dummy_domain': {
                 **dummy_domain,
                 'config': {
                     'test': True

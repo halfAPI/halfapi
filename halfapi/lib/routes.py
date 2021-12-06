@@ -19,7 +19,7 @@ from types import ModuleType, FunctionType
 
 import yaml
 
-from .domain import gen_router_routes, domain_acls, route_decorator, domain_schema_dict
+from .domain import gen_router_routes, domain_acls, route_decorator, domain_schema
 from .responses import ORJSONResponse
 from .acl import args_check
 from ..half_route import HalfRoute
@@ -43,6 +43,7 @@ def JSONRoute(data: Any) -> Coroutine:
         async function
     """
     async def wrapped(request, *args, **kwargs):
+        logger.debug('JSONRoute data: %s', data)
         return ORJSONResponse(data)
 
     return wrapped
@@ -58,11 +59,12 @@ def gen_domain_routes(m_domain: ModuleType):
     Returns:
         Generator(HalfRoute)
     """
-    yield HalfRoute(f'/',
-        JSONRoute(domain_schema_dict(m_domain)),
+    yield HalfRoute('/',
+        JSONRoute(domain_schema(m_domain)),
         [{'acl': acl.public}],
         'GET'
     )
+
     for path, method, m_router, fct, params in gen_router_routes(m_domain, []):
         yield HalfRoute(f'/{path}', fct, params, method)
 

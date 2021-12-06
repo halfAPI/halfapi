@@ -9,18 +9,17 @@ import uvicorn
 
 from .cli import cli
 from .domain import list_api_routes
-from ..conf import (PROJECT_NAME, HOST, PORT, SCHEMA,
-    PRODUCTION, LOGLEVEL, CONFIG)
+from ..conf import CONFIG, SCHEMA
 from ..logging import logger
 from ..lib.schemas import schema_csv_dict
 from ..half_domain import HalfDomain
 
-@click.option('--host', default=HOST)
-@click.option('--port', default=PORT)
+@click.option('--host', default=CONFIG.get('host'))
+@click.option('--port', default=CONFIG.get('port'))
 @click.option('--reload', default=False)
-@click.option('--secret', default=False)
-@click.option('--production', default=True)
-@click.option('--loglevel', default=LOGLEVEL)
+@click.option('--secret', default=CONFIG.get('secret'))
+@click.option('--production', default=CONFIG.get('secret'))
+@click.option('--loglevel', default=CONFIG.get('loglevel'))
 @click.option('--prefix', default='/')
 @click.option('--check', default=True)
 @click.option('--dryrun', default=False, is_flag=True)
@@ -36,21 +35,13 @@ def run(host, port, reload, secret, production, loglevel, prefix, check, dryrun,
         host, port, reload, secret, production, loglevel, prefix, schema
     )
 
-    if not host:
-        host = HOST
-
-    if not port:
-        port = PORT
-
     port = int(port)
 
-    if PRODUCTION and reload:
+    if production and reload:
         reload = False
         raise Exception('Can\'t use live code reload in production')
 
-    log_level = LOGLEVEL or 'info'
-
-    click.echo(f'Launching application {PROJECT_NAME}')
+    click.echo(f'Launching application')
 
     if secret:
         CONFIG['secret'] = secret
@@ -70,7 +61,8 @@ def run(host, port, reload, secret, production, loglevel, prefix, check, dryrun,
         # And activate the desired one, mounted without prefix
         CONFIG['domain'][domain] = {
             'name': domain,
-            'prefix': False
+            'prefix': False,
+            'enabled': True
         }
 
     # list_api_routes()
@@ -78,7 +70,7 @@ def run(host, port, reload, secret, production, loglevel, prefix, check, dryrun,
     click.echo(f'uvicorn.run("halfapi.app:application"\n' \
         f'host: {host}\n' \
         f'port: {port}\n' \
-        f'log_level: {log_level}\n' \
+        f'log_level: {loglevel}\n' \
         f'reload: {reload}\n'
     )
 
@@ -88,5 +80,5 @@ def run(host, port, reload, secret, production, loglevel, prefix, check, dryrun,
     uvicorn.run('halfapi.app:application',
         host=host,
         port=int(port),
-        log_level=log_level,
+        log_level=loglevel,
         reload=reload)

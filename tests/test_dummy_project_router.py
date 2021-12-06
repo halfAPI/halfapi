@@ -12,6 +12,9 @@ from halfapi.lib.domain import gen_router_routes
 
 def test_get_config_route(dummy_project, application_domain):
     c = TestClient(application_domain)
+    r = c.get('/')
+    assert r.status_code == 200
+    pprint(r.json())
     r = c.get('/config')
     assert r.status_code == 200
     pprint(r.json())
