@@ -278,7 +278,7 @@ def application_debug(project_runner):
         'secret':'turlututu',
         'production':False,
         'domain': {
-            'domain': {
+            'dummy_domain': {
                 'name': 'test_domain',
                 'router': 'test_domain.routers',
                 'enabled': True,

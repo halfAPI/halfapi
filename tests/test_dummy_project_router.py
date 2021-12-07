@@ -8,8 +8,6 @@ from pprint import pprint
 from starlette.routing import Route
 from starlette.testclient import TestClient
 
-from halfapi.lib.domain import gen_router_routes
-
 def test_get_config_route(dummy_project, application_domain):
     c = TestClient(application_domain)
     r = c.get('/')

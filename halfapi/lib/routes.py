@@ -19,7 +19,7 @@ from types import ModuleType, FunctionType
 
 import yaml
 
-from .domain import gen_router_routes, domain_acls, route_decorator, domain_schema
+# from .domain import gen_router_routes, domain_acls, route_decorator, domain_schema
 from .responses import ORJSONResponse
 from .acl import args_check
 from ..half_route import HalfRoute

@@ -14,7 +14,7 @@ from .cli import cli
 
 from ..logging import logger
 
-from ..lib.domain import domain_schema_dict
+# from ..lib.domain import domain_schema_dict
 from ..lib.constants import DOMAIN_SCHEMA, ROUTE_SCHEMA
 from ..lib.responses import ORJSONResponse
 # from ..lib.routes import api_routes
@@ -31,26 +31,26 @@ def routes(module, export=False, validate=False, check=False, noheader=False, sc
     """
     The "halfapi routes" command
     """
-    try:
-        mod = importlib.import_module(module)
-    except ImportError as exc:
-        raise click.BadParameter('Cannot import this module', param=module) from exc
+    # try:
+    #     mod = importlib.import_module(module)
+    # except ImportError as exc:
+    #     raise click.BadParameter('Cannot import this module', param=module) from exc
 
-    if export:
-        click.echo(schema_to_csv(module, header=not noheader))
+    # if export:
+    #     click.echo(schema_to_csv(module, header=not noheader))
 
-    if schema:
-        routes_d = domain_schema_dict(mod)
-        ROUTE_SCHEMA.validate(routes_d)
-        click.echo(orjson.dumps(routes_d,
-            option=orjson.OPT_NON_STR_KEYS,
-            default=ORJSONResponse.default_cast))
+    # if schema:
+    #     routes_d = domain_schema_dict(mod)
+    #     ROUTE_SCHEMA.validate(routes_d)
+    #     click.echo(orjson.dumps(routes_d,
+    #         option=orjson.OPT_NON_STR_KEYS,
+    #         default=ORJSONResponse.default_cast))
 
 
-    if validate:
-        routes_d = domain_schema_dict(mod)
-        try:
-            ROUTE_SCHEMA.validate(routes_d)
-        except Exception as exc:
-            raise exc
+    # if validate:
+    #     routes_d = domain_schema_dict(mod)
+    #     try:
+    #         ROUTE_SCHEMA.validate(routes_d)
+    #     except Exception as exc:
+    #         raise exc
 

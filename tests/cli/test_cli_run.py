@@ -10,7 +10,7 @@ def test_run_noproject(cli_runner):
         print(result.stdout)
         assert result.exit_code == 0
 
-        result = cli_runner.invoke(cli, ['run'])
+        result = cli_runner.invoke(cli, ['run', '--dryrun'])
         try:
             assert result.exit_code == 0
         except AssertionError as exc:

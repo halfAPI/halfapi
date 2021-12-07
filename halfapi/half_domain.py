@@ -1,10 +1,25 @@
 import importlib
+import inspect
+import os
+import re
+
+from typing import Coroutine, Dict, Iterator, List, Tuple
+from types import ModuleType, FunctionType
+
+from schema import SchemaError
 
 from starlette.applications import Starlette
 from starlette.routing import Router
 
+import yaml
+
+
+from .lib.constants import API_SCHEMA_DICT, ROUTER_SCHEMA, VERBS
 from .half_route import HalfRoute
-from .lib.routes import gen_domain_routes, gen_schema_routes
+from .lib import acl
+from .lib.routes import JSONRoute
+from .lib.domain import MissingAclError, PathError, UnknownPathParameterType, \
+    UndefinedRoute, UndefinedFunction, get_fct_name, route_decorator
 from .lib.domain_middleware import DomainMiddleware
 from .logging import logger
 
@@ -13,7 +28,8 @@ class HalfDomain(Starlette):
         self.app = app
 
         self.m_domain = importlib.import_module(domain)
-        self.name = getattr('__name__', domain, domain)
+        self.name = getattr(self.m_domain, '__name__', domain)
+        self.id = getattr(self.m_domain, '__id__')
 
         if not router:
             self.router = getattr('__router__', domain, '.routers')
@@ -44,7 +60,7 @@ class HalfDomain(Starlette):
 
         logger.info('HalfDomain creation %s %s', domain, config)
         super().__init__(
-            routes=gen_domain_routes(self.m_domain),
+            routes=self.gen_domain_routes(),
             middleware=[
                 (DomainMiddleware,
                     {
@@ -80,29 +96,78 @@ class HalfDomain(Starlette):
 
     # def schema(self):
 
-    def gen_routes(self):
+    @staticmethod
+    def gen_routes(m_router: ModuleType,
+        verb: str,
+        path: List[str],
+        params: List[Dict]) -> Tuple[FunctionType, Dict]:
         """
-        Yields the Route objects for a domain
+        Returns a tuple of the function associatied to the verb and path arguments,
+        and the dictionary of it's acls
 
         Parameters:
-            m_domains: ModuleType
+            - m_router (ModuleType): The module containing the function definition
+
+            - verb (str): The HTTP verb for the route (GET, POST, ...)
+
+            - path (List): The route path, as a list (each item being a level of
+                deepness), from the lowest level (domain) to the highest
+
+            - params (Dict): The acl list of the following format :
+                [{'acl': Function, 'args': {'required': [], 'optional': []}}]
+
 
         Returns:
-            Generator(HalfRoute)
-        """
-        """
-        yield HalfRoute('/',
-            JSONRoute(self.schema(self.m_domain)),
-            [{'acl': acl.public}],
-            'GET'
-        )
-        """
 
-        for path, method, m_router, fct, params in self.gen_router_routes(self.m_domain, []):
-            yield HalfRoute(f'/{path}', fct, params, method)
+            (Function, Dict): The destination function and the acl dictionary
+
+        """
+        if len(params) == 0:
+            raise MissingAclError('[{}] {}'.format(verb, '/'.join(path)))
+
+        if len(path) == 0:
+            logger.error('Empty path for [{%s}]', verb)
+            raise PathError()
+
+        fct_name = get_fct_name(verb, path[-1])
+        if hasattr(m_router, fct_name):
+            fct = getattr(m_router, fct_name)
+        else:
+            raise UndefinedFunction('{}.{}'.format(m_router.__name__, fct_name or ''))
 
 
-    def gen_router_routes(self, path: List[str]) -> \
+        if not inspect.iscoroutinefunction(fct):
+            return route_decorator(fct), params
+        else:
+            return acl.args_check(fct), params
+
+    # @staticmethod
+    # def gen_routes(m_router):
+    #     """
+    #     Yields the Route objects for a domain
+
+    #     Parameters:
+    #         m_domains: ModuleType
+
+    #     Returns:
+    #         Generator(HalfRoute)
+    #     """
+    #     """
+    #     yield HalfRoute('/',
+    #         JSONRoute(self.schema(self.m_domain)),
+    #         [{'acl': acl.public}],
+    #         'GET'
+    #     )
+    #     """
+
+    #     for path, method, _, fct, params \
+    #         in HalfDomain.gen_router_routes(m_router, []):
+
+    #         yield HalfRoute(f'/{path}', fct, params, method)
+
+
+    @staticmethod
+    def gen_router_routes(m_router, path: List[str]) -> \
         Iterator[Tuple[str, str, ModuleType, Coroutine, List]]:
         """
         Recursive generator that parses a router (or a subrouter)
@@ -121,7 +186,7 @@ class HalfDomain(Starlette):
                 that decorates the endpoint function.
         """
 
-        for subpath, params in read_router(m_router).items():
+        for subpath, params in HalfDomain.read_router(m_router).items():
             path.append(subpath)
 
             for verb in VERBS:
@@ -130,7 +195,7 @@ class HalfDomain(Starlette):
                 yield ('/'.join(filter(lambda x: len(x) > 0, path)),
                     verb,
                     m_router,
-                    *gen_routes(m_router, verb, path, params[verb])
+                    *HalfDomain.gen_routes(m_router, verb, path, params[verb])
                 )
 
             for subroute in params.get('SUBROUTES', []):
@@ -147,7 +212,7 @@ class HalfDomain(Starlette):
                     path.append(subroute)
 
                 try:
-                    yield from gen_router_routes(
+                    yield from HalfDomain.gen_router_routes(
                         importlib.import_module(f'.{subroute}', m_router.__name__),
                         path)
 
@@ -160,6 +225,7 @@ class HalfDomain(Starlette):
             path.pop()
 
 
+    @staticmethod
     def read_router(m_router: ModuleType) -> Dict:
         """
         Reads a module and returns a router dict
@@ -214,3 +280,99 @@ class HalfDomain(Starlette):
             # TODO: Proper exception handling
             logger.error(m_path)
             raise exc
+
+    def gen_domain_routes(self):
+        """
+        Yields the Route objects for a domain
+
+        Parameters:
+            m_domains: ModuleType
+
+        Returns:
+            Generator(HalfRoute)
+        """
+        yield HalfRoute('/',
+            JSONRoute(self.domain_schema()),
+            [{'acl': acl.public}],
+            'GET'
+        )
+
+        for path, method, m_router, fct, params in HalfDomain.gen_router_routes(self.m_domain, []):
+            yield HalfRoute(f'/{path}', fct, params, method)
+
+    def domain_schema_dict(self) -> Dict:
+        """ gen_router_routes return values as a dict
+        Parameters:
+
+        m_router (ModuleType): The domain routers' module
+
+        Returns:
+
+        Dict: Schema of dict is halfapi.lib.constants.DOMAIN_SCHEMA
+
+        @TODO: Should be a "router_schema_dict" function
+        """
+        d_res = {}
+
+        for path, verb, m_router, fct, parameters in HalfDomain.gen_router_routes(self.m_router, []):
+            if path not in d_res:
+                d_res[path] = {}
+
+            if verb not in d_res[path]:
+                d_res[path][verb] = {}
+
+            d_res[path][verb]['callable'] = f'{m_router.__name__}:{fct.__name__}'
+            try:
+                d_res[path][verb]['docs'] = yaml.safe_load(fct.__doc__)
+            except AttributeError:
+                logger.error(
+                    'Cannot read docstring from fct (fct=%s path=%s verb=%s', fct.__name__, path, verb)
+
+            d_res[path][verb]['acls'] = list(map(lambda elt: { **elt, 'acl': elt['acl'].__name__ },
+                parameters))
+
+        return d_res
+
+
+    def domain_schema(self) -> Dict:
+        schema = { **API_SCHEMA_DICT }
+        schema['domain'] = {
+            'name': self.name,
+            'id': self.id,
+            'version': getattr(self.m_domain, '__version__', ''),
+            'patch_release': getattr(self.m_domain, '__patch_release__', ''),
+            'routers': self.m_router.__name__,
+            'acls': tuple(getattr(self.m_acl, 'ACLS', ()))
+        }
+        schema['paths'] = self.domain_schema_dict()
+        return schema
+
+
+    # def domain_schema_list(m_router: ModuleType) -> List:
+    #     """ Schema as list, one row by route/acl
+    #     Parameters:
+    #
+    #        m_router (ModuleType): The domain routers' module
+    #
+    #     Returns:
+    #
+    #        List[Tuple]: (path, verb, callable, doc, acls)
+    #     """
+    #     res = []
+    #
+    #     for path, verb, m_router, fct, parameters in gen_router_routes(m_router, []):
+    #         for params in parameters:
+    #             res.append((
+    #                 path,
+    #                 verb,
+    #                 f'{m_router.__name__}:{fct.__name__}',
+    #                 params.get('acl').__name__,
+    #                 params.get('args', {}).get('required', []),
+    #                 params.get('args', {}).get('optional', []),
+    #                 params.get('out', [])
+    #             ))
+    #
+    #     return res
+
+
+

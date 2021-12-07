@@ -11,4 +11,5 @@ def test_halfapi_dummy_domain(dummy_domain):
         config = {}
         config['domain'] = {}
         config['domain'][dummy_domain['name']] = dummy_domain
+        print(config)
         halfapi = HalfAPI(config)

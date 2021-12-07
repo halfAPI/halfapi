@@ -36,7 +36,7 @@ from .lib.jwt_middleware import JWTAuthenticationBackend
 from .lib.responses import (ORJSONResponse, UnauthorizedResponse,
     NotFoundResponse, InternalServerErrorResponse, NotImplementedResponse,
     ServiceUnavailableResponse)
-from .lib.domain import domain_schema_dict, NoDomainsException, domain_schema
+from .lib.domain import NoDomainsException
 from .lib.routes import gen_schema_routes, JSONRoute
 from .lib.schemas import schema_json, get_acls
 from .logging import logger, config_logging
@@ -105,6 +105,9 @@ class HalfAPI:
         )
 
         for key, domain in self.config.get('domain', {}).items():
+            if not isinstance(domain, dict):
+                continue
+
             dom_name = domain.get('name', key)
             if not domain.get('enabled', False):
                 continue
@@ -215,7 +218,7 @@ class HalfAPI:
         res = {
             domain: HalfDomain.acls_route(domain)
             for domain, domain_conf in self.config.get('domain', {}).items()
-            if domain_conf.get('enabled', False)
+            if isinstance(domain_conf, dict) and domain_conf.get('enabled', False)
         }
 
         async def wrapped(req, *args, **kwargs):

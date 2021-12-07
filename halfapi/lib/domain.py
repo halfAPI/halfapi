@@ -18,7 +18,7 @@ from starlette.exceptions import HTTPException
 
 from halfapi.lib import acl
 from halfapi.lib.responses import ORJSONResponse, ODSResponse
-from halfapi.lib.router import read_router
+# from halfapi.lib.router import read_router
 from halfapi.lib.constants import VERBS
 
 from ..logging import logger
@@ -180,97 +180,97 @@ def gen_routes(m_router: ModuleType,
         return acl.args_check(fct), params
 
 
-def gen_router_routes(m_router: ModuleType, path: List[str]) -> \
-    Iterator[Tuple[str, str, ModuleType, Coroutine, List]]:
-    """
-    Recursive generator that parses a router (or a subrouter)
-    and yields from gen_routes
+# def gen_router_routes(m_router: ModuleType, path: List[str]) -> \
+#     Iterator[Tuple[str, str, ModuleType, Coroutine, List]]:
+#     """
+#     Recursive generator that parses a router (or a subrouter)
+#     and yields from gen_routes
+# 
+#     Parameters:
+# 
+#         - m_router (ModuleType): The currently treated router module
+#         - path (List[str]): The current path stack
+# 
+#     Yields:
+# 
+#         (str, str, ModuleType, Coroutine, List): A tuple containing the path, verb,
+#             router module, function reference and parameters of the route.
+#             Function and parameters are yielded from then gen_routes function,
+#             that decorates the endpoint function.
+#     """
+# 
+#     for subpath, params in read_router(m_router).items():
+#         path.append(subpath)
+# 
+#         for verb in VERBS:
+#             if verb not in params:
+#                 continue
+#             yield ('/'.join(filter(lambda x: len(x) > 0, path)),
+#                 verb,
+#                 m_router,
+#                 *gen_routes(m_router, verb, path, params[verb])
+#             )
+# 
+#         for subroute in params.get('SUBROUTES', []):
+#             #logger.debug('Processing subroute **%s** - %s', subroute, m_router.__name__)
+#             param_match = re.fullmatch('^([A-Z_]+)_([a-z]+)$', subroute)
+#             if param_match is not None:
+#                 try:
+#                     path.append('{{{}:{}}}'.format(
+#                         param_match.groups()[0].lower(),
+#                         param_match.groups()[1]))
+#                 except AssertionError as exc:
+#                     raise UnknownPathParameterType(subroute) from exc
+#             else:
+#                 path.append(subroute)
+# 
+#             try:
+#                 yield from gen_router_routes(
+#                     importlib.import_module(f'.{subroute}', m_router.__name__),
+#                     path)
+# 
+#             except ImportError as exc:
+#                 logger.error('Failed to import subroute **{%s}**', subroute)
+#                 raise exc
+# 
+#             path.pop()
+# 
+#         path.pop()
+# 
 
-    Parameters:
 
-        - m_router (ModuleType): The currently treated router module
-        - path (List[str]): The current path stack
-
-    Yields:
-
-        (str, str, ModuleType, Coroutine, List): A tuple containing the path, verb,
-            router module, function reference and parameters of the route.
-            Function and parameters are yielded from then gen_routes function,
-            that decorates the endpoint function.
-    """
-
-    for subpath, params in read_router(m_router).items():
-        path.append(subpath)
-
-        for verb in VERBS:
-            if verb not in params:
-                continue
-            yield ('/'.join(filter(lambda x: len(x) > 0, path)),
-                verb,
-                m_router,
-                *gen_routes(m_router, verb, path, params[verb])
-            )
-
-        for subroute in params.get('SUBROUTES', []):
-            #logger.debug('Processing subroute **%s** - %s', subroute, m_router.__name__)
-            param_match = re.fullmatch('^([A-Z_]+)_([a-z]+)$', subroute)
-            if param_match is not None:
-                try:
-                    path.append('{{{}:{}}}'.format(
-                        param_match.groups()[0].lower(),
-                        param_match.groups()[1]))
-                except AssertionError as exc:
-                    raise UnknownPathParameterType(subroute) from exc
-            else:
-                path.append(subroute)
-
-            try:
-                yield from gen_router_routes(
-                    importlib.import_module(f'.{subroute}', m_router.__name__),
-                    path)
-
-            except ImportError as exc:
-                logger.error('Failed to import subroute **{%s}**', subroute)
-                raise exc
-
-            path.pop()
-
-        path.pop()
-
-
-
-def domain_schema_dict(m_router: ModuleType) -> Dict:
-    """ gen_router_routes return values as a dict
-    Parameters:
-
-       m_router (ModuleType): The domain routers' module
-
-    Returns:
-
-       Dict: Schema of dict is halfapi.lib.constants.DOMAIN_SCHEMA
-
-    @TODO: Should be a "router_schema_dict" function
-    """
-    d_res = {}
-
-    for path, verb, m_router, fct, parameters in gen_router_routes(m_router, []):
-        if path not in d_res:
-            d_res[path] = {}
-
-        if verb not in d_res[path]:
-            d_res[path][verb] = {}
-
-        d_res[path][verb]['callable'] = f'{m_router.__name__}:{fct.__name__}'
-        try:
-            d_res[path][verb]['docs'] = yaml.safe_load(fct.__doc__)
-        except AttributeError:
-            logger.error(
-                'Cannot read docstring from fct (fct=%s path=%s verb=%s', fct.__name__, path, verb)
-
-        d_res[path][verb]['acls'] = list(map(lambda elt: { **elt, 'acl': elt['acl'].__name__ },
-            parameters))
-
-    return d_res
+# def domain_schema_dict(m_router: ModuleType) -> Dict:
+#     """ gen_router_routes return values as a dict
+#     Parameters:
+# 
+#        m_router (ModuleType): The domain routers' module
+# 
+#     Returns:
+# 
+#        Dict: Schema of dict is halfapi.lib.constants.DOMAIN_SCHEMA
+# 
+#     @TODO: Should be a "router_schema_dict" function
+#     """
+#     d_res = {}
+# 
+#     for path, verb, m_router, fct, parameters in gen_router_routes(m_router, []):
+#         if path not in d_res:
+#             d_res[path] = {}
+# 
+#         if verb not in d_res[path]:
+#             d_res[path][verb] = {}
+# 
+#         d_res[path][verb]['callable'] = f'{m_router.__name__}:{fct.__name__}'
+#         try:
+#             d_res[path][verb]['docs'] = yaml.safe_load(fct.__doc__)
+#         except AttributeError:
+#             logger.error(
+#                 'Cannot read docstring from fct (fct=%s path=%s verb=%s', fct.__name__, path, verb)
+# 
+#         d_res[path][verb]['acls'] = list(map(lambda elt: { **elt, 'acl': elt['acl'].__name__ },
+#             parameters))
+# 
+#     return d_res
 
 from .constants import API_SCHEMA_DICT
 def domain_schema(m_domain: ModuleType) -> Dict:
