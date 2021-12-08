@@ -122,10 +122,10 @@ class HalfAPI:
             logger.debug('Mounting domain %s on %s', domain.get('name'), path)
             self.__application.mount(path,
                 HalfDomain(
-                    self.application,
                     domain.get('name', key),
                     domain.get('router'),
-                    config=domain.get('config', {})
+                    domain.get('config', {}),
+                    self.application
                 )
             )
 

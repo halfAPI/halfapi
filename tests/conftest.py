@@ -279,8 +279,8 @@ def application_debug(project_runner):
         'production':False,
         'domain': {
             'dummy_domain': {
-                'name': 'test_domain',
-                'router': 'test_domain.routers',
+                'name': 'dummy_domain',
+                'router': '.routers',
                 'enabled': True,
                 'prefix': False,
                 'config':{

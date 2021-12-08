@@ -39,6 +39,7 @@ ROUTE_SCHEMA = Schema({
 
 DOMAIN_SCHEMA = Schema({
     'name': str,
+    'id': str,
     Optional('routers'): str,
     Optional('version'): str,
     Optional('patch_release'): str,
