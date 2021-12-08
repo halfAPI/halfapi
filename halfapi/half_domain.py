@@ -42,22 +42,6 @@ class HalfDomain(Starlette):
 
         self.config = config
 
-        """
-        if domain:
-            m_domain = importlib.import_module(domain)
-            if not router:
-                router = getattr('__router__', domain, '.routers')
-            m_domain_router = importlib.import_module(router, domain)
-            m_domain_acl = importlib.import_module(f'{domain}.acl')
-
-        if not(m_domain and m_domain_router and m_domain_acl):
-            raise Exception('Cannot import domain')
-
-        self.schema = domain_schema(m_domain)
-
-        routes = [ Route('/', JSONRoute(self.schema)) ]
-        """
-
         logger.info('HalfDomain creation %s %s', domain, config)
         super().__init__(
             routes=self.gen_domain_routes(),
@@ -140,30 +124,6 @@ class HalfDomain(Starlette):
             return route_decorator(fct), params
         else:
             return acl.args_check(fct), params
-
-    # @staticmethod
-    # def gen_routes(m_router):
-    #     """
-    #     Yields the Route objects for a domain
-
-    #     Parameters:
-    #         m_domains: ModuleType
-
-    #     Returns:
-    #         Generator(HalfRoute)
-    #     """
-    #     """
-    #     yield HalfRoute('/',
-    #         JSONRoute(self.schema(self.m_domain)),
-    #         [{'acl': acl.public}],
-    #         'GET'
-    #     )
-    #     """
-
-    #     for path, method, _, fct, params \
-    #         in HalfDomain.gen_router_routes(m_router, []):
-
-    #         yield HalfRoute(f'/{path}', fct, params, method)
 
 
     @staticmethod
@@ -292,7 +252,7 @@ class HalfDomain(Starlette):
             Generator(HalfRoute)
         """
         yield HalfRoute('/',
-            JSONRoute(self.schema()),
+            JSONRoute([ self.schema() ]),
             [{'acl': acl.public}],
             'GET'
         )
@@ -346,33 +306,3 @@ class HalfDomain(Starlette):
         }
         schema['paths'] = self.schema_dict()
         return schema
-
-
-    # def domain_schema_list(m_router: ModuleType) -> List:
-    #     """ Schema as list, one row by route/acl
-    #     Parameters:
-    #
-    #        m_router (ModuleType): The domain routers' module
-    #
-    #     Returns:
-    #
-    #        List[Tuple]: (path, verb, callable, doc, acls)
-    #     """
-    #     res = []
-    #
-    #     for path, verb, m_router, fct, parameters in gen_router_routes(m_router, []):
-    #         for params in parameters:
-    #             res.append((
-    #                 path,
-    #                 verb,
-    #                 f'{m_router.__name__}:{fct.__name__}',
-    #                 params.get('acl').__name__,
-    #                 params.get('args', {}).get('required', []),
-    #                 params.get('args', {}).get('optional', []),
-    #                 params.get('out', [])
-    #             ))
-    #
-    #     return res
-
-
-

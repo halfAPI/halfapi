@@ -104,6 +104,8 @@ class HalfAPI:
             on_startup=startup_fcts
         )
 
+        schemas = []
+
         for key, domain in self.config.get('domain', {}).items():
             if not isinstance(domain, dict):
                 continue
@@ -120,22 +122,19 @@ class HalfAPI:
                 path = f'/{dom_name}'
 
             logger.debug('Mounting domain %s on %s', domain.get('name'), path)
-            self.__application.mount(path,
-                HalfDomain(
-                    domain.get('name', key),
-                    domain.get('router'),
-                    domain.get('config', {}),
-                    self.application
-                )
+
+            half_domain = HalfDomain(
+                domain.get('name', key),
+                domain.get('router'),
+                domain.get('config', {}),
+                self.application
             )
 
-        """
-        self.__application.add_middleware(
-            DomainMiddleware,
-            domain=domain,
-            config=CONFIG
-        )
-        """
+            schemas.append(half_domain.schema())
+
+            self.__application.mount(path, half_domain)
+
+        self.__application.add_route('/', JSONRoute(schemas))
 
         self.__application.add_middleware(
             AuthenticationMiddleware,

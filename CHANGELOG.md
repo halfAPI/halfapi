@@ -1,5 +1,13 @@
 # HalfAPI
 
+## 0.6.2
+
+- Domains now need to include the following variables in their __init__.py
+    - __name__ (str, optional)
+    - __id__ (str, optional)
+- halfapi domain
+
+
 ## 0.1.0
 
 - Mounts domain routers with their ACLs as decorator
