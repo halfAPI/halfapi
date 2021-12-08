@@ -24,7 +24,7 @@ from .lib.domain_middleware import DomainMiddleware
 from .logging import logger
 
 class HalfDomain(Starlette):
-    def __init__(self, app, domain, router=None, config={}):
+    def __init__(self, domain, router=None, config={}, app=None):
         self.app = app
 
         self.m_domain = importlib.import_module(domain)
@@ -292,7 +292,7 @@ class HalfDomain(Starlette):
             Generator(HalfRoute)
         """
         yield HalfRoute('/',
-            JSONRoute(self.domain_schema()),
+            JSONRoute(self.schema()),
             [{'acl': acl.public}],
             'GET'
         )
@@ -300,7 +300,7 @@ class HalfDomain(Starlette):
         for path, method, m_router, fct, params in HalfDomain.gen_router_routes(self.m_router, []):
             yield HalfRoute(f'/{path}', fct, params, method)
 
-    def domain_schema_dict(self) -> Dict:
+    def schema_dict(self) -> Dict:
         """ gen_router_routes return values as a dict
         Parameters:
 
@@ -334,7 +334,7 @@ class HalfDomain(Starlette):
         return d_res
 
 
-    def domain_schema(self) -> Dict:
+    def schema(self) -> Dict:
         schema = { **API_SCHEMA_DICT }
         schema['domain'] = {
             'name': self.name,
@@ -344,7 +344,7 @@ class HalfDomain(Starlette):
             'routers': self.m_router.__name__,
             'acls': tuple(getattr(self.m_acl, 'ACLS', ()))
         }
-        schema['paths'] = self.domain_schema_dict()
+        schema['paths'] = self.schema_dict()
         return schema
 
 

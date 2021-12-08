@@ -13,7 +13,9 @@ import orjson
 
 
 from .cli import cli
-from ..conf import write_config
+from ..conf import write_config, CONFIG
+
+from ..half_domain import HalfDomain
 
 from ..lib.domain import domain_schema
 from ..lib.schemas import schema_dict_dom
@@ -144,10 +146,12 @@ def domain(domain, delete, update, create, read):  #, domains, read, create, upd
     if delete:
         raise NotImplementedError
     if read:
-        m_domain = importlib.import_module(domain)
+        half_domain = HalfDomain(
+            domain,
+            config=CONFIG.get('domain').get('domain_name', {}))
 
         click.echo(orjson.dumps(
-            domain_schema(m_domain),
+            half_domain.schema(),
             option=orjson.OPT_NON_STR_KEYS,
             default=ORJSONResponse.default_cast)
         )
