@@ -297,7 +297,7 @@ class HalfDomain(Starlette):
             'GET'
         )
 
-        for path, method, m_router, fct, params in HalfDomain.gen_router_routes(self.m_domain, []):
+        for path, method, m_router, fct, params in HalfDomain.gen_router_routes(self.m_router, []):
             yield HalfRoute(f'/{path}', fct, params, method)
 
     def domain_schema_dict(self) -> Dict:
