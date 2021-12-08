@@ -75,12 +75,14 @@ class TestDomain(TestCase):
         client = TestClient(halfapi.application)
         r = client.get('/')
         assert r.status_code == 200
-        d_r = r.json()
-        assert isinstance(d_r, dict)
-        assert 'openapi' in d_r
-        assert 'info' in d_r
-        assert 'paths' in d_r
-        assert 'domain' in d_r
+        schemas = r.json()
+        assert isinstance(schemas, list)
+        for schema in schemas:
+            assert isinstance(schema, dict)
+            assert 'openapi' in schema
+            assert 'info' in schema
+            assert 'paths' in schema
+            assert 'domain' in schema
 
         r = client.get('/halfapi/acls')
         assert r.status_code == 200

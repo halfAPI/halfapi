@@ -26,9 +26,11 @@ def test_routes(application_debug):
     r = c.get('/halfapi/error/500')
     assert r.status_code == 500
     r = c.get('/')
-    d_r = r.json()
-    assert isinstance(d_r, dict)
-    assert API_SCHEMA.validate(d_r)
+    schemas = r.json()
+    assert isinstance(schemas, list)
+    for schema in schemas:
+        assert isinstance(schema, dict)
+        assert API_SCHEMA.validate(schema)
 
     """
     TODO: Find a way to test exception raising
