@@ -43,9 +43,7 @@ from .logging import logger, config_logging
 from .half_domain import HalfDomain
 from halfapi import __version__
 
-
-
-class HalfAPI:
+class HalfAPI(Starlette):
     def __init__(self, config,
         d_routes=None):
         config_logging(logging.DEBUG)
@@ -57,9 +55,6 @@ class HalfAPI:
 
         self.PRODUCTION = PRODUCTION
         self.SECRET = SECRET
-
-        self.__application = None
-
 
         # Domains
 
@@ -91,7 +86,7 @@ class HalfAPI:
                 HalfAPI.wait_quit()
             )
 
-        self.__application = Starlette(
+        super().__init__(
             debug=not PRODUCTION,
             routes=routes,
             exception_handlers={
@@ -105,6 +100,8 @@ class HalfAPI:
         )
 
         schemas = []
+
+        self.__domains = {}
 
         for key, domain in self.config.get('domain', {}).items():
             if not isinstance(domain, dict):
@@ -123,30 +120,26 @@ class HalfAPI:
 
             logger.debug('Mounting domain %s on %s', domain.get('name'), path)
 
-            half_domain = HalfDomain(
-                domain.get('name', key),
-                domain.get('router'),
-                domain.get('config', {}),
-                self.application
-            )
+            domain_key = domain.get('name', key)
 
-            schemas.append(half_domain.schema())
+            self.add_domain(domain_key, domain.get('router'), path)
 
-            self.__application.mount(path, half_domain)
+            schemas.append(self.__domains[domain_key].schema())
 
-        self.__application.add_route('/', JSONRoute(schemas))
 
-        self.__application.add_middleware(
+        self.add_route('/', JSONRoute(schemas))
+
+        self.add_middleware(
             AuthenticationMiddleware,
             backend=JWTAuthenticationBackend()
         )
 
         if not PRODUCTION:
-            self.__application.add_middleware(
+            self.add_middleware(
                 TimingMiddleware,
                 client=HTimingClient(),
                 metric_namer=StarletteScopeToName(prefix="halfapi",
-                starlette_app=self.__application)
+                starlette_app=self)
             )
 
 
@@ -160,7 +153,7 @@ class HalfAPI:
 
     @property
     def application(self):
-        return self.__application
+        return self
 
     def halfapi_routes(self):
         """ Halfapi default routes
@@ -238,3 +231,21 @@ class HalfAPI:
             return ORJSONResponse(res)
 
         return wrapped
+
+    @property
+    def domains(self):
+        return self.__domains
+
+    def add_domain(self, name, router=None, path='/', config=None):
+        if config:
+            self.config['domain'][name] = config
+
+        self.__domains[name] = HalfDomain(
+            name,
+            router,
+            self
+        )
+
+        self.mount(path, self.__domains[name])
+
+        return self.__domains[name]
