@@ -17,11 +17,12 @@ class DomainMiddleware(BaseHTTPMiddleware):
         - acl
     """
 
-    def __init__(self, app, domain, config):
-        logger.info('DomainMiddleware %s %s', domain, config)
+    def __init__(self, app, domain):
+        """ app: HalfAPI instance
+        """
+        logger.info('DomainMiddleware app:%s domain:%s', app, domain)
         super().__init__(app)
         self.domain = domain
-        self.config = config
         self.request = None
 
 
@@ -31,8 +32,13 @@ class DomainMiddleware(BaseHTTPMiddleware):
         Call of the route fonction (decorated or not)
         """
 
-        request.scope['domain'] = self.domain
-        request.scope['config'] = self.config.copy()
+        request.scope['domain'] = self.domain['name']
+        if hasattr(request.app, 'config') \
+          and isinstance(request.app.config, dict):
+            request.scope['config'] = { **request.app.config }
+        else:
+            logger.debug('%s', request.app)
+            logger.debug('%s', getattr(request.app, 'config', None))
 
         response = await call_next(request)
 
@@ -50,6 +56,6 @@ class DomainMiddleware(BaseHTTPMiddleware):
                 response.headers['x-args-optional'] = \
                     ','.join(request.scope['args']['optional'])
 
-        response.headers['x-domain'] = self.domain
+        response.headers['x-domain'] = self.domain['name']
 
         return response

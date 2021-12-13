@@ -14,6 +14,7 @@ from starlette.routing import Router
 import yaml
 
 
+from . import __version__
 from .lib.constants import API_SCHEMA_DICT, ROUTER_SCHEMA, VERBS
 from .half_route import HalfRoute
 from .lib import acl
@@ -24,12 +25,22 @@ from .lib.domain_middleware import DomainMiddleware
 from .logging import logger
 
 class HalfDomain(Starlette):
-    def __init__(self, domain, router=None, config={}, app=None):
+    def __init__(self, domain, router=None, app=None):
+        """
+        Parameters:
+            domain (str): Module name (should be importable)
+            router (str): Router name (should be importable from domain module
+                defaults to __router__ variable from domain module)
+            app (HalfAPI): The app instance
+        """
         self.app = app
 
         self.m_domain = importlib.import_module(domain)
         self.name = getattr(self.m_domain, '__name__', domain)
         self.id = getattr(self.m_domain, '__id__')
+        self.version = getattr(self.m_domain, '__version__', '0.0.0')
+        # TODO: Check if given domain halfapi_version matches with __version__
+        self.halfapi_version = getattr(self.m_domain, '__halfapi_version__', __version__)
 
         if not router:
             self.router = getattr('__router__', domain, '.routers')
@@ -40,18 +51,21 @@ class HalfDomain(Starlette):
 
         self.m_acl = importlib.import_module(f'{domain}.acl')
 
-        self.config = config
+        self.config = { **app.config }
 
-        logger.info('HalfDomain creation %s %s', domain, config)
+        logger.info('HalfDomain creation %s %s', domain, self.config)
         super().__init__(
             routes=self.gen_domain_routes(),
             middleware=[
-                (DomainMiddleware,
-                    {
-                    'domain': self.name,
-                    'config': self.config
+                (DomainMiddleware, {
+                    'domain': {
+                        'name': self.name,
+                        'id': self.id,
+                        'version': self.version,
+                        'halfapi_version': self.halfapi_version,
+                        'config': self.config.get('domain', {}).get(self.name, {}).get('config', {})
                     }
-                )
+                })
             ]
         )
 
