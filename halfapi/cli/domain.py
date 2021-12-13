@@ -146,9 +146,17 @@ def domain(domain, delete, update, create, read):  #, domains, read, create, upd
     if delete:
         raise NotImplementedError
     if read:
-        half_domain = HalfDomain(
-            domain,
-            config=CONFIG.get('domain').get('domain_name', {}))
+        from ..conf import CONFIG
+        from ..halfapi import HalfAPI
+
+        try:
+            config_domain = CONFIG.pop('domain').get(domain, {})
+        except KeyError:
+            config_domain = {}
+
+        halfapi = HalfAPI(CONFIG)
+
+        half_domain = halfapi.add_domain(domain, config=config_domain)
 
         click.echo(orjson.dumps(
             half_domain.schema(),

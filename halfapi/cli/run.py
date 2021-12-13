@@ -53,8 +53,10 @@ def run(host, port, reload, secret, production, loglevel, prefix, check, dryrun,
 
     if domain:
         # If we specify a domain to run as argument
+        if 'domain' not in CONFIG:
+            CONFIG['domain'] = {}
 
-        for key in CONFIG['domain']:
+        for key in CONFIG.get('domain'):
             # Disable all domains
             CONFIG['domain'].pop(key)
 
