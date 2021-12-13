@@ -14,4 +14,4 @@ def get(halfapi):
         returns the configuration of the domain
     """
     logger.error('%s', halfapi)
-    return halfapi['config']
+    return halfapi['config']['domain']['dummy_domain']['config']

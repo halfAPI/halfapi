@@ -38,22 +38,30 @@ class TestDomain(TestCase):
             return wrapper
 
         class_.invoke = invoke_wrapper(class_.invoke)
-        self.runner = class_()
+        self.runner = class_(mix_stderr=False)
 
 
     def tearDown(self):
         pass
 
     def check_domain(self):
-        result = self.runner.invoke(cli, '--version')
-        self.assertEqual(result.exit_code, 0)
-        print(result.stdout)
-        result = self.runner.invoke(cli, ['domain', self.DOMAIN])
-        self.assertEqual(result.exit_code, 0)
-        result_d = json.loads(result.stdout)
-        result = self.runner.invoke(cli, ['run', '--dryrun', self.DOMAIN])
-        print(result.stdout)
-        self.assertEqual(result.exit_code, 0)
+        result = None
+        try:
+            result = self.runner.invoke(cli, '--version')
+            self.assertEqual(result.exit_code, 0)
+            result = self.runner.invoke(cli, ['domain', self.DOMAIN])
+            self.assertEqual(result.exit_code, 0)
+            result_d = json.loads(result.stdout)
+            result = self.runner.invoke(cli, ['run', '--help'])
+            self.assertEqual(result.exit_code, 0)
+            result = self.runner.invoke(cli, ['run', '--dryrun', self.DOMAIN])
+            self.assertEqual(result.exit_code, 0)
+        except AssertionError as exc:
+            print(f'Result {result}')
+            print(f'Stdout {result.stdout}')
+            print(f'Stderr {result.stderr}')
+            raise exc
+
 
         return result_d
 
