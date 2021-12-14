@@ -13,12 +13,21 @@ from starlette.routing import Route
 from starlette.exceptions import HTTPException
 
 from .logging import logger
+from .lib.domain import MissingAclError, PathError, UnknownPathParameterType, \
+    UndefinedRoute, UndefinedFunction
 
 class HalfRoute(Route):
     """ HalfRoute
     """
     def __init__(self, path, fct, params, method):
         logger.info('HalfRoute creation: %s %s %s %s', path, fct, params, method)
+        if len(params) == 0:
+            raise MissingAclError('[{}] {}'.format(verb, '/'.join(path)))
+
+        if len(path) == 0:
+            logger.error('Empty path for [{%s}]', verb)
+            raise PathError()
+
         super().__init__(
             path,
             HalfRoute.acl_decorator(
