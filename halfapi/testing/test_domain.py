@@ -66,19 +66,21 @@ class TestDomain(TestCase):
         return result_d
 
     def check_routes(self):
-        halfapi = HalfAPI({
-            'domain': {
-                'dummy_domain': {
-                    'name': self.DOMAIN,
-                    'router': self.ROUTERS,
-                    'prefix': False,
-                    'enabled': True,
-                    'config': {
-                        'test': True
-                    }
-                }
+        halfapi_conf = {
+            'domain': {}
+        }
+
+        halfapi_conf['domain'][self.DOMAIN] = {
+            'name': self.DOMAIN,
+            'router': self.ROUTERS,
+            'prefix': False,
+            'enabled': True,
+            'config': {
+                'test': True
             }
-        })
+        }
+
+        halfapi = HalfAPI(halfapi_conf)
 
         client = TestClient(halfapi.application)
         r = client.get('/')
