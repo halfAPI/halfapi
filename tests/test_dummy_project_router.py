@@ -30,7 +30,7 @@ def test_get_route(dummy_project, application_domain):
         # ('abc/alphabet','GET'),
     ]
 
-    for route_def in []:#dummy_domain_routes:
+    for route_def in dummy_domain_routes:
         path, verb = route_def[0], route_def[1]
         route_path = '/{}'.format(path)
         print(route_path)
