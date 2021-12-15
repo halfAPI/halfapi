@@ -17,6 +17,7 @@ class TestDomain(TestCase):
         return '.'.join((self.DOMAIN, self.ROUTERS))
 
     def setUp(self):
+        # CLI
         class_ = CliRunner
         def invoke_wrapper(f):
             """Augment CliRunner.invoke to emit its output to stdout.
@@ -39,6 +40,26 @@ class TestDomain(TestCase):
 
         class_.invoke = invoke_wrapper(class_.invoke)
         self.runner = class_(mix_stderr=False)
+
+        # HTTP
+        self.halfapi_conf = {
+            'domain': {}
+        }
+
+        self.halfapi_conf['domain'][self.DOMAIN] = {
+            'name': self.DOMAIN,
+            'router': self.ROUTERS,
+            'prefix': False,
+            'enabled': True,
+            'config': {
+                'test': True
+            }
+        }
+
+        self.halfapi = HalfAPI(self.halfapi_conf)
+
+        self.client = TestClient(self.halfapi.application)
+
 
 
     def tearDown(self):
@@ -66,24 +87,7 @@ class TestDomain(TestCase):
         return result_d
 
     def check_routes(self):
-        halfapi_conf = {
-            'domain': {}
-        }
-
-        halfapi_conf['domain'][self.DOMAIN] = {
-            'name': self.DOMAIN,
-            'router': self.ROUTERS,
-            'prefix': False,
-            'enabled': True,
-            'config': {
-                'test': True
-            }
-        }
-
-        halfapi = HalfAPI(halfapi_conf)
-
-        client = TestClient(halfapi.application)
-        r = client.get('/')
+        r = self.client.get('/')
         assert r.status_code == 200
         schemas = r.json()
         assert isinstance(schemas, list)
@@ -94,7 +98,7 @@ class TestDomain(TestCase):
             assert 'paths' in schema
             assert 'domain' in schema
 
-        r = client.get('/halfapi/acls')
+        r = self.client.get('/halfapi/acls')
         assert r.status_code == 200
         d_r = r.json()
         assert isinstance(d_r, dict)
