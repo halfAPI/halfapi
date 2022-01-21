@@ -67,9 +67,9 @@ class HalfAPI(Starlette):
 
         logger.info('Config: %s', self.config)
         logger.info('Active domains: %s',
-            filter(
+            list(filter(
                 lambda n: n.get('enabled', False),
-                self.config.get('domain', {})))
+                self.config.get('domain', {}).values())))
 
         if d_routes:
             # Mount the routes from the d_routes argument - domain-less mode
