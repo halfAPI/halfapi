@@ -113,6 +113,15 @@ CONFIG = read_config()
 PROJECT_NAME = CONFIG.get('project_name',
     environ.get('HALFAPI_PROJECT_NAME', os.getcwd().split('/')[-1]))
 
+if environ.get('HALFAPI_DOMAIN_NAME'):
+    DOMAIN_NAME = environ.get('HALFAPI_DOMAIN_NAME')
+    CONFIG['domain'] = {}
+    CONFIG['domain'][DOMAIN_NAME] = {
+        'enabled': True,
+        'name': DOMAIN_NAME,
+        'prefix': False
+    }
+
 if len(CONFIG.get('domain', {}).keys()) == 0:
     logger.info('No domains')
 
