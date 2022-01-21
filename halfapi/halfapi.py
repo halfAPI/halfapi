@@ -129,10 +129,11 @@ class HalfAPI(Starlette):
 
         self.add_route('/', JSONRoute(schemas))
 
-        self.add_middleware(
-            AuthenticationMiddleware,
-            backend=JWTAuthenticationBackend()
-        )
+        if SECRET:
+            self.add_middleware(
+                AuthenticationMiddleware,
+                backend=JWTAuthenticationBackend()
+            )
 
         if not PRODUCTION:
             self.add_middleware(
