@@ -56,8 +56,9 @@ def run(host, port, reload, secret, production, loglevel, prefix, check, dryrun,
         if 'domain' not in CONFIG:
             CONFIG['domain'] = {}
 
-        for key in CONFIG.get('domain'):
-            # Disable all domains
+        # Disable all domains
+        keys = list(CONFIG.get('domain').keys())
+        for key in keys:
             CONFIG['domain'].pop(key)
 
         # And activate the desired one, mounted without prefix
