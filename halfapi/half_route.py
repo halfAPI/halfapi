@@ -84,6 +84,8 @@ class HalfRoute(Route):
                         logger.debug(
                             'Args for current route (%s)', param.get('args'))
 
+                    if 'out' in param:
+                        req.scope['out'] = param['out']
 
                     if 'out' in param:
                         req.scope['out'] = param['out'].copy()

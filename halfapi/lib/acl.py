@@ -108,8 +108,9 @@ def args_check(fct):
 
             kwargs['data'] = data
 
-        if req.scope.get('out'):
-            kwargs['out'] = req.scope.get('out').copy()
+        out_s = req.scope.get('out')
+        if out_s:
+            kwargs['out'] = list(out_s)
 
         return await fct(req, *args, **kwargs)
 
