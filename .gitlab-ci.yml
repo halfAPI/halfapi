@@ -55,24 +55,24 @@ build_pypi:
     paths:
       - dist/*.whl
   rules:
-    - if: '$CI_COMMIT_REF_NAME == "master" && $CI_COMMIT_TAG != ""'
+    - if: '$CI_COMMIT_TAG != ""'
       variables:
         TAG: $CI_COMMIT_TAG      
 
 build_container:
+  rules:
+    - if: '$CI_COMMIT_TAG != ""'
+      variables:
+        IMGTAG: $CI_COMMIT_TAG
+    - if: '$CI_COMMIT_REF_NAME == "devel"'
+      variables: 
+        IMGTAG: "latest"
   stage: build
   image: $CI_REGISTRY/devtools/kaniko
   script:
+    - echo "Will upload image halfapi:\"$IMGTAG\""
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY/malves/halfapi:$TAG
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY/malves/halfapi:"$TAG"
   artifacts:
     paths:
       - /kaniko/.docker/config.json
-  rules:
-    - if: '$CI_COMMIT_REF_NAME == "master" && $CI_COMMIT_TAG != ""'
-      variables:
-        TAG: $CI_COMMIT_TAG
-    - if: '$CI_COMMIT_REF_NAME == "devel"'
-      variables: 
-        TAG: "latest"
-
