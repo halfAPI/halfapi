@@ -34,7 +34,7 @@ test:
     - pip3 install pipenv
     - pipenv install  --dev --skip-lock
     - pipenv run pytest --version
-    - pipenv run pytest -v
+    - pipenv run pytest -v ./tests
     - pipenv run halfapi --version
 
 run:
