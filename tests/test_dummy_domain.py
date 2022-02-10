@@ -13,7 +13,6 @@ def test_dummy_domain():
     from .dummy_domain.routers.abc.alphabet.TEST_uuid import get
     from .dummy_domain.routers.abc.pinnochio import get
     from .dummy_domain.routers.config import get
-    async_mod = importlib.import_module('dummy_domain.routers.async', '.')
-    fcts = ['get_abc_alphabet_TEST', 'get_abc_pinnochio', 'get_config', 'get_arguments']
-    for fct in fcts:
-        getattr(async_mod, fct)
+    from .dummy_domain.routers.config import get
+    from .dummy_domain.routers import async_router
+    from .dummy_domain.routers.async_router import ROUTES, get_abc_alphabet_TEST, get_abc_pinnochio, get_config, get_arguments

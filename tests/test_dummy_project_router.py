@@ -24,8 +24,8 @@ def test_get_route(dummy_project, application_domain):
     dummy_domain_routes = [
         ('config','GET'),
         ('config','GET'),
-        ('async/abc/pinnochio','GET'),
-        ('async/config','GET'),
+        ('async_router/abc/pinnochio','GET'),
+        ('async_router/config','GET'),
         # ('abc/pinnochio','GET'),
         # ('abc/alphabet','GET'),
     ]
@@ -95,7 +95,7 @@ def test_arguments_route(dummy_project, application_domain):
     assert r.status_code == 200
     for key, val in arg.items():
         assert r.json()[key] == str(val)
-    path = '/async/arguments'
+    path = '/async_router/arguments'
     r = c.get(path)
     assert r.status_code == 400
     r = c.get(path, params={'foo':True})
