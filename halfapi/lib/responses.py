@@ -136,7 +136,7 @@ class ODSResponse(Response):
                 for elt in d_rows:
                     rows.append(list(elt.values()))
 
-                rows.insert(rows_names)
+                rows.insert(0, rows_names)
 
             self.sheet = pe.Sheet(rows)
             self.sheet.save_to_memory(
