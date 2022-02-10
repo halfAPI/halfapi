@@ -26,6 +26,7 @@ import orjson
 from starlette.responses import PlainTextResponse, Response, JSONResponse
 
 from .user import JWTUser, Nobody
+from ..logging import logger
 
 
 __all__ = [
@@ -129,8 +130,15 @@ class ODSResponse(Response):
             return
 
         with BytesIO() as ods_file:
-            # rows.insert(0, rownames)
-            self.sheet = pe.Sheet(d_rows)
+            rows = []
+            if len(d_rows):
+                rows_names = list(d_rows[0].keys())
+                for elt in d_rows:
+                    rows.append(list(elt.values()))
+
+                rows.insert(rows_names)
+
+            self.sheet = pe.Sheet(rows)
             self.sheet.save_to_memory(
                 file_type='ods',
                 stream=ods_file)
