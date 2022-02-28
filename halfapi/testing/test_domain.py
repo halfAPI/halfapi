@@ -43,6 +43,8 @@ class TestDomain(TestCase):
 
         # HTTP
         self.halfapi_conf = {
+            'secret': 'testsecret',
+            'production': False,
             'domain': {}
         }
 
