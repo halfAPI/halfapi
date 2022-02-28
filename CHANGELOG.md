@@ -1,5 +1,9 @@
 # HalfAPI
 
+## 0.6.8
+
+- Fix testing lib for domains (add default secret and debug option)
+
 ## 0.6.2
 
 - Domains now need to include the following variables in their __init__.py
