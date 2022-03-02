@@ -1,5 +1,9 @@
 # HalfAPI
 
+## 0.6.9
+
+- Hide data fields in args_check logs
+
 ## 0.6.8
 
 - Fix testing lib for domains (add default secret and debug option)

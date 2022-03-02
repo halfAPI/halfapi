@@ -43,7 +43,6 @@ def JSONRoute(data: Any) -> Coroutine:
         async function
     """
     async def wrapped(request, *args, **kwargs):
-        logger.debug('JSONRoute data: %s', data)
         return ORJSONResponse(data)
 
     return wrapped

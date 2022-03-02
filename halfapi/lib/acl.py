@@ -94,8 +94,6 @@ def args_check(fct):
 
         kwargs['data'] = data
 
-        logger.debug('args_check %s:%s %s %s', fct.__module__, fct.__name__, args, kwargs)
-
         return await fct(req, *args, **kwargs)
 
     return caller
