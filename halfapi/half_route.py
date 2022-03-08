@@ -85,6 +85,8 @@ class HalfRoute(Route):
                             'Args for current route (%s)', param.get('args'))
 
 
+                    if 'out' in param:
+                        req.scope['out'] = param['out'].copy()
 
                     if 'check' in req.query_params:
                         return PlainTextResponse(param['acl'].__name__)

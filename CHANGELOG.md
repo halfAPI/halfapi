@@ -1,5 +1,11 @@
 # HalfAPI
 
+## 0.6.10
+
+- Add "x-out" field in HTTP headers when "out" parameters are specified for a
+  route
+- Add "out" kwarg for not-async functions that specify it
+
 ## 0.6.9
 
 - Hide data fields in args_check logs

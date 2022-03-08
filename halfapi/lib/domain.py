@@ -64,6 +64,10 @@ def route_decorator(fct: FunctionType, ret_type: str = 'json') -> Coroutine:
         if 'data' in fct_args_spec:
             fct_args['data'] = kwargs.get('data')
 
+        if 'out' in fct_args_spec:
+            fct_args['out'] = kwargs.get('out')
+
+
         """ If format argument is specified (either by get or by post param)
         """
         ret_type = fct_args.get('data', {}).get('format', 'json')

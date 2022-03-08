@@ -56,6 +56,11 @@ class DomainMiddleware(BaseHTTPMiddleware):
                 response.headers['x-args-optional'] = \
                     ','.join(request.scope['args']['optional'])
 
+        if len(request.scope.get('out', set())):
+            response.headers['x-out'] = \
+                ','.join(request.scope['out'])
+
+
         response.headers['x-domain'] = self.domain['name']
 
         return response

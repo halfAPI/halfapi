@@ -94,6 +94,9 @@ def args_check(fct):
 
         kwargs['data'] = data
 
+        if req.scope.get('out'):
+            kwargs['out'] = req.scope.get('out').copy()
+
         return await fct(req, *args, **kwargs)
 
     return caller
