@@ -72,7 +72,7 @@ build_container:
   script:
     - echo "Will upload image halfapi:\"$IMGTAG\""
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY/malves/halfapi:"$IMGTAG"
+    - /kaniko/executor --force --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY/malves/halfapi:"$IMGTAG"
   artifacts:
     paths:
       - /kaniko/.docker/config.json
