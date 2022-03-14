@@ -28,7 +28,9 @@ def connected(fct=public):
           or not hasattr(req.user, 'is_authenticated')):
             return False
 
-        return fct(req, **{**kwargs, **req.path_params})
+        if hasattr(req, 'path_params'):
+            return fct(req, **{**kwargs, **req.path_params})
+        return fct(req, **{**kwargs})
 
     return caller
 

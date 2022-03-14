@@ -1,5 +1,9 @@
 # HalfAPI
 
+## 0.6.11
+
+- Fix "request" has no "path_params" attribute bug
+
 ## 0.6.10
 
 - Add "x-out" field in HTTP headers when "out" parameters are specified for a
