@@ -136,8 +136,9 @@ class HalfDomain(Starlette):
 
         if not inspect.iscoroutinefunction(fct):
             return route_decorator(fct), params
-        else:
-            return acl.args_check(fct), params
+
+        # TODO: Remove when using only sync functions
+        return acl.args_check(fct), params
 
 
     @staticmethod

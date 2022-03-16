@@ -17,9 +17,8 @@ from types import ModuleType
 from starlette.schemas import SchemaGenerator
 
 from .. import __version__
-# from .domain import gen_router_routes, domain_schema_list
 from ..logging import logger
-from .routes import gen_starlette_routes, api_routes, api_acls
+from .routes import api_routes
 from .responses import ORJSONResponse
 
 SCHEMAS = SchemaGenerator(
@@ -33,67 +32,6 @@ async def schema_json(request, *args, **kwargs):
     """
     return ORJSONResponse(
         SCHEMAS.get_schema(routes=request.app.routes))
-
-
-def schema_dict_dom(d_domains: Dict[str, ModuleType]) -> Dict:
-    """
-    Returns the API schema of the *m_domain* domain as a python dictionnary
-
-    Parameters:
-
-    d_domains (Dict[str, moduleType]): The module to scan for routes
-
-    Returns:
-
-        Dict: A dictionnary containing the description of the API using the
-            | OpenAPI standard
-    """
-    return SCHEMAS.get_schema(
-            routes=list(gen_starlette_routes(d_domains)))
-
-
-async def get_acls(request, *args, **kwargs):
-    """
-    description: A dictionnary of the domains and their acls, with the
-                 result of the acls functions
-    """
-    return ORJSONResponse(api_acls(request))
-
-
-def schema_to_csv(module_name, header=True) -> str:
-    """
-    Returns a string composed where each line is a set of path, verb, function,
-    acl, required arguments, optional arguments and output variables. Those
-    lines should be unique in the result string;
-    """
-    # retrieve module
-    m_router = importlib.import_module(module_name)
-    lines = []
-    if header:
-        lines.append([
-            'path',
-            'method',
-            'module:function',
-            'acl',
-            'args_required', 'args_optional',
-            'out'
-        ])
-
-    for line in domain_schema_list(m_router):
-        lines.append([
-            line[0],
-            line[1],
-            line[2],
-            line[3],
-            ','.join(line[4]),
-            ','.join(line[5]),
-            ','.join(line[6])
-        ])
-
-    return '\n'.join(
-        [ ';'.join(fields) for fields in lines ]
-    )
-
 
 
 def schema_csv_dict(csv: List[str], prefix='/') -> Dict:

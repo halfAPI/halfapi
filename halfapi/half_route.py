@@ -19,13 +19,13 @@ from .lib.domain import MissingAclError, PathError, UnknownPathParameterType, \
 class HalfRoute(Route):
     """ HalfRoute
     """
-    def __init__(self, path, fct, params, method):
+    def __init__(self, path: List[str], fct: Callable, params: List[Dict], method: str):
         logger.info('HalfRoute creation: %s %s %s %s', path, fct, params, method)
         if len(params) == 0:
-            raise MissingAclError('[{}] {}'.format(verb, '/'.join(path)))
+            raise MissingAclError('[{}] {}'.format(method, '/'.join(path)))
 
         if len(path) == 0:
-            logger.error('Empty path for [{%s}]', verb)
+            logger.error('Empty path for [{%s}]', method)
             raise PathError()
 
         super().__init__(

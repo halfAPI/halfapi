@@ -17,8 +17,6 @@ from ..logging import logger
 # from ..lib.domain import domain_schema_dict
 from ..lib.constants import DOMAIN_SCHEMA, ROUTE_SCHEMA
 from ..lib.responses import ORJSONResponse
-# from ..lib.routes import api_routes
-from ..lib.schemas import schema_to_csv # get_api_routes
 
 @click.argument('module', required=True)
 @click.option('--export', default=False, is_flag=True)

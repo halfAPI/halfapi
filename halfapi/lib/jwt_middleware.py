@@ -81,8 +81,8 @@ class JWTAuthenticationBackend(AuthenticationBackend):
 
                 if token:
                     return AuthCredentials(), CheckUser(payload['user_id'])
-                else:
-                    return AuthCredentials(), Nobody()
+
+                return AuthCredentials(), Nobody()
 
 
             if PRODUCTION and 'debug' in payload.keys() and payload['debug']:

@@ -46,7 +46,6 @@ import uuid
 
 import toml
 
-from .lib.domain import d_domains
 from .logging import logger
 
 PRODUCTION = True
@@ -76,23 +75,6 @@ try:
         HALFAPI_CONFIG_FILES.append(HALFAPI_DOT_FILE)
 except FileNotFoundError:
     logger.error('Cannot find a configuration file under %s', HALFAPI_DOT_FILE)
-
-def conf_files():
-    return [
-        os.path.join(
-            CONF_DIR, 'default.ini'
-        ),
-        os.path.join(
-            os.getcwd(), '.halfapi', 'config')]
-
-
-def write_config():
-    """
-    Writes the current config to the highest priority config file
-    """
-    # with open(conf_files()[-1], 'w') as halfapi_config:
-    #     config.write(halfapi_config)
-    pass
 
 
 def read_config():

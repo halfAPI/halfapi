@@ -13,12 +13,10 @@ import orjson
 
 
 from .cli import cli
-from ..conf import write_config, CONFIG
+from ..conf import CONFIG
 
 from ..half_domain import HalfDomain
 
-from ..lib.domain import domain_schema
-from ..lib.schemas import schema_dict_dom
 from ..lib.routes import api_routes
 from ..lib.responses import ORJSONResponse
 

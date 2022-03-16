@@ -2,11 +2,13 @@
 """
 Routes module
 
+Classes :
+    - JSONRoute
+
 Fonctions :
     - gen_domain_routes
-    - gen_starlette_routes
+    - gen_schema_routes
     - api_routes
-    - api_acls
 
 Exception :
     - DomainNotFoundError
@@ -83,20 +85,6 @@ def gen_schema_routes(schema: Dict):
                 yield HalfRoute(path, args_check(fct), acls, verb)
 
 
-def gen_starlette_routes(d_domains: Dict[str, ModuleType]) -> Generator:
-    """
-    Yields the Route objects for HalfAPI app
-
-    Parameters:
-        d_domains (dict[str, ModuleType])
-
-    Returns:
-        Generator(Route)
-    """
-    for domain_name, m_domain in d_domains.items():
-        yield from gen_domain_routes(m_domain)
-
-
 def api_routes(m_dom: ModuleType) -> Tuple[Dict, Dict]:
     """
     Yields the description objects for HalfAPI app routes
@@ -146,28 +134,3 @@ def api_routes(m_dom: ModuleType) -> Tuple[Dict, Dict]:
             raise exc
 
     return d_res, d_acls
-
-
-def api_acls(request):
-    """ Returns the list of possible ACLs
-
-    # TODO: Rewrite
-    """
-    res = {}
-    domains = {}
-    doc = 'doc' in request.query_params
-    for domain, m_domain in domains.items():
-        res[domain] = {}
-        for acl_name, fct in domain_acls(m_domain, [domain]):
-            if not isinstance(fct, FunctionType):
-                continue
-
-            fct_result = fct.__doc__.strip() if doc and fct.__doc__ else fct(request)
-            if acl_name in res[domain]:
-                continue
-
-            if isinstance(fct_result, FunctionType):
-                fct_result = fct()(request)
-            res[domain][acl_name] = fct_result
-
-    return res

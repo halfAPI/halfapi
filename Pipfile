@@ -11,6 +11,8 @@ pylint = "*"
 build = "*"
 pytest-pythonpath = "*"
 twine = "*"
+pyflakes = "*"
+vulture = "*"
 
 [packages]
 click = ">=7.1,<8"

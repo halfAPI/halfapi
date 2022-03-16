@@ -38,7 +38,7 @@ from .lib.responses import (ORJSONResponse, UnauthorizedResponse,
     ServiceUnavailableResponse)
 from .lib.domain import NoDomainsException
 from .lib.routes import gen_schema_routes, JSONRoute
-from .lib.schemas import schema_json, get_acls
+from .lib.schemas import schema_json
 from .logging import logger, config_logging
 from .half_domain import HalfDomain
 from halfapi import __version__
