@@ -1,5 +1,9 @@
 # HalfAPI
 
+## 0.6.12
+
+- Installs pytest with dependencies in Docker image, tests when building image
+
 ## 0.6.11
 
 - Fix "request" has no "path_params" attribute bug
