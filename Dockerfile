@@ -4,6 +4,9 @@ COPY . /halfapi
 WORKDIR /halfapi
 RUN apt-get update > /dev/null && apt-get -y install git > /dev/null
 RUN pip install gunicorn uvicorn
-RUN pip install .
+# Install package with extra_requires for testing
+RUN pip install ".[tests]"
+ENV PYTHONPATH=./tests
+RUN pytest
 CMD gunicorn halfapi.app
 
