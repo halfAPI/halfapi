@@ -1,5 +1,13 @@
 # HalfAPI
 
+## 0.6.13
+
+- (rollback from 0.6.12) Remove pytest from dependencies in Docker file and
+  remove tests
+- (dep) Add "packaging" dependency
+- Add dependency check capability when instantiating a domain (__deps__
+  variable, see in dummy_domain)
+
 ## 0.6.12
 
 - Installs pytest with dependencies in Docker image, tests when building image

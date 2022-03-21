@@ -51,7 +51,8 @@ setup(
         "pyyaml>=5.3.1,<6",
         "timing-asgi>=0.2.1,<1",
         "schema>=0.7.4,<1",
-        "toml>=0.7.1,<0.8"
+        "toml>=0.7.1,<0.8",
+        "packaging>=19.0"
     ],
     classifiers=[
         "Development Status :: 3 - Alpha",
