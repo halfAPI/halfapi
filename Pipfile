@@ -25,6 +25,7 @@ timing-asgi = ">=0.2.1,<1"
 schema = ">=0.7.4,<1"
 toml = "*"
 pip = "*"
+packaging = "*"
 
 [scripts]
 halfapi = "python -m halfapi"

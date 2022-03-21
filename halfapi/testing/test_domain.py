@@ -3,6 +3,7 @@ import functools
 import os
 import sys
 import json
+from json.decoder import JSONDecodeError
 from unittest import TestCase
 from starlette.testclient import TestClient
 from click.testing import CliRunner
@@ -84,6 +85,11 @@ class TestDomain(TestCase):
             print(f'Stdout {result.stdout}')
             print(f'Stderr {result.stderr}')
             raise exc
+        except JSONDecodeError as exc:
+            print(f'Result {result}')
+            print(f'Stdout {result.stdout}')
+            raise exc
+
 
 
         return result_d

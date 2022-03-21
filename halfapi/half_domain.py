@@ -3,6 +3,8 @@ import inspect
 import os
 import re
 
+from packaging.specifiers import SpecifierSet
+from packaging.version import Version
 from typing import Coroutine, Dict, Iterator, List, Tuple
 from types import ModuleType, FunctionType
 
@@ -42,6 +44,8 @@ class HalfDomain(Starlette):
         # TODO: Check if given domain halfapi_version matches with __version__
         self.halfapi_version = getattr(self.m_domain, '__halfapi_version__', __version__)
 
+        self.deps = getattr(self.m_domain, '__deps__', tuple())
+
         if not router:
             self.router = getattr('__router__', domain, '.routers')
         else:
@@ -54,6 +58,18 @@ class HalfDomain(Starlette):
         self.config = { **app.config }
 
         logger.info('HalfDomain creation %s %s', domain, self.config)
+
+        for elt in self.deps:
+            package, version = elt
+            specifier = SpecifierSet(version)
+            package_module = importlib.import_module(package)
+            if Version(package_module.__version__) not in specifier:
+                raise Exception(
+                    'Wrong version for package {} version {} (excepting {})'.format(
+                        package, package_module.__version__, specifier
+                    ))
+
+
         super().__init__(
             routes=self.gen_domain_routes(),
             middleware=[
