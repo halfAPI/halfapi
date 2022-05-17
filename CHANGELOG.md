@@ -1,5 +1,11 @@
 # HalfAPI
 
+## 0.6.15
+
+- Allows to define a "__acl__" variable in the API module's __init__.py, to
+  specify how to import the acl lib. You can also specify "acl" in the domain's
+  config
+
 ## 0.6.14
 
 - Add XLSXResponse (with format argument set to "xlsx"), to return .xlsx files
