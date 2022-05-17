@@ -96,21 +96,21 @@ class HalfDomain(Starlette):
 
 
     @staticmethod
-    def acls(domain):
+    def acls(domain, acl=None):
         """ Returns the ACLS constant for the given domain
         """
-        m_acl = HalfDomain.m_acl(domain)
+        m_acl = HalfDomain.m_acl(domain, acl)
         try:
             return getattr(m_acl, 'ACLS')
         except AttributeError:
             raise Exception(f'Missing acl.ACLS constant in {domain} module')
 
     @staticmethod
-    def acls_route(domain):
+    def acls_route(domain, acl=None):
         d_res = {}
-        m_acl = HalfDomain.m_acl(domain)
+        m_acl = HalfDomain.m_acl(domain, acl)
 
-        for acl_name, doc, order in HalfDomain.acls(domain):
+        for acl_name, doc, order in HalfDomain.acls(domain, acl):
             fct = getattr(m_acl, acl_name)
             d_res[acl_name] = {
                 'callable': fct,

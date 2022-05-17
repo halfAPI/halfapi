@@ -209,7 +209,7 @@ class HalfAPI(Starlette):
 
     def acls_route(self):
         res = {
-            domain: HalfDomain.acls_route(domain)
+            domain: HalfDomain.acls_route(domain, domain_conf.get('acl'))
             for domain, domain_conf in self.config.get('domain', {}).items()
             if isinstance(domain_conf, dict) and domain_conf.get('enabled', False)
         }
