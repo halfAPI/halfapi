@@ -52,6 +52,7 @@ class TestDomain(TestCase):
         self.halfapi_conf['domain'][self.DOMAIN] = {
             'name': self.DOMAIN,
             'router': self.ROUTERS,
+            'acl': self.ACL,
             'prefix': False,
             'enabled': True,
             'config': {

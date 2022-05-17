@@ -27,7 +27,7 @@ from .lib.domain_middleware import DomainMiddleware
 from .logging import logger
 
 class HalfDomain(Starlette):
-    def __init__(self, domain, router=None, app=None):
+    def __init__(self, domain, router=None, acl=None, app=None):
         """
         Parameters:
             domain (str): Module name (should be importable)
@@ -53,7 +53,7 @@ class HalfDomain(Starlette):
 
         self.m_router = importlib.import_module(self.router, domain)
 
-        self.m_acl = importlib.import_module(f'{domain}.acl')
+        self.m_acl = HalfDomain.m_acl(domain, acl)
 
         self.config = { **app.config }
 
@@ -86,10 +86,20 @@ class HalfDomain(Starlette):
         )
 
     @staticmethod
+    def m_acl(domain, acl=None):
+        """ Returns the imported acl module for the domain
+        """
+        if (not acl):
+            acl = getattr('__acl__', domain, '.acl')
+
+        return importlib.import_module(acl, domain)
+
+
+    @staticmethod
     def acls(domain):
         """ Returns the ACLS constant for the given domain
         """
-        m_acl = importlib.import_module(f'{domain}.acl')
+        m_acl = HalfDomain.m_acl(domain)
         try:
             return getattr(m_acl, 'ACLS')
         except AttributeError:
@@ -98,7 +108,8 @@ class HalfDomain(Starlette):
     @staticmethod
     def acls_route(domain):
         d_res = {}
-        m_acl = importlib.import_module(f'{domain}.acl')
+        m_acl = HalfDomain.m_acl(domain)
+
         for acl_name, doc, order in HalfDomain.acls(domain):
             fct = getattr(m_acl, acl_name)
             d_res[acl_name] = {

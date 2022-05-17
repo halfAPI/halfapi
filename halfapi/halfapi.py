@@ -122,7 +122,7 @@ class HalfAPI(Starlette):
 
             domain_key = domain.get('name', key)
 
-            self.add_domain(domain_key, domain.get('router'), path)
+            self.add_domain(domain_key, domain.get('router'), domain.get('acl'), path)
 
             schemas.append(self.__domains[domain_key].schema())
 
@@ -237,13 +237,14 @@ class HalfAPI(Starlette):
     def domains(self):
         return self.__domains
 
-    def add_domain(self, name, router=None, path='/', config=None):
+    def add_domain(self, name, router=None, acl=None, path='/', config=None):
         if config:
             self.config['domain'][name] = config
 
         self.__domains[name] = HalfDomain(
             name,
             router,
+            acl,
             self
         )
 
