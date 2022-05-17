@@ -1,5 +1,9 @@
 # HalfAPI
 
+## 0.6.14
+
+- Add XLSXResponse (with format argument set to "xlsx"), to return .xlsx files
+
 ## 0.6.13
 
 - (rollback from 0.6.12) Remove pytest from dependencies in Docker file and
