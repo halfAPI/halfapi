@@ -16,7 +16,7 @@ import yaml
 from starlette.exceptions import HTTPException
 
 from halfapi.lib import acl
-from halfapi.lib.responses import ORJSONResponse, ODSResponse
+from halfapi.lib.responses import ORJSONResponse, ODSResponse, XLSXResponse
 # from halfapi.lib.router import read_router
 from halfapi.lib.constants import VERBS
 
@@ -92,6 +92,14 @@ def route_decorator(fct: FunctionType, ret_type: str = 'json') -> Coroutine:
                     assert isinstance(elt, dict)
 
                 return ODSResponse(res)
+
+            if ret_type == 'xlsx':
+                res = fct(**fct_args)
+                assert isinstance(res, list)
+                for elt in res:
+                    assert isinstance(elt, dict)
+
+                return XLSXResponse(res)
 
             raise NotImplementedError
 

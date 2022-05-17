@@ -118,6 +118,8 @@ class HJSONResponse(ORJSONResponse):
         return super().render(list(content))
 
 class ODSResponse(Response):
+    file_type = 'ods'
+
     def __init__(self, d_rows: typing.List[typing.Dict]):
         try:
             import pyexcel as pe
@@ -140,10 +142,10 @@ class ODSResponse(Response):
 
             self.sheet = pe.Sheet(rows)
             self.sheet.save_to_memory(
-                file_type='ods',
+                file_type=self.file_type,
                 stream=ods_file)
 
-            filename = f'{date.today()}.ods'
+            filename = f'{date.today()}.{self.file_type}'
 
             super().__init__(
                 content=ods_file.getvalue(),
@@ -152,3 +154,6 @@ class ODSResponse(Response):
                     'Content-Disposition': f'attachment; filename="{filename}"'},
                 status_code = 200)
 
+
+class XLSXResponse(ODSResponse):
+    file_type = 'xlsx'

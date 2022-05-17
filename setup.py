@@ -68,6 +68,11 @@ setup(
             "requests",
             "pytest-asyncio",
             "pylint"
+        ],
+        "pyexcel":[
+            "pyexcel",
+            "pyexcel-ods3",
+            "pyexcel-xlsx"
         ]
     },
     entry_points={
