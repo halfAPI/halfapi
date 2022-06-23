@@ -97,6 +97,13 @@ PROJECT_NAME = CONFIG.get('project_name',
 
 if environ.get('HALFAPI_DOMAIN_NAME'):
     DOMAIN_NAME = environ.get('HALFAPI_DOMAIN_NAME')
+    if 'domain' in CONFIG and DOMAIN_NAME in CONFIG['domain'] \
+        and 'config' in CONFIG['domain'][DOMAIN_NAME]:
+
+        domain_config = CONFIG['domain'][DOMAIN_NAME]['config']
+    else:
+        domain_config = {}
+
     CONFIG['domain'] = {}
 
     CONFIG['domain'][DOMAIN_NAME] = {
@@ -104,6 +111,8 @@ if environ.get('HALFAPI_DOMAIN_NAME'):
         'name': DOMAIN_NAME,
         'prefix': False
     }
+
+    CONFIG['domain'][DOMAIN_NAME]['config'] = domain_config
 
     if environ.get('HALFAPI_DOMAIN_MODULE'):
         dom_module = environ.get('HALFAPI_DOMAIN_MODULE')
