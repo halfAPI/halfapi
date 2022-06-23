@@ -98,11 +98,16 @@ PROJECT_NAME = CONFIG.get('project_name',
 if environ.get('HALFAPI_DOMAIN_NAME'):
     DOMAIN_NAME = environ.get('HALFAPI_DOMAIN_NAME')
     CONFIG['domain'] = {}
+
     CONFIG['domain'][DOMAIN_NAME] = {
         'enabled': True,
         'name': DOMAIN_NAME,
         'prefix': False
     }
+
+    if environ.get('HALFAPI_DOMAIN_MODULE'):
+        dom_module = environ.get('HALFAPI_DOMAIN_MODULE')
+        CONFIG['domain'][DOMAIN_NAME]['module'] = dom_module
 
 if len(CONFIG.get('domain', {}).keys()) == 0:
     logger.info('No domains')

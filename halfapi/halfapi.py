@@ -122,7 +122,12 @@ class HalfAPI(Starlette):
 
             domain_key = domain.get('name', key)
 
-            self.add_domain(domain_key, domain.get('router'), domain.get('acl'), path)
+            self.add_domain(
+                domain_key,
+                domain.get('module'),
+                domain.get('router'),
+                domain.get('acl'),
+                path)
 
             schemas.append(self.__domains[domain_key].schema())
 
@@ -209,7 +214,10 @@ class HalfAPI(Starlette):
 
     def acls_route(self):
         res = {
-            domain: HalfDomain.acls_route(domain, domain_conf.get('acl'))
+            domain: HalfDomain.acls_route(
+                domain,
+                module=domain_conf.get('module'),
+                acl=domain_conf.get('acl'))
             for domain, domain_conf in self.config.get('domain', {}).items()
             if isinstance(domain_conf, dict) and domain_conf.get('enabled', False)
         }
@@ -237,16 +245,38 @@ class HalfAPI(Starlette):
     def domains(self):
         return self.__domains
 
-    def add_domain(self, name, router=None, acl=None, path='/', config=None):
+    def add_domain(self, name, module=None, router=None, acl=None, path='/', config=None):
+
+        # logger.debug('HalfApi.add_domain %s %s %s %s %s',
+        #     name,
+        #     module,
+        #     router,
+        #     acl,
+        #     path,
+        #     config)
+
         if config:
             self.config['domain'][name] = config
 
-        self.__domains[name] = HalfDomain(
-            name,
-            router,
-            acl,
-            self
-        )
+        if not module:
+            module = name
+
+        try:
+            self.__domains[name] = HalfDomain(
+                name,
+                module=importlib.import_module(module),
+                router=router,
+                acl=acl,
+                app=self
+            )
+
+        except ImportError as exc:
+            print(
+                'Cannot instantiate HalfDomain {} with module {}'.format(
+                name,
+                module
+            ))
+            raise exc
 
         self.mount(path, self.__domains[name])
 

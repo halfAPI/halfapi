@@ -27,7 +27,7 @@ from .lib.domain_middleware import DomainMiddleware
 from .logging import logger
 
 class HalfDomain(Starlette):
-    def __init__(self, domain, router=None, acl=None, app=None):
+    def __init__(self, domain, module=None, router=None, acl=None, app=None):
         """
         Parameters:
             domain (str): Module name (should be importable)
@@ -37,7 +37,7 @@ class HalfDomain(Starlette):
         """
         self.app = app
 
-        self.m_domain = importlib.import_module(domain)
+        self.m_domain = importlib.import_module(domain) if module is None else module
         self.name = getattr(self.m_domain, '__name__', domain)
         self.id = getattr(self.m_domain, '__id__')
         self.version = getattr(self.m_domain, '__version__', '0.0.0')
@@ -47,13 +47,17 @@ class HalfDomain(Starlette):
         self.deps = getattr(self.m_domain, '__deps__', tuple())
 
         if not router:
-            self.router = getattr('__router__', domain, '.routers')
+            self.router = getattr(domain, '__router__', '.routers')
         else:
             self.router = router
 
-        self.m_router = importlib.import_module(self.router, domain)
+        self.m_router = None
+        try:
+            self.m_router = importlib.import_module(self.router, self.m_domain.__package__)
+        except AttributeError:
+            raise Exception('no router module')
 
-        self.m_acl = HalfDomain.m_acl(domain, acl)
+        self.m_acl = HalfDomain.m_acl(self.m_domain, acl)
 
         self.config = { **app.config }
 
@@ -86,31 +90,37 @@ class HalfDomain(Starlette):
         )
 
     @staticmethod
-    def m_acl(domain, acl=None):
-        """ Returns the imported acl module for the domain
+    def m_acl(module, acl=None):
+        """ Returns the imported acl module for the domain module
         """
         if (not acl):
-            acl = getattr('__acl__', domain, '.acl')
+            acl = getattr(module, '__acl__', '.acl')
 
-        return importlib.import_module(acl, domain)
+        return importlib.import_module(acl, module.__package__)
 
 
     @staticmethod
-    def acls(domain, acl=None):
+    def acls(domain, module=None, acl=None):
         """ Returns the ACLS constant for the given domain
         """
-        m_acl = HalfDomain.m_acl(domain, acl)
+        if not module:
+            module = importlib.import_module(domain)
+
+        m_acl = HalfDomain.m_acl(module, acl)
         try:
             return getattr(m_acl, 'ACLS')
         except AttributeError:
             raise Exception(f'Missing acl.ACLS constant in {domain} module')
 
     @staticmethod
-    def acls_route(domain, acl=None):
+    def acls_route(domain, module=None, acl=None):
         d_res = {}
-        m_acl = HalfDomain.m_acl(domain, acl)
+        if module is None:
+            module = importlib.import_module(domain)
 
-        for acl_name, doc, order in HalfDomain.acls(domain, acl):
+        m_acl = HalfDomain.m_acl(module, acl)
+
+        for acl_name, doc, order in HalfDomain.acls(domain, acl=acl):
             fct = getattr(m_acl, acl_name)
             d_res[acl_name] = {
                 'callable': fct,
