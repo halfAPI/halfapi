@@ -1,5 +1,9 @@
 # HalfAPI
 
+## 0.6.18
+
+- Fix config coming from .halfapi/config when using HALFAPI_DOMAIN_NAME environment variable
+
 ## 0.6.17
 
 - Fix 0.6.16
