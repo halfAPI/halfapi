@@ -64,6 +64,9 @@ class TestDomain(TestCase):
 
         self.client = TestClient(self.halfapi.application)
 
+        self.module = importlib.import_module(
+            getattr(self, 'MODULE', self.DOMAIN)
+        )
 
 
     def tearDown(self):
@@ -114,7 +117,7 @@ class TestDomain(TestCase):
 
         assert self.DOMAIN in d_r.keys()
 
-        ACLS = HalfDomain.acls(self.DOMAIN)
+        ACLS = HalfDomain.acls(self.module, self.ACL)
         assert len(ACLS) == len(d_r[self.DOMAIN])
 
         for acl_name in ACLS:

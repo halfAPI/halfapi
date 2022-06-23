@@ -93,34 +93,48 @@ class HalfDomain(Starlette):
     def m_acl(module, acl=None):
         """ Returns the imported acl module for the domain module
         """
-        if (not acl):
+        if not acl:
             acl = getattr(module, '__acl__', '.acl')
 
         return importlib.import_module(acl, module.__package__)
 
 
     @staticmethod
-    def acls(domain, module=None, acl=None):
+    def acls(module, acl=None):
         """ Returns the ACLS constant for the given domain
         """
-        if not module:
-            module = importlib.import_module(domain)
-
         m_acl = HalfDomain.m_acl(module, acl)
         try:
             return getattr(m_acl, 'ACLS')
         except AttributeError:
-            raise Exception(f'Missing acl.ACLS constant in {domain} module')
+            raise Exception(f'Missing acl.ACLS constant in module {m_acl.__package__}')
 
     @staticmethod
-    def acls_route(domain, module=None, acl=None):
+    def acls_route(domain, module_path=None, acl=None):
+        """ Dictionary of acls
+
+        Format :
+
+        {
+            [acl_name]: {
+                callable: fct_reference,
+                docs: fct_docstring,
+                result: fct_result
+            }
+        }
+        """
+
         d_res = {}
-        if module is None:
-            module = importlib.import_module(domain)
+
+        module = importlib.import_module(domain) \
+            if module_path is None \
+            else importlib.import_module(module_path)
 
         m_acl = HalfDomain.m_acl(module, acl)
 
-        for acl_name, doc, order in HalfDomain.acls(domain, acl=acl):
+        for acl_name, doc, order in HalfDomain.acls(
+            module,
+            acl=acl):
             fct = getattr(m_acl, acl_name)
             d_res[acl_name] = {
                 'callable': fct,
