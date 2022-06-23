@@ -13,6 +13,7 @@ pytest-pythonpath = "*"
 twine = "*"
 pyflakes = "*"
 vulture = "*"
+virtualenv = "*"
 
 [packages]
 click = ">=7.1,<8"
