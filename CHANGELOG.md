@@ -1,5 +1,12 @@
 # HalfAPI
 
+## 0.6.16
+
+- The definition of "HALFAPI_DOMAIN_MODULE" environment variable allows to
+  specify the base module for a domain structure. It is formatted as a python
+  import path.
+  The "HALFAPI_DOMAIN" specifies the "name" of the module
+
 ## 0.6.15
 
 - Allows to define a "__acl__" variable in the API module's __init__.py, to
