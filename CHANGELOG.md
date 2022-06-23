@@ -1,5 +1,12 @@
 # HalfAPI
 
+## 0.6.17
+
+- Fix 0.6.16
+- Errata : HALFAPI_DOMAIN is HALFAPI_DOMAIN_NAME
+- Testing : You can now specify "MODULE" class attribute for your "test_domain"
+  subclasses
+
 ## 0.6.16
 
 - The definition of "HALFAPI_DOMAIN_MODULE" environment variable allows to
