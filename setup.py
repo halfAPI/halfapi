@@ -52,19 +52,22 @@ setup(
         "timing-asgi>=0.2.1,<1",
         "schema>=0.7.4,<1",
         "toml>=0.7.1,<0.8",
-        "packaging>=19.0"
+        "packaging>=19.0",
+        "python-multipart"
     ],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Intended Audience :: Developers",
         "Topic :: Software Development :: Libraries :: Application Frameworks",
+        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10"
     ],
     extras_require={
         "tests":[
-            "pytest",
+            "pytest>=7,<8",
             "requests",
             "pytest-asyncio",
             "pylint"

@@ -56,11 +56,23 @@ def args_check(fct):
             data_ = dict(req.query_params)
 
         elif req.method in ['POST', 'PATCH', 'PUT', 'DELETE']:
-            try:
-                data_ = await req.json()
-            except JSONDecodeError as exc:
-                logger.debug('Posted data was not JSON')
-                pass
+            if req.scope.get('headers'):
+                if b'content-type' not in dict(req.scope.get('headers')):
+                    data_ = {}
+                else:
+                    content_type = dict(req.scope.get('headers')).get(b'content-type').decode().split(';')[0]
+
+                    if content_type == 'application/json':
+                        try:
+                            data_ = await req.json()
+                        except JSONDecodeError as exc:
+                            logger.debug('Posted data was not JSON')
+                            pass
+                    elif content_type in [
+                        'multipart/form-data', 'application/x-www-form-urlencoded']:
+                        data_ = await req.form()
+                    else:
+                        data_ = await req.body()
 
         def plural(array: list) -> str:
             return 's' if len(array) > 1 else ''
@@ -69,7 +81,7 @@ def args_check(fct):
 
 
         args_d = req.scope.get('args')
-        if args_d is not None:
+        if args_d is not None and isinstance(data_, dict):
             required = args_d.get('required', set())
 
             missing = []
@@ -90,7 +102,7 @@ def args_check(fct):
                 if key in data_:
                     data[key] = data_[key]
         else:
-            """ Unsafe mode, without specified arguments
+            """ Unsafe mode, without specified arguments, or plain text mode
             """
             data = data_
 

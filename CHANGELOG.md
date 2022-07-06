@@ -1,5 +1,10 @@
 # HalfAPI
 
+## 0.6.19
+
+- Allow file sending in multipart request (#32)
+- Add python-multipart dependency
+
 ## 0.6.18
 
 - Fix config coming from .halfapi/config when using HALFAPI_DOMAIN_NAME environment variable
