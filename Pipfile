@@ -4,12 +4,12 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-pytest = "*"
+pytest = ">=7,<8"
 requests = "*"
 pytest-asyncio = "*"
 pylint = "*"
 build = "*"
-pytest-pythonpath = "*"
+#pytest-pythonpath = "*"
 twine = "*"
 pyflakes = "*"
 vulture = "*"
