@@ -70,7 +70,7 @@ def args_check(fct):
                             pass
                     elif content_type in [
                         'multipart/form-data', 'application/x-www-form-urlencoded']:
-                        data_ = await req.form()
+                        data_ = dict(await req.form())
                     else:
                         data_ = await req.body()
 
@@ -99,14 +99,14 @@ def args_check(fct):
 
             optional = args_d.get('optional', set())
             for key in optional:
-                if key in data_:
-                    data[key] = data_[key]
-        else:
-            """ Unsafe mode, without specified arguments, or plain text mode
-            """
-            data = data_
+                    if key in data_:
+                        data[key] = data_[key]
+            else:
+                """ Unsafe mode, without specified arguments, or plain text mode
+                """
+                data = data_
 
-        kwargs['data'] = data
+            kwargs['data'] = data
 
         if req.scope.get('out'):
             kwargs['out'] = req.scope.get('out').copy()

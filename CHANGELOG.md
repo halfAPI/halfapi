@@ -1,5 +1,9 @@
 # HalfAPI
 
+## 0.6.20
+
+- Fix arguments handling
+
 ## 0.6.19
 
 - Allow file sending in multipart request (#32)
