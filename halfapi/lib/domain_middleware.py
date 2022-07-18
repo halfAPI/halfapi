@@ -35,7 +35,21 @@ class DomainMiddleware(BaseHTTPMiddleware):
         request.scope['domain'] = self.domain['name']
         if hasattr(request.app, 'config') \
           and isinstance(request.app.config, dict):
-            request.scope['config'] = { **request.app.config }
+            # Set the config scope to the domain's config
+            request.scope['config'] = request.app.config.get(
+                'domain', {}
+            ).get(
+                self.domain['name'], {}
+            ).copy()
+
+            # TODO: Remove in 0.7.0
+            config = request.scope['config'].copy()
+            request.scope['config']['domain'] = {}
+            request.scope['config']['domain'][self.domain['name']] = {}
+            request.scope['config']['domain'][self.domain['name']]['config'] = config
+            
+
+
         else:
             logger.debug('%s', request.app)
             logger.debug('%s', getattr(request.app, 'config', None))

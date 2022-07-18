@@ -14,4 +14,17 @@ def get(halfapi):
         returns the configuration of the domain
     """
     logger.error('%s', halfapi)
-    return halfapi['config']['domain']['dummy_domain']['config']
+    # TODO: Remove in 0.7.0
+    try:
+        assert 'test' in halfapi['config']['domain']['dummy_domain']['config']
+    except AssertionError as exc:
+        logger.error('No TEST in halfapi[config][domain][dummy_domain][config]')
+        raise exc
+
+    try:
+        assert 'test' in halfapi['config']
+    except AssertionError as exc:
+        logger.error('No TEST in halfapi[config]')
+        raise exc
+
+    return halfapi['config']

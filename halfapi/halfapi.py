@@ -122,12 +122,12 @@ class HalfAPI(Starlette):
 
             domain_key = domain.get('name', key)
 
-            self.add_domain(
-                domain_key,
-                domain.get('module'),
-                domain.get('router'),
-                domain.get('acl'),
-                path)
+            add_domain_args = {
+                **domain,
+                'path': path
+            }
+
+            self.add_domain(**add_domain_args)
 
             schemas.append(self.__domains[domain_key].schema())
 
@@ -246,28 +246,26 @@ class HalfAPI(Starlette):
     def domains(self):
         return self.__domains
 
-    def add_domain(self, name, module=None, router=None, acl=None, path='/', config=None):
+    def add_domain(self, **kwargs):
 
-        # logger.debug('HalfApi.add_domain %s %s %s %s %s',
-        #     name,
-        #     module,
-        #     router,
-        #     acl,
-        #     path,
-        #     config)
+        if not kwargs.get('enabled'):
+            raise Exception(f'Domain not enabled ({kwargs})')
 
-        if config:
-            self.config['domain'][name] = config
+        name = kwargs['name']
 
-        if not module:
+        self.config['domain'][name] = kwargs.get('config', {})
+
+        if not kwargs.get('module'):
             module = name
+        else:
+            module = kwargs.get('module')
 
         try:
             self.__domains[name] = HalfDomain(
                 name,
                 module=importlib.import_module(module),
-                router=router,
-                acl=acl,
+                router=kwargs.get('router'),
+                acl=kwargs.get('acl'),
                 app=self
             )
 
@@ -279,6 +277,6 @@ class HalfAPI(Starlette):
             ))
             raise exc
 
-        self.mount(path, self.__domains[name])
+        self.mount(kwargs.get('path', name), self.__domains[name])
 
         return self.__domains[name]
