@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM docker.io/python:3.8.12-slim-bullseye
+FROM docker.io/python:3.10.5-slim-bullseye
 COPY . /halfapi
 WORKDIR /halfapi
 RUN apt-get update > /dev/null && apt-get -y install git > /dev/null
