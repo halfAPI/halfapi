@@ -8,6 +8,8 @@ import sys
 import importlib
 import subprocess
 
+import json
+
 import click
 import orjson
 
@@ -120,9 +122,10 @@ def list_api_routes():
 @click.option('--create',default=False, is_flag=True)
 @click.option('--update',default=False, is_flag=True)
 @click.option('--delete',default=False, is_flag=True)
+@click.argument('config_file', type=click.File(mode='rb'), required=False)
 @click.argument('domain',default=None, required=False)
 @cli.command()
-def domain(domain, delete, update, create, read):  #, domains, read, create, update, delete):
+def domain(domain, config_file, delete, update, create, read):  #, domains, read, create, update, delete):
     """
     The "halfapi domain" command
 
@@ -147,17 +150,14 @@ def domain(domain, delete, update, create, read):  #, domains, read, create, upd
         from ..conf import CONFIG
         from ..halfapi import HalfAPI
 
-        try:
-            config_domain = CONFIG.pop('domain').get(domain, {})
-        except KeyError:
-            config_domain = {}
+        if config_file:
+            CONFIG = json.loads(''.join(
+                [ line.decode() for line in config_file.readlines() ]
+            ))
 
         halfapi = HalfAPI(CONFIG)
-
-        half_domain = halfapi.add_domain(domain, config=config_domain)
-
         click.echo(orjson.dumps(
-            half_domain.schema(),
+            halfapi.domains[domain].schema(),
             option=orjson.OPT_NON_STR_KEYS,
             default=ORJSONResponse.default_cast)
         )

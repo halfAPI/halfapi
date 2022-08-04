@@ -11,6 +11,7 @@ from ..cli.cli import cli
 from ..halfapi import HalfAPI
 from ..half_domain import HalfDomain
 from pprint import pprint
+import tempfile
 
 class TestDomain(TestCase):
     @property
@@ -53,12 +54,17 @@ class TestDomain(TestCase):
             'name': self.DOMAIN,
             'router': self.ROUTERS,
             'acl': self.ACL,
+            'module': self.MODULE,
             'prefix': False,
             'enabled': True,
             'config': {
                 'test': True
             }
         }
+
+        _, self.config_file = tempfile.mkstemp()
+        with open(self.config_file, 'w') as fh:
+            fh.write(json.dumps(self.halfapi_conf))
 
         self.halfapi = HalfAPI(self.halfapi_conf)
 
@@ -77,7 +83,7 @@ class TestDomain(TestCase):
         try:
             result = self.runner.invoke(cli, '--version')
             self.assertEqual(result.exit_code, 0)
-            result = self.runner.invoke(cli, ['domain', self.DOMAIN])
+            result = self.runner.invoke(cli, ['domain', self.DOMAIN, self.config_file])
             self.assertEqual(result.exit_code, 0)
             result_d = json.loads(result.stdout)
             result = self.runner.invoke(cli, ['run', '--help'])
