@@ -15,8 +15,12 @@ import tempfile
 
 class TestDomain(TestCase):
     @property
+    def module_name(self):
+        return getattr(self, 'MODULE', self.DOMAIN)
+
+    @property
     def router_module(self):
-        return '.'.join((self.DOMAIN, self.ROUTERS))
+        return '.'.join((self.module_name, self.ROUTERS))
 
     def setUp(self):
         # CLI
@@ -54,7 +58,7 @@ class TestDomain(TestCase):
             'name': self.DOMAIN,
             'router': self.ROUTERS,
             'acl': self.ACL,
-            'module': self.MODULE,
+            'module': self.module_name,
             'prefix': False,
             'enabled': True,
             'config': {
@@ -71,7 +75,7 @@ class TestDomain(TestCase):
         self.client = TestClient(self.halfapi.application)
 
         self.module = importlib.import_module(
-            getattr(self, 'MODULE', self.DOMAIN)
+            self.module_name
         )
 
 
