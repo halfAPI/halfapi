@@ -4,6 +4,9 @@
 
 - Store only domain's config in halfapi['config'] 
 - Should run halfapi domain with config_file argument
+- Testing : You can specify a "MODULE" attribute to point out the path to the Api's base module
+- Environment : HALFAPI_DOMAIN_MODULE can be set to specify Api's base module
+- Config : 'module' attribute can be set to specify Api's base module
 
 ## 0.6.20
 
