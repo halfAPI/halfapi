@@ -4,6 +4,7 @@ import subprocess
 import importlib
 import tempfile
 from unittest.mock import patch
+import json
 
 import pytest
 from click.testing import CliRunner
@@ -25,7 +26,20 @@ class TestCliProj():
         r = project_runner('domain')
         print(r.stdout)
         assert r.exit_code == 1
-        r = project_runner('domain dummy_domain')
+        _, tmp_conf = tempfile.mkstemp()
+        with open(tmp_conf, 'w') as fh:
+            fh.write(
+                json.dumps({
+                    'domain': {
+                        'dummy_domain': {
+                            'name': 'dummy_domain',
+                            'enabled': True
+                        }
+                    }
+                })
+            )
+
+        r = project_runner(f'domain dummy_domain {tmp_conf}')
         print(r.stdout)
         assert r.exit_code == 0
 

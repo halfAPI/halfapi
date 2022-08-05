@@ -1,5 +1,10 @@
 # HalfAPI
 
+## 0.6.21
+
+- Store only domain's config in halfapi['config'] 
+- Should run halfapi domain with config_file argument
+
 ## 0.6.20
 
 - Fix arguments handling
