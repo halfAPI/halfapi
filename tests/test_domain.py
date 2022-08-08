@@ -6,8 +6,7 @@ class TestDummyDomain(TestDomain):
     from .dummy_domain import __name__, __routers__
 
     DOMAIN = __name__
-    ROUTERS = __routers__
-    ACL = '.acl'
+    CONFIG = {'test': True}
 
     def test_domain(self):
         self.check_domain()
