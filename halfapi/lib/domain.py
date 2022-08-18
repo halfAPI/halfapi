@@ -16,7 +16,7 @@ import yaml
 from starlette.exceptions import HTTPException
 
 from halfapi.lib import acl
-from halfapi.lib.responses import ORJSONResponse, ODSResponse, XLSXResponse
+from halfapi.lib.responses import ORJSONResponse, ODSResponse, XLSXResponse, PlainTextResponse, HTMLResponse
 # from halfapi.lib.router import read_router
 from halfapi.lib.constants import VERBS
 
@@ -59,6 +59,11 @@ def route_decorator(fct: FunctionType, ret_type: str = 'json') -> Coroutine:
     @acl.args_check
     async def wrapped(request, *args, **kwargs):
         fct_args_spec = inspect.getfullargspec(fct).args
+        fct_args_defaults = inspect.getfullargspec(fct).defaults or []
+        fct_args_defaults_dict = {}
+        for i in range(len(fct_args_defaults)):
+            fct_args_defaults_dict[fct_args_spec[-i]] = fct_args_defaults[-i]
+
         fct_args = request.path_params.copy()
 
         if 'halfapi' in fct_args_spec:
@@ -76,10 +81,12 @@ def route_decorator(fct: FunctionType, ret_type: str = 'json') -> Coroutine:
         if 'out' in fct_args_spec:
             fct_args['out'] = kwargs.get('out')
 
-
-        """ If format argument is specified (either by get or by post param)
+        """ If format argument is specified (either by get, post param or function argument)
         """
-        ret_type = fct_args.get('data', {}).get('format', 'json')
+        if 'ret_type' in fct_args_defaults_dict:
+            ret_type = fct_args_defaults_dict['ret_type']
+        else:
+            ret_type = fct_args.get('data', {}).get('format', 'json')
 
         try:
             if ret_type == 'json':
@@ -100,6 +107,19 @@ def route_decorator(fct: FunctionType, ret_type: str = 'json') -> Coroutine:
                     assert isinstance(elt, dict)
 
                 return XLSXResponse(res)
+
+            if ret_type in ['html', 'xhtml']:
+                res = fct(**fct_args)
+                assert isinstance(res, str)
+
+                return HTMLResponse(res)
+
+            if ret_type in 'txt':
+                res = fct(**fct_args)
+                assert isinstance(res, str)
+
+                return PlainTextResponse(res)
+
 
             raise NotImplementedError
 

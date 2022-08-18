@@ -23,7 +23,7 @@ from io import BytesIO
 import orjson
 
 # asgi framework
-from starlette.responses import PlainTextResponse, Response, JSONResponse
+from starlette.responses import PlainTextResponse, Response, JSONResponse, HTMLResponse
 
 from .user import JWTUser, Nobody
 from ..logging import logger

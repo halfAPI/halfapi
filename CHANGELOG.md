@@ -1,5 +1,11 @@
 # HalfAPI
 
+## 0.7.0-rc0
+
+- Add *html* return type as default argument ret_type
+- Add *txt* return type
+
+
 ## 0.6.21
 
 - Store only domain's config in halfapi['config'] 
