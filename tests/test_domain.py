@@ -19,3 +19,20 @@ class TestDummyDomain(TestDomain):
         assert res.status_code == 200
         assert isinstance(res.content.decode(), str)
         assert res.headers['content-type'].split(';')[0] == 'text/html'
+
+        res = self.client.get('/ret_type/h24')
+        assert res.status_code == 200
+        assert isinstance(res.content.decode(), str)
+        assert res.headers['content-type'].split(';')[0] == 'text/html'
+
+        res = self.client.get('/ret_type/h24/config')
+        assert res.status_code == 200
+        assert isinstance(res.content.decode(), str)
+        assert res.headers['content-type'].split(';')[0] == 'text/html'
+
+        res = self.client.post('/ret_type/h24/config', {
+            'trou': 'glet'
+        })
+        assert res.status_code == 200
+        assert isinstance(res.content.decode(), str)
+        assert res.headers['content-type'].split(';')[0] == 'text/html'

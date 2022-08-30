@@ -52,7 +52,7 @@ class NoDomainsException(Exception):
     """
     pass
 
-def route_decorator(fct: FunctionType, ret_type: str = 'json') -> Coroutine:
+def route_decorator(fct: FunctionType) -> Coroutine:
     """ Returns an async function that can be mounted on a router
     """
     @wraps(fct)
@@ -60,9 +60,10 @@ def route_decorator(fct: FunctionType, ret_type: str = 'json') -> Coroutine:
     async def wrapped(request, *args, **kwargs):
         fct_args_spec = inspect.getfullargspec(fct).args
         fct_args_defaults = inspect.getfullargspec(fct).defaults or []
-        fct_args_defaults_dict = {}
-        for i in range(len(fct_args_defaults)):
-            fct_args_defaults_dict[fct_args_spec[-i]] = fct_args_defaults[-i]
+        fct_args_defaults_dict = dict(list(zip(
+            reversed(fct_args_spec),
+            reversed(fct_args_defaults)
+        )))
 
         fct_args = request.path_params.copy()
 
@@ -76,7 +77,12 @@ def route_decorator(fct: FunctionType, ret_type: str = 'json') -> Coroutine:
 
 
         if 'data' in fct_args_spec:
-            fct_args['data'] = kwargs.get('data')
+            if 'data' in fct_args_defaults_dict:
+                fct_args['data'] = fct_args_defaults_dict
+            else:
+                fct_args['data'] = {}
+
+            fct_args['data'].update(kwargs.get('data', {}))
 
         if 'out' in fct_args_spec:
             fct_args['out'] = kwargs.get('out')
@@ -88,6 +94,8 @@ def route_decorator(fct: FunctionType, ret_type: str = 'json') -> Coroutine:
         else:
             ret_type = fct_args.get('data', {}).get('format', 'json')
 
+        logger.debug('Return type {} (defaults: {})'.format(ret_type,
+            fct_args_defaults_dict))
         try:
             if ret_type == 'json':
                 return ORJSONResponse(fct(**fct_args))
