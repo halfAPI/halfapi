@@ -92,7 +92,7 @@ class HalfAPI(Starlette):
             exception_handlers={
                 401: UnauthorizedResponse,
                 404: NotFoundResponse,
-                500: InternalServerErrorResponse,
+                500: HalfAPI.exception,
                 501: NotImplementedResponse,
                 503: ServiceUnavailableResponse
             },
@@ -148,14 +148,17 @@ class HalfAPI(Starlette):
                 starlette_app=self)
             )
 
-
-
     @property
     def version(self):
         return __version__
 
     async def version_async(self, request, *args, **kwargs):
         return Response(self.version)
+
+    @staticmethod
+    async def exception(request: Request, exc: HTTPException):
+        logger.critical(exc, exc_info=True)
+        return InternalServerErrorResponse()
 
     @property
     def application(self):
