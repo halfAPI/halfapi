@@ -2,6 +2,7 @@
 
 ## 0.6.22
 
+- IMPORTANT : Fix bug introduced with 0.6.20 (fix arguments handling)
 - Add *html* return type as default argument ret_type
 - Add *txt* return type
 
