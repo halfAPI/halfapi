@@ -55,18 +55,18 @@ ACLS = {
 
 }
 
-def get(halfapi, data):
+def get(data):
     """
     description:
-        returns the configuration of the domain
+        returns the arguments passed in
     """
     logger.error('%s', data['foo'])
-    return {'foo': data['foo'], 'bar': data['bar']}
+    return data
 
-def post(halfapi, data):
+def post(data):
     """
     description:
-        returns the configuration of the domain
+        returns the arguments passed in
     """
     logger.error('%s', data)
-    return {'foo': data['foo'], 'bar': data.get('bar', data.get('baz'))}
+    return data

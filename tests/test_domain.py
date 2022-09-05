@@ -36,3 +36,20 @@ class TestDummyDomain(TestDomain):
         assert res.status_code == 200
         assert isinstance(res.content.decode(), str)
         assert res.headers['content-type'].split(';')[0] == 'text/html'
+
+    def test_arguments__get_routes(self):
+        arg_dict = {'foo': '1', 'bar': '2', 'x': '3'}
+        res = self.client.get('/arguments?foo=1&bar=2&x=3')
+        assert res.json() == arg_dict
+
+        res = self.client.get('/arguments?foo=1&bar=2&x=3&y=4')
+        assert res.json() == arg_dict
+
+    def test_arguments_post_routes(self):
+        arg_dict = {'foo': '1', 'bar': '2', 'baz': '3'}
+        res = self.client.post('/arguments', arg_dict)
+
+        assert res.json() == arg_dict
+
+        res = self.client.post('/arguments', { **arg_dict, 'y': '4'})
+        assert res.json() == arg_dict
