@@ -101,12 +101,12 @@ def args_check(fct):
             for key in optional:
                     if key in data_:
                         data[key] = data_[key]
-            else:
-                """ Unsafe mode, without specified arguments, or plain text mode
-                """
-                data = data_
+        else:
+            """ Unsafe mode, without specified arguments, or plain text mode
+            """
+            data = data_
 
-            kwargs['data'] = data
+        kwargs['data'] = data
 
         out_s = req.scope.get('out')
         if out_s:

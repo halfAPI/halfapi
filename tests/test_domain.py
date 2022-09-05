@@ -38,6 +38,10 @@ class TestDummyDomain(TestDomain):
         assert res.headers['content-type'].split(';')[0] == 'text/html'
 
     def test_arguments__get_routes(self):
+        res = self.client.post('/arguments?foo=1&x=3')
+
+        assert res.status_code == 400
+
         arg_dict = {'foo': '1', 'bar': '2', 'x': '3'}
         res = self.client.get('/arguments?foo=1&bar=2&x=3')
         assert res.json() == arg_dict
@@ -46,7 +50,22 @@ class TestDummyDomain(TestDomain):
         assert res.json() == arg_dict
 
     def test_arguments_post_routes(self):
-        arg_dict = {'foo': '1', 'bar': '2', 'baz': '3'}
+        arg_dict = {}
+        res = self.client.post('/arguments', arg_dict)
+
+        assert res.status_code == 400
+
+        arg_dict = {'foo': '1', 'bar': '3'}
+        res = self.client.post('/arguments', arg_dict)
+
+        assert res.status_code == 400
+
+        arg_dict = {'foo': '1', 'baz': '3'}
+        res = self.client.post('/arguments', arg_dict)
+
+        assert res.json() == arg_dict
+
+        arg_dict = {'foo': '1', 'baz': '3', 'truebidoo': '4'}
         res = self.client.post('/arguments', arg_dict)
 
         assert res.json() == arg_dict
