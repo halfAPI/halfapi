@@ -6,6 +6,7 @@
 - Add *html* return type as default argument ret_type
 - Add *txt* return type
 - Log HTTPException with statuscode 500 as critical
+- PyJWT >=2.4.0,<2.5.0
 
 
 ## 0.6.21
