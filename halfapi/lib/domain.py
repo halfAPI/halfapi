@@ -135,6 +135,7 @@ def route_decorator(fct: FunctionType) -> Coroutine:
             raise HTTPException(501) from exc
         except Exception as exc:
             # TODO: Write tests
+            logger.error(exc, exc_info=True)
             if not isinstance(exc, HTTPException):
                 raise HTTPException(500) from exc
             raise exc

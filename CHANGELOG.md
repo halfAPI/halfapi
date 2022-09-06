@@ -5,6 +5,7 @@
 - IMPORTANT : Fix bug introduced with 0.6.20 (fix arguments handling)
 - Add *html* return type as default argument ret_type
 - Add *txt* return type
+- Log unhandled exceptions
 - Log HTTPException with statuscode 500 as critical
 - PyJWT >=2.4.0,<2.5.0
 
