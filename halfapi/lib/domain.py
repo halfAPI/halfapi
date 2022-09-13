@@ -78,7 +78,7 @@ def route_decorator(fct: FunctionType) -> Coroutine:
 
         if 'data' in fct_args_spec:
             if 'data' in fct_args_defaults_dict:
-                fct_args['data'] = fct_args_defaults_dict
+                fct_args['data'] = fct_args_defaults_dict['data']
             else:
                 fct_args['data'] = {}
 
