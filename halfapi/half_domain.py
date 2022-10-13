@@ -38,16 +38,15 @@ class HalfDomain(Starlette):
         self.app = app
 
         self.m_domain = importlib.import_module(domain) if module is None else module
-        self.name = getattr(self.m_domain, '__name__', domain)
-        self.id = getattr(self.m_domain, '__id__')
-        self.version = getattr(self.m_domain, '__version__', '0.0.0')
-        # TODO: Check if given domain halfapi_version matches with __version__
-        self.halfapi_version = getattr(self.m_domain, '__halfapi_version__', __version__)
-
-        self.deps = getattr(self.m_domain, '__deps__', tuple())
+        d_domain = getattr(self.m_domain, 'domain', domain)
+        self.name = d_domain['name']
+        self.id = d_domain['id']
+        self.version = d_domain['version']
+        self.halfapi_version = d_domain.get('halfapi_version', __version__)
+        self.deps = d_domain.get('deps', tuple())
 
         if not router:
-            self.router = getattr(domain, '__router__', '.routers')
+            self.router = d_domain.get('routers', '.routers')
         else:
             self.router = router
 

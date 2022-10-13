@@ -3,7 +3,9 @@ from halfapi.testing.test_domain import TestDomain
 from pprint import pprint
 
 class TestDummyDomain(TestDomain):
-    from .dummy_domain import __name__, __routers__
+    from .dummy_domain import domain
+    __name__ = domain.get('name')
+    __routers__ = domain.get('routers')
 
     DOMAIN = __name__
     CONFIG = {'test': True}

@@ -3,6 +3,7 @@
 ## 0.6.22
 
 - IMPORTANT : Fix bug introduced with 0.6.20 (fix arguments handling)
+- BREAKING : A domain should now include it's meta datas in a "domain" dictionary located in the __init__.py file of the domain's root. Consider looking in 'tests/dummy_domain/__init__.py'
 - Add *html* return type as default argument ret_type
 - Add *txt* return type
 - Log unhandled exceptions
