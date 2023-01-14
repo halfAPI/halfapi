@@ -48,7 +48,7 @@ setup(
         "click>=8,<9",
         "uvicorn>=0.13,<1",
         "orjson>=3.8.5,<4",
-        "pyyaml>=5.3.1,<6",
+        "pyyaml>=6,<7",
         "timing-asgi>=0.2.1,<1",
         "schema>=0.7.4,<1",
         "toml>=0.7.1,<0.8",
