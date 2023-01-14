@@ -1,5 +1,16 @@
 # HalfAPI
 
+## 0.6.23
+
+Dependency update version
+
+- starlette v0.23
+- orjson v3.8.5
+- click v8
+- pyJWT v2.6
+- pyYAML v6
+- toml v0.10
+
 ## 0.6.22
 
 - IMPORTANT : Fix bug introduced with 0.6.20 (fix arguments handling)
