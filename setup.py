@@ -51,7 +51,7 @@ setup(
         "pyyaml>=6,<7",
         "timing-asgi>=0.2.1,<1",
         "schema>=0.7.4,<1",
-        "toml>=0.7.1,<0.8",
+        "toml>=0.10,<0.11",
         "packaging>=19.0",
         "python-multipart"
     ],
