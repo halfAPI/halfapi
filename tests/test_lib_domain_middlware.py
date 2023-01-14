@@ -12,12 +12,12 @@ def test_init():
 
 def test_call(application_debug):
     c = TestClient(application_debug)
-    r = c.get('/abc/alphabet')
+    r = c.request('get', '/abc/alphabet')
     assert r.status_code == 200
     assert r.headers['x-domain'] == 'dummy_domain'
     assert r.headers['x-acl'] == 'public'
 
-    r = c.get('/arguments')
+    r = c.request('get', '/arguments')
     assert r.status_code == 400
     assert r.headers['x-domain'] == 'dummy_domain'
     assert r.headers['x-acl'] == 'public'
@@ -26,7 +26,7 @@ def test_call(application_debug):
     assert r.headers['x-args-optional'] == 'x'
 
     c = TestClient(application_debug)
-    r = c.post('/arguments')
+    r = c.request('post', '/arguments')
     assert r.status_code == 400
     assert r.headers['x-domain'] == 'dummy_domain'
     assert r.headers['x-acl'] == 'public'

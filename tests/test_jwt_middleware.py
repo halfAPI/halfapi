@@ -38,7 +38,7 @@ def test_jwt_NoToken(dummy_app):
 
     dummy_app.add_route('/test', test_route)
     test_client = TestClient(dummy_app)
-    resp = test_client.get('/test')
+    resp = test_client.request('get', '/test')
     assert resp.status_code == 200
 
 def test_jwt_Token(dummy_app, token_builder):
@@ -50,7 +50,7 @@ def test_jwt_Token(dummy_app, token_builder):
     dummy_app.add_route('/test', test_route)
     test_client = TestClient(dummy_app)
 
-    resp = test_client.get('/test',
+    resp = test_client.request('get', '/test',
         headers={
             'Authorization': token_builder
         })
@@ -65,7 +65,7 @@ def test_jwt_DebugFalse(dummy_app, token_debug_false_builder):
     dummy_app.add_route('/test', test_route)
     test_client = TestClient(dummy_app)
 
-    resp = test_client.get('/test',
+    resp = test_client.request('get', '/test',
         headers={
             'Authorization': token_debug_false_builder
         })
@@ -82,7 +82,7 @@ def test_jwt_DebugTrue(dummy_app, token_debug_true_builder):
     dummy_app.add_route('/test', test_route)
     test_client = TestClient(dummy_app)
 
-    resp = test_client.get('/test',
+    resp = test_client.request('get', '/test',
         headers={
             'Authorization': token_debug_true_builder
         })
@@ -100,7 +100,7 @@ def test_jwt_DebugTrue_DebugApp(dummy_debug_app, token_debug_true_builder):
     dummy_debug_app.add_route('/test', test_route)
     test_client = TestClient(dummy_debug_app)
 
-    resp = test_client.get('/test',
+    resp = test_client.request('get', '/test',
         headers={
             'Authorization': token_debug_true_builder
         })

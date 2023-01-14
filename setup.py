@@ -44,7 +44,7 @@ setup(
     python_requires=">=3.8",
     install_requires=[
         "PyJWT>=2.4.0,<2.5.0",
-        "starlette>=0.17,<0.18",
+        "starlette>=0.23,<0.24",
         "click>=7.1,<8",
         "uvicorn>=0.13,<1",
         "orjson>=3.4.7,<4",
@@ -68,9 +68,10 @@ setup(
     extras_require={
         "tests":[
             "pytest>=7,<8",
-            "requests",
             "pytest-asyncio",
-            "pylint"
+            "pylint",
+            "requests",
+            "httpx"
         ],
         "pyexcel":[
             "pyexcel",

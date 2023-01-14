@@ -4,16 +4,17 @@ import importlib
 import subprocess
 import time
 import pytest
+import json
 from pprint import pprint
 from starlette.routing import Route
 from starlette.testclient import TestClient
 
 def test_get_config_route(dummy_project, application_domain):
     c = TestClient(application_domain)
-    r = c.get('/')
+    r = c.request('get', '/')
     assert r.status_code == 200
     pprint(r.json())
-    r = c.get('/config')
+    r = c.request('get', '/config')
     assert r.status_code == 200
     pprint(r.json())
     assert 'test' in r.json()
@@ -36,15 +37,15 @@ def test_get_route(dummy_project, application_domain):
         print(route_path)
         try:
             if verb.lower() == 'get':
-                r = c.get(route_path)
+                r = c.request('get', route_path)
             elif verb.lower() == 'post':
-                r = c.post(route_path)
+                r = c.request('post', route_path)
             elif verb.lower() == 'patch':
-                r = c.patch(route_path)
+                r = c.request('patch', route_path)
             elif verb.lower() == 'put':
-                r = c.put(route_path)
+                r = c.request('put', route_path)
             elif verb.lower() == 'delete':
-                r = c.delete(route_path)
+                r = c.request('delete', route_path)
             else:
                 raise Exception(verb)
             try:
@@ -69,7 +70,7 @@ def test_get_route(dummy_project, application_domain):
             path = path.format(test=str(test_uuid))
             route_path = f'/{path}'
             if verb.lower() == 'get':
-                r = c.get(f'{route_path}')
+                r = c.request('get', f'{route_path}')
 
             assert r.status_code == 200
 
@@ -78,7 +79,7 @@ def test_delete_route(dummy_project, application_domain):
     c = TestClient(application_domain)
     from uuid import uuid4
     arg = str(uuid4())
-    r = c.delete(f'/abc/alphabet/{arg}')
+    r = c.request('delete', f'/abc/alphabet/{arg}')
     assert r.status_code == 200
     assert isinstance(r.json(), str)
 
@@ -86,23 +87,23 @@ def test_arguments_route(dummy_project, application_domain):
     c = TestClient(application_domain)
 
     path = '/arguments'
-    r = c.get(path)
+    r = c.request('get', path)
     assert r.status_code == 400
-    r = c.get(path, params={'foo':True})
+    r = c.request('get', path, params={'foo':True})
     assert r.status_code == 400
     arg = {'foo':True, 'bar':True}
-    r = c.get(path, params=arg)
+    r = c.request('get', path, params=arg)
     assert r.status_code == 200
     for key, val in arg.items():
-        assert r.json()[key] == str(val)
+        assert json.loads(r.json()[key]) == val
     path = '/async_router/arguments'
-    r = c.get(path)
+    r = c.request('get', path)
     assert r.status_code == 400
-    r = c.get(path, params={'foo':True})
+    r = c.request('get', path, params={'foo':True})
     assert r.status_code == 400
     arg = {'foo':True, 'bar':True}
-    r = c.get(path, params=arg)
+    r = c.request('get', path, params=arg)
     assert r.status_code == 200
     for key, val in arg.items():
-        assert r.json()[key] == str(val)
+        assert json.loads(r.json()[key]) == val
 

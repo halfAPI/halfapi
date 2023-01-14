@@ -17,7 +17,7 @@ def test_acl_Check(dummy_app, token_debug_false_builder):
     dummy_app.add_route('/test_public', test_route_public)
     test_client = TestClient(dummy_app)
 
-    resp = test_client.get('/test_public?check')
+    resp = test_client.request('get', '/test_public?check')
     assert resp.status_code == 200
 
     @HalfRoute.acl_decorator(params=[{'acl':acl.private}])
@@ -28,10 +28,10 @@ def test_acl_Check(dummy_app, token_debug_false_builder):
     dummy_app.add_route('/test_private', test_route_private)
     test_client = TestClient(dummy_app)
 
-    resp = test_client.get('/test_private')
+    resp = test_client.request('get', '/test_private')
     assert resp.status_code == 401
 
-    resp = test_client.get('/test_private?check')
+    resp = test_client.request('get', '/test_private?check')
     assert resp.status_code == 200
 
 

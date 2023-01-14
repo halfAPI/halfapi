@@ -24,6 +24,8 @@ import orjson
 
 # asgi framework
 from starlette.responses import PlainTextResponse, Response, JSONResponse, HTMLResponse
+from starlette.requests import Request
+from starlette.exceptions import HTTPException
 
 from .user import JWTUser, Nobody
 from ..logging import logger
@@ -157,3 +159,9 @@ class ODSResponse(Response):
 
 class XLSXResponse(ODSResponse):
     file_type = 'xlsx'
+
+def gen_exception_route(response_cls):
+    async def exception_route(req: Request, exc: HTTPException):
+        return response_cls()
+
+    return exception_route

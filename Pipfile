@@ -13,10 +13,11 @@ twine = "*"
 pyflakes = "*"
 vulture = "*"
 virtualenv = "*"
+httpx = "*"
 
 [packages]
 click = ">=7.1,<8"
-starlette = ">=0.17,<0.18"
+starlette = ">=0.23,<0.24"
 uvicorn = ">=0.13,<1"
 orjson = ">=3.4.7,<4"
 pyjwt = ">=2.4.0,<2.5.0"

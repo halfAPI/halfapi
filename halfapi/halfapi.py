@@ -35,7 +35,7 @@ from .lib.timing import HTimingClient
 from .lib.jwt_middleware import JWTAuthenticationBackend
 from .lib.responses import (ORJSONResponse, UnauthorizedResponse,
     NotFoundResponse, InternalServerErrorResponse, NotImplementedResponse,
-    ServiceUnavailableResponse)
+    ServiceUnavailableResponse, gen_exception_route)
 from .lib.domain import NoDomainsException
 from .lib.routes import gen_schema_routes, JSONRoute
 from .lib.schemas import schema_json
@@ -90,11 +90,11 @@ class HalfAPI(Starlette):
             debug=not PRODUCTION,
             routes=routes,
             exception_handlers={
-                401: UnauthorizedResponse,
-                404: NotFoundResponse,
-                500: HalfAPI.exception,
-                501: NotImplementedResponse,
-                503: ServiceUnavailableResponse
+                401: gen_exception_route(UnauthorizedResponse),
+                404: gen_exception_route(NotFoundResponse),
+                500: gen_exception_route(HalfAPI.exception),
+                501: gen_exception_route(NotImplementedResponse),
+                503: gen_exception_route(ServiceUnavailableResponse)
             },
             on_startup=startup_fcts
         )
