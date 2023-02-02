@@ -14,6 +14,7 @@ from os import environ
 import typing
 from uuid import UUID
 
+from http.cookies import SimpleCookie
 import jwt
 from starlette.authentication import (
     AuthenticationBackend, AuthenticationError, BaseUser, AuthCredentials,
@@ -34,6 +35,15 @@ except FileNotFoundError:
         logger.error('Could not import SECRET variable from conf module,'\
             ' using HALFAPI_SECRET environment variable')
 
+def cookies_from_scope(scope):
+    cookie = dict(scope.get("headers") or {}).get(b"cookie")
+    if not cookie:
+        return {}
+
+    simple_cookie = SimpleCookie()
+    simple_cookie.load(cookie.decode("utf8"))
+    return {key: morsel.value for key, morsel in simple_cookie.items()}
+
 class JWTAuthenticationBackend(AuthenticationBackend):
     def __init__(self, secret_key: str = SECRET,
         algorithm: str = 'HS256', prefix: str = 'JWT'):
@@ -53,7 +63,8 @@ class JWTAuthenticationBackend(AuthenticationBackend):
     ) -> typing.Optional[typing.Tuple['AuthCredentials', 'BaseUser']]:
 
 
-        token = conn.headers.get('Authorization')
+        token = cookies_from_scope(conn.scope).get('JWTToken')
+
         is_check_call = 'check' in conn.query_params
         is_fake_user_id = is_check_call and 'user_id' in conn.query_params
         PRODUCTION = conn.scope['app'].debug == False
