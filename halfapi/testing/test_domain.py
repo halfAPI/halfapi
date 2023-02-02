@@ -98,7 +98,7 @@ class TestDomain(TestCase):
         try:
             result = self.runner.invoke(cli, '--version')
             self.assertEqual(result.exit_code, 0)
-            result = self.runner.invoke(cli, ['domain', self.DOMAIN, self.config_file])
+            result = self.runner.invoke(cli, ['domain', '--read', self.DOMAIN, self.config_file])
             self.assertEqual(result.exit_code, 0)
             result_d = json.loads(result.stdout)
             result = self.runner.invoke(cli, ['run', '--help'])

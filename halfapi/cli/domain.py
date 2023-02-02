@@ -119,7 +119,7 @@ def list_api_routes():
     #     list_routes(domain, m_dom)
 
 
-@click.option('--run',default=True, is_flag=True)
+@click.option('--run',default=False, is_flag=True)
 @click.option('--read',default=False, is_flag=True)
 @click.option('--create',default=False, is_flag=True)
 @click.option('--update',default=False, is_flag=True)
@@ -144,11 +144,13 @@ def domain(domain, config_file, delete, update, create, read, run):  #, domains,
             # TODO: Connect to the create_domain function
             raise NotImplementedError
         raise Exception('Missing domain name')
-    if update:
+    if create:
         raise NotImplementedError
-    if delete:
+    elif update:
         raise NotImplementedError
-    if read:
+    elif delete:
+        raise NotImplementedError
+    elif read:
         from ..conf import CONFIG
         from ..halfapi import HalfAPI
 
@@ -164,8 +166,17 @@ def domain(domain, config_file, delete, update, create, read, run):  #, domains,
             default=ORJSONResponse.default_cast)
         )
 
-    if run:
+    else:
         from ..conf import CONFIG
+        if 'domain' not in CONFIG:
+            CONFIG['domain'] = {}
+
+        if domain not in CONFIG['domain']:
+            CONFIG['domain'][domain] = {
+                'enabled': True,
+                'name': domain
+            }
+
         CONFIG['domain'][domain]['enabled'] = True
         port = CONFIG['domain'][domain].get('port', 3000)
 
