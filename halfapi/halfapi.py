@@ -66,10 +66,14 @@ class HalfAPI(Starlette):
         )
 
         logger.info('Config: %s', self.config)
-        logger.info('Active domains: %s',
-            list(filter(
-                lambda n: n.get('enabled', False),
-                self.config.get('domain', {}).values())))
+
+        domains = {
+            key: elt
+            for key, elt in self.config.get('domain', {}).items()
+            if elt.get('enabled', False)
+        }
+
+        logger.info('Active domains: %s', domains)
 
         if d_routes:
             # Mount the routes from the d_routes argument - domain-less mode
@@ -103,7 +107,7 @@ class HalfAPI(Starlette):
 
         self.__domains = {}
 
-        for key, domain in self.config.get('domain', {}).items():
+        for key, domain in domains.items():
             if not isinstance(domain, dict):
                 continue
 
@@ -112,7 +116,7 @@ class HalfAPI(Starlette):
                 continue
 
             if not domain.get('prefix', False):
-                if len(self.config.get('domain').keys()) > 1:
+                if len(domains.keys()) > 1:
                     raise Exception('Cannot use multiple domains and set prefix to false')
                 path = '/'
             else:
