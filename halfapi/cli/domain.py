@@ -12,6 +12,7 @@ import json
 
 import click
 import orjson
+import uvicorn
 
 
 from .cli import cli
@@ -118,14 +119,15 @@ def list_api_routes():
     #     list_routes(domain, m_dom)
 
 
-@click.option('--read',default=True, is_flag=True)
+@click.option('--run',default=True, is_flag=True)
+@click.option('--read',default=False, is_flag=True)
 @click.option('--create',default=False, is_flag=True)
 @click.option('--update',default=False, is_flag=True)
 @click.option('--delete',default=False, is_flag=True)
 @click.argument('config_file', type=click.File(mode='rb'), required=False)
 @click.argument('domain',default=None, required=False)
 @cli.command()
-def domain(domain, config_file, delete, update, create, read):  #, domains, read, create, update, delete):
+def domain(domain, config_file, delete, update, create, read, run):  #, domains, read, create, update, delete):
     """
     The "halfapi domain" command
 
@@ -161,5 +163,16 @@ def domain(domain, config_file, delete, update, create, read):  #, domains, read
             option=orjson.OPT_NON_STR_KEYS,
             default=ORJSONResponse.default_cast)
         )
+
+    if run:
+        from ..conf import CONFIG
+        CONFIG['domain'][domain]['enabled'] = True
+        port = CONFIG['domain'][domain].get('port', 3000)
+
+        uvicorn.run(
+            'halfapi.app:application',
+            port=port
+        )
+
 
     sys.exit(0)
