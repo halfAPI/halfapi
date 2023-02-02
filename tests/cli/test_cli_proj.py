@@ -39,7 +39,7 @@ class TestCliProj():
                 })
             )
 
-        r = project_runner(f'domain dummy_domain {tmp_conf}')
+        r = project_runner(f'domain dummy_domain --dry-run {tmp_conf}')
         print(r.stdout)
         assert r.exit_code == 0
 

@@ -119,6 +119,7 @@ def list_api_routes():
     #     list_routes(domain, m_dom)
 
 
+@click.option('--dry-run',default=False, is_flag=True)
 @click.option('--run',default=False, is_flag=True)
 @click.option('--read',default=False, is_flag=True)
 @click.option('--create',default=False, is_flag=True)
@@ -127,7 +128,7 @@ def list_api_routes():
 @click.argument('config_file', type=click.File(mode='rb'), required=False)
 @click.argument('domain',default=None, required=False)
 @cli.command()
-def domain(domain, config_file, delete, update, create, read, run):  #, domains, read, create, update, delete):
+def domain(domain, config_file, delete, update, create, read, run, dry_run):  #, domains, read, create, update, delete):
     """
     The "halfapi domain" command
 
@@ -176,6 +177,9 @@ def domain(domain, config_file, delete, update, create, read, run):  #, domains,
                 'enabled': True,
                 'name': domain
             }
+
+        if dry_run:
+            CONFIG['dryrun'] = True
 
         CONFIG['domain'][domain]['enabled'] = True
         port = CONFIG['domain'][domain].get('port', 3000)
