@@ -1,6 +1,6 @@
 # HalfAPI
 
-## 0.7.0
+## 0.6.24
 
 - Uses the "Authorization" cookie to read authentication token additionnaly to the "Authorization" header
 - CLI : allows to run a single domain using the "halfapi domain --run domain_name" command
