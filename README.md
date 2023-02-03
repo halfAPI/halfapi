@@ -23,16 +23,14 @@ to reference [HalfORM](https://github.com/collorg/halfORM), a project written by
 
 Configure HalfAPI in the file : .halfapi/config .
 
-It's an **ini** file that contains at least two sections, project and domains.
+It's a **toml** file that contains at least two sections, project and domains.
+
+https://toml.io/en/
 
 
 ### Project
 
 The main configuration options without which HalfAPI cannot be run.
-
-**name** : Project's name
-
-**halfapi_version** : The HalfAPI version on which you work
 
 **secret** : The file containing the secret to decode the user's tokens.
 
@@ -43,12 +41,28 @@ The main configuration options without which HalfAPI cannot be run.
 
 ### Domains
 
-The name of the options should be the name of the domains' module, the value is the
-submodule which contains the routers.
+Specify the domains configurations in the following form :
 
-Example :
+```
+[domains.DOMAIN_NAME]
+name = "DOMAIN_NAME"
+enabled = true
+prefix = "/prefix"
+module = "domain_name.path.to.api.root"
+port = 1002
+```
 
-dummy_domain = .routers
+Specific configuration can be done under the "config" section :
+
+```
+[domains.DOMAIN_NAME.config]
+boolean_option = false
+string_value = "String"
+answer = 42
+listylist = ["hello", "world"]
+```
+
+And can be accessed through the app's "config" dictionnary.
 
 
 ## Usage
@@ -62,9 +76,17 @@ Run the project by using the `halfapi run` command.
 You can try the dummy_domain with the following command.
 
 ```
-python -m halfapi routes --export --noheader dummy_domain.routers | python -m halfapi run -
+PYTHONPATH=$PWD/tests python -m halfapi domain dummy_domain
 ```
 
+### CLI documentation
+
+Use the CLI help.
+
+```
+python -m halfapi --help
+python -m halfapi domain --help
+```
 
 ## API Testing
 
