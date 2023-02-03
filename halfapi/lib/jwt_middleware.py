@@ -62,8 +62,12 @@ class JWTAuthenticationBackend(AuthenticationBackend):
         self, conn: HTTPConnection
     ) -> typing.Optional[typing.Tuple['AuthCredentials', 'BaseUser']]:
 
+        # Standard way to authenticate via API
+        # https://datatracker.ietf.org/doc/html/rfc7235#section-4.2
+        token = conn.headers.get('Authorization')
 
-        token = cookies_from_scope(conn.scope).get('JWTToken')
+        if not token:
+            token = cookies_from_scope(conn.scope).get('Authorization')
 
         is_check_call = 'check' in conn.query_params
         is_fake_user_id = is_check_call and 'user_id' in conn.query_params
