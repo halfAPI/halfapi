@@ -70,14 +70,14 @@ class JWTAuthenticationBackend(AuthenticationBackend):
             token = cookies_from_scope(conn.scope).get('Authorization')
 
         is_check_call = 'check' in conn.query_params
-        is_fake_user_id = is_check_call and 'user_id' in conn.query_params
+
         PRODUCTION = conn.scope['app'].debug == False
 
         if not token and not is_check_call:
             return AuthCredentials(), Nobody()
 
         try:
-            if token and not is_fake_user_id:
+            if token:
                 payload = jwt.decode(token,
                     key=self.secret_key,
                     algorithms=[self.algorithm],
@@ -86,14 +86,6 @@ class JWTAuthenticationBackend(AuthenticationBackend):
                     })
 
             if is_check_call:
-                if is_fake_user_id:
-                    try:
-                        fake_user_id = UUID(conn.query_params['user_id'])
-
-                        return AuthCredentials(), CheckUser(fake_user_id)
-                    except ValueError as exc:
-                        raise HTTPException(400, 'user_id parameter not an uuid')
-
                 if token:
                     return AuthCredentials(), CheckUser(payload['user_id'])
 
