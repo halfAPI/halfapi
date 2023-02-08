@@ -19,12 +19,13 @@ import jwt
 from starlette.authentication import (
     AuthenticationBackend, AuthenticationError, BaseUser, AuthCredentials,
     UnauthenticatedUser)
-from starlette.requests import HTTPConnection
+from starlette.requests import HTTPConnection, Request
 from starlette.exceptions import HTTPException
 
 from .user import CheckUser, JWTUser, Nobody
 from ..logging import logger
 from ..conf import CONFIG
+from ..lib.responses import ORJSONResponse
 
 SECRET=None
 
@@ -43,6 +44,11 @@ def cookies_from_scope(scope):
     simple_cookie = SimpleCookie()
     simple_cookie.load(cookie.decode("utf8"))
     return {key: morsel.value for key, morsel in simple_cookie.items()}
+
+def on_auth_error(request: Request, exc: Exception):
+    response = ORJSONResponse({"error": str(exc)}, status_code=401)
+    response.delete_cookie('Authorization')
+    return response
 
 class JWTAuthenticationBackend(AuthenticationBackend):
     def __init__(self, secret_key: str = SECRET,

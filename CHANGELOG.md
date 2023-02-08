@@ -1,5 +1,9 @@
 # HalfAPI
 
+## 0.6.25
+
+- Deletes the "Authorization" cookie on authentication error
+
 ## 0.6.24
 
 - Uses the "Authorization" cookie to read authentication token additionnaly to the "Authorization" header
