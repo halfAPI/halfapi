@@ -32,7 +32,7 @@ from timing_asgi.integrations import StarletteScopeToName
 from .lib.constants import API_SCHEMA_DICT
 from .lib.domain_middleware import DomainMiddleware
 from .lib.timing import HTimingClient
-from .lib.jwt_middleware import JWTAuthenticationBackend
+from .lib.jwt_middleware import JWTAuthenticationBackend, on_auth_error
 from .lib.responses import (ORJSONResponse, UnauthorizedResponse,
     NotFoundResponse, InternalServerErrorResponse, NotImplementedResponse,
     ServiceUnavailableResponse, gen_exception_route)
@@ -141,7 +141,8 @@ class HalfAPI(Starlette):
         if SECRET:
             self.add_middleware(
                 AuthenticationMiddleware,
-                backend=JWTAuthenticationBackend()
+                backend=JWTAuthenticationBackend(),
+                on_error=on_auth_error
             )
 
         if not PRODUCTION:
