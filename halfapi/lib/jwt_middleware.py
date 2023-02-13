@@ -102,6 +102,8 @@ class JWTAuthenticationBackend(AuthenticationBackend):
                 raise AuthenticationError(
                     'Trying to connect using *DEBUG* token in *PRODUCTION* mode')
 
+        except jwt.ExpiredSignatureError as exc:
+            return AuthCredentials(), Nobody()
         except jwt.InvalidTokenError as exc:
             raise AuthenticationError(str(exc)) from exc
         except Exception as exc:
