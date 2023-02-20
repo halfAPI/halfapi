@@ -3,6 +3,7 @@
 ## 0.6.25
 
 - Deletes the "Authorization" cookie on authentication error
+- Do not raise an exception on signature expiration, use "Nobody" user instead
 
 ## 0.6.24
 
