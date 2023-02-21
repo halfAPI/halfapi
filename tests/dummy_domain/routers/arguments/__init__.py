@@ -47,7 +47,8 @@ ACLS = {
                     'foo', 'baz'
                 },
                 'optional': {
-                    'truebidoo'
+                    'truebidoo',
+                    'z'
                 }
             }
         },

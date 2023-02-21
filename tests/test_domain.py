@@ -32,7 +32,7 @@ class TestDummyDomain(TestDomain):
         assert isinstance(res.content.decode(), str)
         assert res.headers['content-type'].split(';')[0] == 'text/html'
 
-        res = self.client.request('post', '/ret_type/h24/config', data={
+        res = self.client.request('post', '/ret_type/h24/config', json={
             'trou': 'glet'
         })
         assert res.status_code == 200
@@ -53,24 +53,27 @@ class TestDummyDomain(TestDomain):
 
     def test_arguments_post_routes(self):
         arg_dict = {}
-        res = self.client.request('post', '/arguments', data=arg_dict)
+        res = self.client.request('post', '/arguments', json=arg_dict)
 
         assert res.status_code == 400
 
         arg_dict = {'foo': '1', 'bar': '3'}
-        res = self.client.request('post', '/arguments', data=arg_dict)
+        res = self.client.request('post', '/arguments', json=arg_dict)
 
         assert res.status_code == 400
 
         arg_dict = {'foo': '1', 'baz': '3'}
-        res = self.client.request('post', '/arguments', data=arg_dict)
+        res = self.client.request('post', '/arguments', json=arg_dict)
 
         assert res.json() == arg_dict
 
         arg_dict = {'foo': '1', 'baz': '3', 'truebidoo': '4'}
-        res = self.client.request('post', '/arguments', data=arg_dict)
+        res = self.client.request('post', '/arguments', json=arg_dict)
 
         assert res.json() == arg_dict
 
-        res = self.client.request('post', '/arguments', data={ **arg_dict, 'y': '4'})
+        res = self.client.request('post', '/arguments', json={ **arg_dict, 'y': '4'})
         assert res.json() == arg_dict
+
+        res = self.client.request('post', '/arguments', json={ **arg_dict, 'z': True})
+        assert res.json() == {**arg_dict, 'z': True}

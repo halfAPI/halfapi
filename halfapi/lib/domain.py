@@ -99,6 +99,7 @@ def route_decorator(fct: FunctionType) -> Coroutine:
         logger.debug('Return type {} (defaults: {})'.format(ret_type,
             fct_args_defaults_dict))
         try:
+            logger.debug('FCT_ARGS***** %s', fct_args)
             if ret_type == 'json':
                 return ORJSONResponse(fct(**fct_args))
 
