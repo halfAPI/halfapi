@@ -21,8 +21,8 @@ def test_call(application_debug):
     assert r.status_code == 400
     assert r.headers['x-domain'] == 'dummy_domain'
     assert r.headers['x-acl'] == 'public'
-    assert 'foo' in r.headers['x-args-required']
-    assert 'bar' in r.headers['x-args-required']
+    assert 'foo' in r.headers['x-args-required'].split(',')
+    assert 'bar' in r.headers['x-args-required'].split(',')
     assert r.headers['x-args-optional'] == 'x'
 
     c = TestClient(application_debug)
@@ -30,8 +30,9 @@ def test_call(application_debug):
     assert r.status_code == 400
     assert r.headers['x-domain'] == 'dummy_domain'
     assert r.headers['x-acl'] == 'public'
-    assert 'foo' in r.headers['x-args-required']
-    assert 'baz' in r.headers['x-args-required']
-    assert r.headers['x-args-optional'] == 'truebidoo'
+    assert 'foo' in r.headers['x-args-required'].split(',')
+    assert 'baz' in r.headers['x-args-required'].split(',')
+    assert 'truebidoo' in r.headers['x-args-optional'].split(',')
+    assert 'z' in r.headers['x-args-optional'].split(',')
 
 
