@@ -1,5 +1,9 @@
 # HalfAPI
 
+## 0.6.26
+
+- Adds the "base_url", "cookies" and "url" to the "halfapi" argument of route definitions
+
 ## 0.6.25
 
 - Deletes the "Authorization" cookie on authentication error

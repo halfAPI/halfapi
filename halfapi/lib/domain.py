@@ -73,8 +73,10 @@ def route_decorator(fct: FunctionType) -> Coroutine:
                     'user' in request else None,
                 'config': request.scope.get('config', {}),
                 'domain': request.scope.get('domain', 'unknown'),
+                'cookies': request.cookies,
+                'base_url': request.base_url,
+                'url': request.url
             }
-
 
         if 'data' in fct_args_spec:
             if 'data' in fct_args_defaults_dict:

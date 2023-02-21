@@ -49,3 +49,76 @@
 # 
 #     assert isinstance(res, list)
 #     assert len(res) > 0
+
+from starlette.testclient import TestClient
+from starlette.responses import Response
+from starlette.routing import Router, Route
+
+from halfapi.lib.domain import route_decorator
+from halfapi.lib.user import Nobody
+
+def test_route_decorator():
+    """ It should decorate an async function that fullfills its arguments
+    """
+    def route(halfapi, data, out, ret_type='txt'):
+        for key in ['user', 'config', 'domain', 'cookies', 'base_url', 'url']:
+            assert key in halfapi
+
+        assert halfapi['user'] is None
+        assert isinstance(halfapi['config'], dict)
+        assert len(halfapi['config']) == 0
+        assert isinstance(halfapi['domain'], str)
+        assert halfapi['domain'] == 'unknown'
+        assert isinstance(halfapi['cookies'], dict)
+        assert len(halfapi['cookies']) == 0
+        assert len(str(halfapi['base_url'])) > 0
+        assert str(halfapi['base_url']) == 'http://testserver/'
+        assert len(str(halfapi['url'])) > 0
+        assert str(halfapi['url']) == 'http://testserver/'
+        assert isinstance(data, dict)
+        assert len(data) == 0
+
+        assert out is None
+
+        assert ret_type is 'txt'
+
+        return ''
+
+    async_route = route_decorator(route)
+    app = Router([Route('/', endpoint=async_route, methods=['GET'])])
+    client = TestClient(app)
+    response = client.get('/')
+    assert response.is_success
+    assert response.content.decode() == ''
+
+    def route(data, out, ret_type='txt'):
+        assert isinstance(data, dict)
+        assert len(data) == 0
+
+        assert out is None
+
+        assert ret_type is 'txt'
+
+        return ''
+
+    async_route = route_decorator(route)
+    app = Router([Route('/', endpoint=async_route, methods=['GET'])])
+    client = TestClient(app)
+    response = client.get('/')
+    assert response.is_success
+    assert response.content.decode() == ''
+
+    def route(data):
+        assert isinstance(data, dict)
+        assert len(data) == 2
+        assert data['toto'] == 'tata'
+        assert data['bouboul'] == True
+
+        return ''
+
+    async_route = route_decorator(route)
+    app = Router([Route('/', endpoint=async_route, methods=['POST'])])
+    client = TestClient(app)
+    response = client.post('/', json={'toto': 'tata', 'bouboul': True})
+    assert response.is_success
+    assert response.json() == ''
