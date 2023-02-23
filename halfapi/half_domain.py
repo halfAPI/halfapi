@@ -11,7 +11,7 @@ from types import ModuleType, FunctionType
 from schema import SchemaError
 
 from starlette.applications import Starlette
-from starlette.routing import Router
+from starlette.routing import Router, Route
 
 import yaml
 
@@ -19,7 +19,8 @@ import yaml
 from . import __version__
 from .lib.constants import API_SCHEMA_DICT, ROUTER_SCHEMA, VERBS
 from .half_route import HalfRoute
-from .lib import acl
+from .lib import acl as lib_acl
+from .lib.responses import PlainTextResponse
 from .lib.routes import JSONRoute
 from .lib.domain import MissingAclError, PathError, UnknownPathParameterType, \
     UndefinedRoute, UndefinedFunction, get_fct_name, route_decorator
@@ -89,6 +90,13 @@ class HalfDomain(Starlette):
         )
 
     @staticmethod
+    def name(module):
+        """ Returns the name declared in the 'domain' dict at the root of the package
+        """
+        return module.domain['name']
+        
+
+    @staticmethod
     def m_acl(module, acl=None):
         """ Returns the imported acl module for the domain module
         """
@@ -104,9 +112,14 @@ class HalfDomain(Starlette):
         """
         m_acl = HalfDomain.m_acl(module, acl)
         try:
-            return getattr(m_acl, 'ACLS')
-        except AttributeError:
-            raise Exception(f'Missing acl.ACLS constant in module {m_acl.__package__}')
+            return [
+                lib_acl.ACL(*elt)
+                for elt in getattr(m_acl, 'ACLS')
+            ]
+        except AttributeError as exc:
+            logger.error(exc)
+            raise Exception(
+                f'Missing acl.ACLS constant in module {m_acl.__package__}') from exc
 
     @staticmethod
     def acls_route(domain, module_path=None, acl=None):
@@ -118,7 +131,6 @@ class HalfDomain(Starlette):
             [acl_name]: {
                 callable: fct_reference,
                 docs: fct_docstring,
-                result: fct_result
             }
         }
         """
@@ -131,18 +143,73 @@ class HalfDomain(Starlette):
 
         m_acl = HalfDomain.m_acl(module, acl)
 
-        for acl_name, doc, order in HalfDomain.acls(
-            module,
-            acl=acl):
-            fct = getattr(m_acl, acl_name)
-            d_res[acl_name] = {
+        for elt in HalfDomain.acls(module, acl=acl):
+
+            fct = getattr(m_acl, elt.name)
+
+            d_res[elt.name] = {
                 'callable': fct,
-                'docs': doc,
-                'result': None
+                'docs': elt.documentation
             }
+
         return d_res
 
-    # def schema(self):
+    @staticmethod
+    def acls_router(domain, module_path=None, acl=None):
+        """ Router of the acls routes :
+
+        / : Same result as HalfDomain.acls_route
+        /acl_name : Dummy route protected by the "acl_name" acl
+        """
+
+        async def dummy_endpoint(request, *args, **kwargs):
+            return PlainTextResponse('')
+
+        routes = []
+        d_res = {}
+
+        module = importlib.import_module(domain) \
+            if module_path is None \
+            else importlib.import_module(module_path)
+
+
+        m_acl = HalfDomain.m_acl(module, acl)
+
+        for elt in HalfDomain.acls(module, acl=acl):
+
+            fct = getattr(m_acl, elt.name)
+
+            d_res[elt.name] = {
+                'callable': fct,
+                'docs': elt.documentation,
+                'public': elt.public
+            }
+
+            if elt.public:
+                routes.append(
+                    Route(
+                        f'/{elt.name}',
+                        HalfRoute.acl_decorator(
+                            dummy_endpoint,
+                            params=[{'acl': fct}]
+                        ),
+                        methods=['GET']
+                    )
+                )
+
+        d_res_under_domain_name = {}
+        d_res_under_domain_name[HalfDomain.name(module)] = d_res
+
+        routes.append(
+            Route(
+                '/',
+                JSONRoute(d_res_under_domain_name),
+                methods=['GET']
+            )
+        )
+
+        return Router(routes)
+
 
     @staticmethod
     def gen_routes(m_router: ModuleType,
@@ -188,7 +255,7 @@ class HalfDomain(Starlette):
             return route_decorator(fct), params
 
         # TODO: Remove when using only sync functions
-        return acl.args_check(fct), params
+        return lib_acl.args_check(fct), params
 
 
     @staticmethod
@@ -318,7 +385,7 @@ class HalfDomain(Starlette):
         """
         yield HalfRoute('/',
             JSONRoute([ self.schema() ]),
-            [{'acl': acl.public}],
+            [{'acl': lib_acl.public}],
             'GET'
         )
 

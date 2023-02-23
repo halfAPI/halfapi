@@ -8,5 +8,3 @@ domain = {
         ('halfapi', '=={}'.format(halfapi_version)),
     )
 }
-
-

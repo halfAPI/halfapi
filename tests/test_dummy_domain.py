@@ -1,4 +1,5 @@
 import importlib
+from halfapi.testing.test_domain import TestDomain
 
 def test_dummy_domain():
     from . import dummy_domain

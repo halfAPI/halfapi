@@ -132,16 +132,21 @@ class TestDomain(TestCase):
             assert 'domain' in schema
 
         r = self.client.request('get', '/halfapi/acls')
-        """
         assert r.status_code == 200
         d_r = r.json()
         assert isinstance(d_r, dict)
-
         assert self.domain_name in d_r.keys()
 
         ACLS = HalfDomain.acls(self.module, self.acl_path)
         assert len(ACLS) == len(d_r[self.domain_name])
 
-        for acl_name in ACLS:
-            assert acl_name[0] in d_r[self.domain_name]
-        """
+        for acl_rule in ACLS:
+            assert len(acl_rule.name) > 0
+            assert acl_rule.name in d_r[self.domain_name]
+            assert len(acl_rule.documentation) > 0
+            assert isinstance(acl_rule.priority, int)
+            assert acl_rule.priority >= 0
+
+            if acl_rule.public is True:
+                r = self.client.request('get', f'/halfapi/acls/{acl_rule.name}')
+                assert r.status_code in [200, 401]

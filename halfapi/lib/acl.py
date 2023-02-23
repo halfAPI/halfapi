@@ -2,6 +2,7 @@
 """
 Base ACL module that contains generic functions for domains ACL
 """
+from dataclasses import dataclass
 from functools import wraps
 from json import JSONDecodeError
 from starlette.authentication import UnauthenticatedUser
@@ -118,7 +119,24 @@ def args_check(fct):
 
 # ACLS list for doc and priorities
 # Write your own constant in your domain or import this one
+# Format : (acl_name: str, acl_documentation: str, priority: int, [public=False])
+#
+# The 'priority' integer is greater than zero and the lower values means more
+# priority. For a route, the order of declaration of the ACLs should respect
+# their priority.
+#
+# When the 'public' boolean value is True, a route protected by this ACL is
+# defined on the "/halfapi/acls/acl_name", that returns an empty response and
+# the status code 200 or 401.
+ 
 ACLS = (
-    ('private', public.__doc__, 0),
-    ('public', public.__doc__, 999)
+    ('private', private.__doc__, 0, True),
+    ('public', public.__doc__, 999, True)
 )
+
+@dataclass
+class ACL():
+    name: str
+    documentation: str
+    priority: int
+    public: bool = False

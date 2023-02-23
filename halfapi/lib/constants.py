@@ -44,7 +44,7 @@ DOMAIN_SCHEMA = Schema({
     Optional('version'): str,
     Optional('patch_release'): str,
     Optional('acls'): [
-        [str, str, int]
+        [str, str, int, Optional(bool)]
     ]
 })
 

@@ -19,7 +19,7 @@ from starlette.applications import Starlette
 from starlette.authentication import UnauthenticatedUser
 from starlette.exceptions import HTTPException
 from starlette.middleware import Middleware
-from starlette.routing import Route, Mount
+from starlette.routing import Router, Route, Mount
 from starlette.requests import Request
 from starlette.responses import Response, PlainTextResponse
 from starlette.middleware.authentication import AuthenticationMiddleware
@@ -178,7 +178,7 @@ class HalfAPI(Starlette):
 
         yield Route('/whoami', get_user)
         yield Route('/schema', schema_json)
-        yield Route('/acls', self.acls_route())
+        yield Mount('/acls', self.acls_router())
         yield Route('/version', self.version_async)
         """ Halfapi debug routes definition
         """
@@ -220,35 +220,26 @@ class HalfAPI(Starlette):
         time.sleep(1)
         sys.exit(0)
 
-    def acls_route(self):
-        module = None
-        res = {
-            domain: HalfDomain.acls_route(
-                domain,
-                module_path=domain_conf.get('module'),
-                acl=domain_conf.get('acl'))
-            for domain, domain_conf in self.config.get('domain', {}).items()
-            if isinstance(domain_conf, dict) and domain_conf.get('enabled', False)
-        }
+    def acls_router(self):
+        mounts = {}
 
-        async def wrapped(req, *args, **kwargs):
-            for domain, domain_acls in res.items():
-                for acl_name, d_acl in domain_acls.items():
-                    fct = d_acl['callable']
-                    if not callable(fct):
-                        raise Exception(
-                            'No callable function in acl definition %s',
-                            acl_name)
+        for domain, domain_conf in self.config.get('domain', {}).items():
+            if isinstance(domain_conf, dict) and domain_conf.get('enabled', False):
+                mounts['domain'] = HalfDomain.acls_router(
+                    domain,
+                    module_path=domain_conf.get('module'),
+                    acl=domain_conf.get('acl')
+                )
 
-                    fct_result = fct(req, *args, **kwargs)
-                    if callable(fct_result):
-                        fct_result = fct()(req, *args, **kwargs)
-
-                    d_acl['result'] = fct_result
-
-            return ORJSONResponse(res)
-
-        return wrapped
+        if len(mounts) > 1:
+            return Router([
+                Mount(f'/{domain}', acls_router)
+                for domain, acls_router in mounts.items()
+            ])
+        elif len(mounts) == 1:
+            return Mount('/', mounts.popitem()[1])
+        else:
+            return Router()
 
     @property
     def domains(self):
