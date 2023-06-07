@@ -2,6 +2,8 @@
 
 ## 0.6.27
 
+### Breaking changes
+
 - ACLs definition can now include a "public" parameter that defines if there should be an automatic creation of a route to check this acls
 - /halfapi/acls does not return the "result", it just returns if there is a public route to check the ACL on /halfapi/acls/acl_name
 
