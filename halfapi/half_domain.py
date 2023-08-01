@@ -12,6 +12,8 @@ from schema import SchemaError
 
 from starlette.applications import Starlette
 from starlette.routing import Router, Route
+from starlette.schemas import SchemaGenerator
+from .lib.responses import ORJSONResponse
 
 from .lib.acl import AclRoute
 
@@ -42,15 +44,15 @@ class HalfDomain(Starlette):
         self.app = app
 
         self.m_domain = importlib.import_module(domain) if module is None else module
-        d_domain = getattr(self.m_domain, 'domain', domain)
-        self.name = d_domain['name']
-        self.id = d_domain['id']
-        self.version = d_domain['version']
-        self.halfapi_version = d_domain.get('halfapi_version', __version__)
-        self.deps = d_domain.get('deps', tuple())
+        self.d_domain = getattr(self.m_domain, 'domain', domain)
+        self.name = self.d_domain['name']
+        self.id = self.d_domain['id']
+        self.version = self.d_domain['version']
+        self.halfapi_version = self.d_domain.get('halfapi_version', __version__)
+        self.deps = self.d_domain.get('deps', tuple())
 
         if not router:
-            self.router = d_domain.get('routers', '.routers')
+            self.router = self.d_domain.get('routers', '.routers')
         else:
             self.router = router
 
@@ -405,7 +407,7 @@ class HalfDomain(Starlette):
             Generator(HalfRoute)
         """
         yield HalfRoute('/',
-            JSONRoute([ self.schema() ]),
+            self.schema_openapi(),
             [{'acl': lib_acl.public}],
             'GET'
         )
@@ -459,3 +461,35 @@ class HalfDomain(Starlette):
         }
         schema['paths'] = self.schema_dict()
         return schema
+
+    def schema_openapi(self) -> Route:
+        schema = SchemaGenerator(
+            {
+                'openapi': '3.0.0',
+                'info': {
+                    'title': self.name,
+                    'version': self.version,
+                    'x-acls': tuple(getattr(self.m_acl, 'ACLS', ())),
+                    **({
+                      f'x-{key}': value
+                      for key, value in self.d_domain.items()
+                    }),
+                }
+            }
+
+        )
+
+        async def inner(request, *args, **kwargs):
+            """
+            description: |
+              Returns the current API routes description (OpenAPI v3)
+              as a JSON object
+            responses:
+              200:
+                description: API Schema in OpenAPI v3 format
+            """
+            return ORJSONResponse(
+                schema.get_schema(routes=request.app.routes))
+
+        return inner
+

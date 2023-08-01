@@ -7,6 +7,10 @@ import json
 import os
 import sys
 import pprint
+import openapi_spec_validator
+import logging
+logger = logging.getLogger()
+
 from halfapi.lib.constants import API_SCHEMA
 
 
@@ -58,8 +62,6 @@ def test_schema(application_debug):
     c = TestClient(application_debug)
 
     r = c.request('get', '/')
-    schemas = r.json()
-    assert isinstance(schemas, list)
-    for schema in schemas:
-        assert isinstance(schema, dict)
-        assert API_SCHEMA.validate(schema)
+    schema = r.json()
+    assert isinstance(schema, dict)
+    openapi_spec_validator.validate_spec(schema)

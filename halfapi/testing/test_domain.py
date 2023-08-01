@@ -122,14 +122,11 @@ class TestDomain(TestCase):
     def check_routes(self):
         r = self.client.request('get', '/')
         assert r.status_code == 200
-        schemas = r.json()
-        assert isinstance(schemas, list)
-        for schema in schemas:
-            assert isinstance(schema, dict)
-            assert 'openapi' in schema
-            assert 'info' in schema
-            assert 'paths' in schema
-            assert 'domain' in schema
+        schema = r.json()
+        assert isinstance(schema, dict)
+        assert 'openapi' in schema
+        assert 'info' in schema
+        assert 'paths' in schema
 
         r = self.client.request('get', '/halfapi/acls')
         assert r.status_code == 200

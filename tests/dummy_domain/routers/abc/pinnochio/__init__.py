@@ -6,5 +6,8 @@ def get():
     """
     description:
         Not implemented
+    responses:
+        200:
+            description: test response
     """
     raise NotImplementedError

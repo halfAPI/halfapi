@@ -12,6 +12,9 @@ def get(halfapi):
     """
     description:
         returns the configuration of the domain
+    responses:
+        200:
+            description: test response
     """
     logger.error('%s', halfapi)
     # TODO: Remove in 0.7.0

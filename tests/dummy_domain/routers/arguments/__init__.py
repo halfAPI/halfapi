@@ -60,6 +60,9 @@ def get(data):
     """
     description:
         returns the arguments passed in
+    responses:
+        200:
+            description: test response
     """
     logger.error('%s', data['foo'])
     return data
@@ -68,6 +71,9 @@ def post(data):
     """
     description:
         returns the arguments passed in
+    responses:
+        200:
+            description: test response
     """
     logger.error('%s', data)
     return data
