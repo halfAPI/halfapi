@@ -13,6 +13,7 @@ import os
 import importlib
 from typing import Dict, Coroutine, List
 from types import ModuleType
+import yaml
 
 from starlette.schemas import SchemaGenerator
 
@@ -114,3 +115,23 @@ def schema_csv_dict(csv: List[str], prefix='/') -> Dict:
         })
 
     return schema_d
+
+def param_docstring_default(name, type):
+    """ Returns a default docstring in OpenAPI format for a path parameter
+    """
+    type_map = {
+        'str': 'string',
+        'uuid': 'string',
+        'path': 'string',
+        'int': 'number',
+        'float': 'number'
+    }
+    return yaml.dump({
+        'name': name,
+        'in': 'path',
+        'description': f'default description for path parameter {name}',
+        'required': True,
+        'schema': {
+            'type': type_map[type]
+        }
+    })

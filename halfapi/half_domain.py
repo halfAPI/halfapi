@@ -24,6 +24,7 @@ from .half_route import HalfRoute
 from .lib import acl as lib_acl
 from .lib.responses import PlainTextResponse
 from .lib.routes import JSONRoute
+from .lib.schemas import param_docstring_default
 from .lib.domain import MissingAclError, PathError, UnknownPathParameterType, \
     UndefinedRoute, UndefinedFunction, get_fct_name, route_decorator
 from .lib.domain_middleware import DomainMiddleware
@@ -207,7 +208,8 @@ class HalfDomain(Starlette):
     def gen_routes(m_router: ModuleType,
         verb: str,
         path: List[str],
-        params: List[Dict]) -> Tuple[FunctionType, Dict]:
+        params: List[Dict],
+        path_param_docstrings: Dict[str, str] = {}) -> Tuple[FunctionType, Dict]:
         """
         Returns a tuple of the function associatied to the verb and path arguments,
         and the dictionary of it's acls
@@ -239,6 +241,13 @@ class HalfDomain(Starlette):
         fct_name = get_fct_name(verb, path[-1])
         if hasattr(m_router, fct_name):
             fct = getattr(m_router, fct_name)
+            fct_docstring_obj = yaml.safe_load(fct.__doc__)
+            if 'parameters' not in fct_docstring_obj and path_param_docstrings:
+                fct_docstring_obj['parameters'] = list(map(
+                    yaml.safe_load,
+                    path_param_docstrings.values()))
+
+            fct.__doc__ = yaml.dump(fct_docstring_obj)
         else:
             raise UndefinedFunction('{}.{}'.format(m_router.__name__, fct_name or ''))
 
@@ -251,7 +260,7 @@ class HalfDomain(Starlette):
 
 
     @staticmethod
-    def gen_router_routes(m_router, path: List[str]) -> \
+    def gen_router_routes(m_router, path: List[str], PATH_PARAMS={}) -> \
         Iterator[Tuple[str, str, ModuleType, Coroutine, List]]:
         """
         Recursive generator that parses a router (or a subrouter)
@@ -279,17 +288,32 @@ class HalfDomain(Starlette):
                 yield ('/'.join(filter(lambda x: len(x) > 0, path)),
                     verb,
                     m_router,
-                    *HalfDomain.gen_routes(m_router, verb, path, params[verb])
+                    *HalfDomain.gen_routes(m_router, verb, path, params[verb], PATH_PARAMS)
                 )
 
             for subroute in params.get('SUBROUTES', []):
-                #logger.debug('Processing subroute **%s** - %s', subroute, m_router.__name__)
+                subroute_module = importlib.import_module(f'.{subroute}', m_router.__name__)
                 param_match = re.fullmatch('^([A-Z_]+)_([a-z]+)$', subroute)
+                parameter_name = None
                 if param_match is not None:
                     try:
+                        parameter_name = param_match.groups()[0].lower()
+                        if parameter_name in PATH_PARAMS:
+                            raise Exception(f'Duplicate parameter name in same path! {subroute} : {parameter_name}')
+
+                        parameter_type = param_match.groups()[1]
                         path.append('{{{}:{}}}'.format(
-                            param_match.groups()[0].lower(),
-                            param_match.groups()[1]))
+                            parameter_name,
+                            parameter_type,
+                            )
+                        )
+
+
+                        try:
+                            PATH_PARAMS[parameter_name] = subroute_module.param_docstring
+                        except AttributeError as exc:
+                            PATH_PARAMS[parameter_name] = param_docstring_default(parameter_name, parameter_type)
+
                     except AssertionError as exc:
                         raise UnknownPathParameterType(subroute) from exc
                 else:
@@ -297,14 +321,19 @@ class HalfDomain(Starlette):
 
                 try:
                     yield from HalfDomain.gen_router_routes(
-                        importlib.import_module(f'.{subroute}', m_router.__name__),
-                        path)
+                        subroute_module,
+                        path,
+                        PATH_PARAMS
+                    )
 
                 except ImportError as exc:
                     logger.error('Failed to import subroute **{%s}**', subroute)
                     raise exc
 
                 path.pop()
+                if parameter_name:
+                    PATH_PARAMS.pop(parameter_name)
+
 
             path.pop()
 

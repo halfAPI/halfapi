@@ -1,6 +1,8 @@
 import pytest
 from halfapi.testing.test_domain import TestDomain
 from pprint import pprint
+import logging
+logger = logging.getLogger()
 
 class TestDummyDomain(TestDomain):
     from .dummy_domain import domain
@@ -77,3 +79,28 @@ class TestDummyDomain(TestDomain):
 
         res = self.client.request('post', '/arguments', json={ **arg_dict, 'z': True})
         assert res.json() == {**arg_dict, 'z': True}
+
+    def test_schema_path_params(self):
+        res = self.client.request('get', '/halfapi/schema')
+        schema = res.json()
+
+        logger.debug(schema)
+
+        assert len(schema['paths']) > 0
+        route = schema['paths']['/path_params/{first}/one/{second}/two/{third}']
+
+        assert 'parameters' in route['get']
+        parameters = route['get']['parameters']
+
+        assert len(parameters) == 3
+
+        param_map = {
+            elt['name']: elt
+            for elt in parameters
+        }
+
+        assert param_map['second']['description'] == 'second parameter description test'
+
+
+
+
