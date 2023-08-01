@@ -1,5 +1,43 @@
 # HalfAPI
 
+## 0.6.28
+
+If you are a developper, you should update dev dependencies in your virtual
+environment.
+
+### OpenAPI schemas
+
+This release improves OpenAPI specification in routes, and gives a default
+"parameters" field for routes that have path parameters.
+
+Also, if you use halfAPI for multi-domain setups, you may be annoyed by the
+change in the return value of the "/" route that differs from "/domain" route.
+
+An HalfAPI instance should return one and only one OpenAPI Schema, so you can
+rely on it to connect to other software.
+
+The version number that is contained under the "info" dictionnary is now the "version"
+of the Api domain, as specified in the domain dictionnary specified at the root
+of the Domain.
+
+The title field of the "info" dictionnary is now the Domain's name.
+
+The ACLs list is now available under the "info.x-acls" attribute of the schema.
+It is still accessible from the "/halfapi/acls" route.
+
+### ACLs
+
+The use of an "HEAD" request to check an ACL is now the norm. Please change all
+the occurrences of your calls on theses routes with the GET method.
+
+### Commits
+
+- [doc-schema] the "/" route on a domain now returns the OpenAPI-validated Schema (not a list of schemas), the "dummy_domain" test now validates OpenAPI specs
+- [doc-schema] In module-based routers, if there is a path parameter, you can specify an OpenAPI documentation for it, or a default will be used
+- [dev-deps] openapi-schema-validator, openapi-spec-validator
+- [doc] add docstrings for halfapi routes
+- [acl] The public acls check routes use the "HEAD" method, deprecated "GET"
+
 ## 0.6.27
 
 ### Breaking changes

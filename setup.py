@@ -71,7 +71,9 @@ setup(
             "pytest-asyncio",
             "pylint",
             "requests",
-            "httpx"
+            "httpx",
+            "openapi-schema-validator",
+            "openapi-spec-validator"
         ],
         "pyexcel":[
             "pyexcel",

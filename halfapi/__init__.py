@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-__version__ = '0.6.27'
+__version__ = '0.6.28rc0'
 
 def version():
     return f'HalfAPI version:{__version__}'
