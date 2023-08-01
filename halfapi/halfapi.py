@@ -158,6 +158,12 @@ class HalfAPI(Starlette):
         return __version__
 
     async def version_async(self, request, *args, **kwargs):
+        """
+        description: Version route
+        responses:
+          200:
+            description: Currently running HalfAPI's version
+        """
         return Response(self.version)
 
     @staticmethod
@@ -174,6 +180,16 @@ class HalfAPI(Starlette):
         """
 
         async def get_user(request, *args, **kwargs):
+            """
+            description: WhoAmI route
+            responses:
+              200:
+                description: The currently logged-in user
+                content:
+                  application/json:
+                    schema:
+                      type: object
+            """
             return ORJSONResponse({'user':request.user})
 
         yield Route('/whoami', get_user)

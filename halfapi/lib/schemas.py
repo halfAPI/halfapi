@@ -27,8 +27,12 @@ SCHEMAS = SchemaGenerator(
 
 async def schema_json(request, *args, **kwargs):
     """
-    description: Returns the current API routes description (OpenAPI v3)
-                 as a JSON object
+    description: |
+      Returns the current API routes description (OpenAPI v3)
+      as a JSON object
+    responses:
+      200:
+        description: API Schema in OpenAPI v3 format
     """
     return ORJSONResponse(
         SCHEMAS.get_schema(routes=request.app.routes))
