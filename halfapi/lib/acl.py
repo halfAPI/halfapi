@@ -5,8 +5,11 @@ Base ACL module that contains generic functions for domains ACL
 from dataclasses import dataclass
 from functools import wraps
 from json import JSONDecodeError
+import yaml
 from starlette.authentication import UnauthenticatedUser
 from starlette.exceptions import HTTPException
+from starlette.routing import Route
+from starlette.responses import Response
 
 from ..logging import logger
 
@@ -140,3 +143,36 @@ class ACL():
     documentation: str
     priority: int
     public: bool = False
+
+
+class AclRoute(Route):
+    def __init__(self, path, acl_fct, acl: ACL):
+        self.acl_fct = acl_fct
+        self.name = acl.name
+        self.description = acl.documentation
+
+        self.docstring = yaml.dump({
+            'description': f'{self.name}: {self.description}',
+            'responses': {
+                '200': {
+                    'description': 'ACL OK'
+                },
+                '401': {
+                    'description': 'ACL FAIL'
+                }
+            }
+        })
+
+        async def endpoint(request, *args, **kwargs):
+            if request.method == 'GET':
+                logger.warning('Deprecated since 0.6.28, use HEAD method since now')
+
+            if self.acl_fct(request, *args, **kwargs) is True:
+                return Response(status_code=200)
+
+            return Response(status_code=401)
+
+        endpoint.__doc__ = self.docstring
+
+        return super().__init__(path, methods=['HEAD', 'GET'], endpoint=endpoint)
+

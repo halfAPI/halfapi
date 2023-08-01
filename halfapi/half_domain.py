@@ -13,6 +13,8 @@ from schema import SchemaError
 from starlette.applications import Starlette
 from starlette.routing import Router, Route
 
+from .lib.acl import AclRoute
+
 import yaml
 
 
@@ -156,14 +158,11 @@ class HalfDomain(Starlette):
 
     @staticmethod
     def acls_router(domain, module_path=None, acl=None):
-        """ Router of the acls routes :
+        """ Returns a Router object with the following routes :
 
-        / : Same result as HalfDomain.acls_route
-        /acl_name : Dummy route protected by the "acl_name" acl
+        / : The "acls" field of the API metadatas
+        /{acl_name} : If the ACL is defined as public, a route that returns either status code 200 or 401 on HEAD/GET request
         """
-
-        async def dummy_endpoint(request, *args, **kwargs):
-            return PlainTextResponse('')
 
         routes = []
         d_res = {}
@@ -187,14 +186,7 @@ class HalfDomain(Starlette):
 
             if elt.public:
                 routes.append(
-                    Route(
-                        f'/{elt.name}',
-                        HalfRoute.acl_decorator(
-                            dummy_endpoint,
-                            params=[{'acl': fct}]
-                        ),
-                        methods=['GET']
-                    )
+                    AclRoute(f'/{elt.name}', fct, elt)
                 )
 
         d_res_under_domain_name = {}
