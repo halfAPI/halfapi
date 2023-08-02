@@ -50,6 +50,7 @@ class HalfDomain(Starlette):
         self.version = self.d_domain['version']
         self.halfapi_version = self.d_domain.get('halfapi_version', __version__)
         self.deps = self.d_domain.get('deps', tuple())
+        self.schema_components = self.d_domain.get('schema_components', dict())
 
         if not router:
             self.router = self.d_domain.get('routers', '.routers')
@@ -474,7 +475,8 @@ class HalfDomain(Starlette):
                       f'x-{key}': value
                       for key, value in self.d_domain.items()
                     }),
-                }
+                },
+                'components': self.schema_components
             }
 
         )
