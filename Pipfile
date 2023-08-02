@@ -16,6 +16,7 @@ virtualenv = "*"
 httpx = "*"
 openapi-schema-validator = "*"
 openapi-spec-validator = "*"
+coverage = "*"
 
 [packages]
 click = ">=8,<9"

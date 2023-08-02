@@ -73,7 +73,8 @@ setup(
             "requests",
             "httpx",
             "openapi-schema-validator",
-            "openapi-spec-validator"
+            "openapi-spec-validator",
+            "coverage"
         ],
         "pyexcel":[
             "pyexcel",
