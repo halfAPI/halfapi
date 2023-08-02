@@ -44,7 +44,7 @@ test:
   <<: *test
   parallel:
     matrix:
-      - PYVERSION: ["3.8", "3.9", "3.10"]
+      - PYVERSION: ["3.8", "3.9", "3.10", "3.11"]
   script:
     - pipenv run pytest --version
     - PYTHONPATH=./tests/ pipenv run coverage run --source halfapi -m pytest
