@@ -36,7 +36,7 @@ It follows the following format :
 
 """
 
-import logging
+from .logging import logger
 import os
 from os import environ
 import sys
@@ -45,8 +45,6 @@ import tempfile
 import uuid
 
 import toml
-
-from .logging import logger
 
 PRODUCTION = True
 LOGLEVEL = 'info'
@@ -77,17 +75,18 @@ except FileNotFoundError:
     logger.error('Cannot find a configuration file under %s', HALFAPI_DOT_FILE)
 
 
-def read_config():
+def read_config(filenames=HALFAPI_CONFIG_FILES):
     """
     The highest index in "filenames" are the highest priorty
     """
     d_res = {}
 
-    logger.info('Reading config files %s', HALFAPI_CONFIG_FILES)
-    for CONF_FILE in HALFAPI_CONFIG_FILES:
-        d_res.update( toml.load(HALFAPI_CONFIG_FILES) )
+    logger.info('Reading config files %s', filenames)
+    for CONF_FILE in filenames:
+        if os.path.isfile(CONF_FILE):
+            d_res.update( toml.load(CONF_FILE) )
 
-    logger.info('Reading config files (result) %s', d_res)
+    logger.info('Read config files (result) %s', d_res)
     return { **d_res.get('project', {}), 'domain': d_res.get('domain', {}) }
 
 CONFIG = read_config()

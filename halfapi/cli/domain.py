@@ -9,6 +9,7 @@ import importlib
 import subprocess
 
 import json
+import toml
 
 import click
 import orjson
@@ -16,7 +17,6 @@ import uvicorn
 
 
 from .cli import cli
-from ..conf import CONFIG
 
 from ..half_domain import HalfDomain
 
@@ -145,6 +145,14 @@ def domain(domain, config_file, delete, update, create, read, run, dry_run):  #,
             # TODO: Connect to the create_domain function
             raise NotImplementedError
         raise Exception('Missing domain name')
+
+    if config_file:
+        CONFIG = toml.load(config_file.name)
+
+        os.environ['HALFAPI_CONF_FILE'] = config_file.name
+    else:
+        from halfapi.conf import CONFIG
+
     if create:
         raise NotImplementedError
     elif update:
@@ -152,13 +160,7 @@ def domain(domain, config_file, delete, update, create, read, run, dry_run):  #,
     elif delete:
         raise NotImplementedError
     elif read:
-        from ..conf import CONFIG
         from ..halfapi import HalfAPI
-
-        if config_file:
-            CONFIG = json.loads(''.join(
-                [ line.decode() for line in config_file.readlines() ]
-            ))
 
         halfapi = HalfAPI(CONFIG)
         click.echo(orjson.dumps(
@@ -168,25 +170,13 @@ def domain(domain, config_file, delete, update, create, read, run, dry_run):  #,
         )
 
     else:
-        from ..conf import CONFIG
-        if 'domain' not in CONFIG:
-            CONFIG['domain'] = {}
-
-        if domain not in CONFIG['domain']:
-            CONFIG['domain'][domain] = {
-                'enabled': True,
-                'name': domain
-            }
-
-        if dry_run:
-            CONFIG['dryrun'] = True
-
-        CONFIG['domain'][domain]['enabled'] = True
-        port = CONFIG['domain'][domain].get('port', 3000)
-
+        port = CONFIG.get('port',
+            CONFIG.get('domain', {}).get('port')
+        )
         uvicorn.run(
             'halfapi.app:application',
-            port=port
+            port=port,
+            factory=True
         )
 
 

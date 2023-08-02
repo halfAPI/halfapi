@@ -9,6 +9,7 @@ It defines the following globals :
     - application (the asgi application itself - a starlette object)
 
 """
+import sys
 import logging
 import time
 import importlib
@@ -48,6 +49,7 @@ class HalfAPI(Starlette):
         d_routes=None):
         config_logging(logging.DEBUG)
         self.config = config
+        logger.debug('HalfAPI.config: %s', self.config)
 
         SECRET = self.config.get('secret')
         PRODUCTION = self.config.get('production', True)

@@ -1,9 +1,11 @@
+import os
 from .halfapi import HalfAPI
-from .conf import CONFIG, SCHEMA
 from .logging import logger
+from .conf import read_config
 
-logger.info('CONFIG: %s', CONFIG)
-logger.info('SCHEMA: %s', SCHEMA)
+def application():
+    config_file = os.environ.get('HALFAPI_CONF_FILE', '.halfapi/config')
 
-application = HalfAPI(
-    CONFIG, SCHEMA or None).application
+    CONFIG = read_config([config_file])
+
+    return HalfAPI(CONFIG).application

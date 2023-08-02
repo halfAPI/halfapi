@@ -4,6 +4,7 @@ import os
 import sys
 import json
 from json.decoder import JSONDecodeError
+import toml
 from unittest import TestCase
 from starlette.testclient import TestClient
 from click.testing import CliRunner
@@ -79,7 +80,7 @@ class TestDomain(TestCase):
 
         _, self.config_file = tempfile.mkstemp()
         with open(self.config_file, 'w') as fh:
-            fh.write(json.dumps(self.halfapi_conf))
+            fh.write(toml.dumps(self.halfapi_conf))
 
         self.halfapi = HalfAPI(self.halfapi_conf)
 

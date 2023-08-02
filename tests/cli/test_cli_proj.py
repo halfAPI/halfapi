@@ -5,6 +5,7 @@ import importlib
 import tempfile
 from unittest.mock import patch
 import json
+import toml
 
 import pytest
 from click.testing import CliRunner
@@ -29,12 +30,16 @@ class TestCliProj():
         _, tmp_conf = tempfile.mkstemp()
         with open(tmp_conf, 'w') as fh:
             fh.write(
-                json.dumps({
+                toml.dumps({
                     'domain': {
                         'dummy_domain': {
+                            'port': 4242,
                             'name': 'dummy_domain',
                             'enabled': True
                         }
+                    },
+                    'project': {
+                        'dryrun': True
                     }
                 })
             )
