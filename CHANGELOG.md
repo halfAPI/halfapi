@@ -2,6 +2,10 @@
 
 ## 0.6.28
 
+### Development dependencies
+
+Python 3.7 is no longer supported (openapi_spec_validator is not compatible).
+
 If you are a developper, you should update dev dependencies in your virtual
 environment.
 
