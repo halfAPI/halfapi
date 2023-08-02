@@ -47,8 +47,15 @@ test:
       - PYVERSION: ["3.8", "3.9", "3.10"]
   script:
     - pipenv run pytest --version
-    - PYTHONPATH=./tests/ pipenv run pytest -v ./tests
+    - PYTHONPATH=./tests/ pipenv run coverage run --source halfapi -m pytest
+    - pipenv run coverage xml
     - pipenv run halfapi --version
+
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
 
 build_pypi:
   stage: build
