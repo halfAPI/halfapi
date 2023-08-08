@@ -29,6 +29,15 @@ The title field of the "info" dictionnary is now the Domain's name.
 The ACLs list is now available under the "info.x-acls" attribute of the schema.
 It is still accessible from the "/halfapi/acls" route.
 
+#### Schema Components
+
+You can now specify a dict in the domain's metadata dict that follows the
+"components" key of an OpenAPI schema.
+
+Use it to define models that are used in your API. You can see an exemple of
+it's use in the "tests/dummy_domain/__init__.py" file.
+
+
 ### ACLs
 
 The use of an "HEAD" request to check an ACL is now the norm. Please change all
