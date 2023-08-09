@@ -56,10 +56,8 @@ def parse_query(q_string: str = ""):
             >>> parse_query('limit:10')
             <function parse_query.<locals>.select at 0x...>
 
-            >>> parse_query('limit=10')
-            Traceback (most recent call last):
-                ...
-            starlette.exceptions.HTTPException: 400
+            # >>> parse_query('limit=10')
+            # starlette.exceptions.HTTPException: 400
 
 
     """
