@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1
-FROM docker.io/python:3.10.5-slim-bullseye
+FROM python:3.11.4-alpine3.18
 COPY . /halfapi
 WORKDIR /halfapi
-RUN apt-get update > /dev/null && apt-get -y install git > /dev/null
+RUN apk update > /dev/null && apk add git > /dev/null
 RUN pip install gunicorn uvicorn
 RUN pip install .
 CMD gunicorn halfapi.app
