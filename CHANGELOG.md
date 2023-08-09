@@ -2,6 +2,11 @@
 
 ## 0.6.28
 
+### Dependencies
+
+Starlette version bumped to 0.31 (had to disable a test to make it work but
+seems not important).
+
 ### Development dependencies
 
 Python 3.7 is no longer supported (openapi_spec_validator is not compatible).
