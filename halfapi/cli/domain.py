@@ -17,11 +17,13 @@ import uvicorn
 
 
 from .cli import cli
+from ..conf import CONFIG
 
 from ..half_domain import HalfDomain
 
 from ..lib.routes import api_routes
 from ..lib.responses import ORJSONResponse
+from ..conf import CONFIG, PROJECT_LEVEL_KEYS
 
 
 from ..logging import logger
@@ -119,16 +121,22 @@ def list_api_routes():
     #     list_routes(domain, m_dom)
 
 
+@click.option('--devel',default=None, is_flag=True)
+@click.option('--watch',default=False, is_flag=True)
+@click.option('--production',default=None, is_flag=True)
+@click.option('--port',default=None, type=int)
+@click.option('--log-level',default=None, type=str)
 @click.option('--dry-run',default=False, is_flag=True)
 @click.option('--run',default=False, is_flag=True)
 @click.option('--read',default=False, is_flag=True)
+@click.option('--conftest',default=False, is_flag=True)
 @click.option('--create',default=False, is_flag=True)
 @click.option('--update',default=False, is_flag=True)
 @click.option('--delete',default=False, is_flag=True)
 @click.argument('config_file', type=click.File(mode='rb'), required=False)
 @click.argument('domain',default=None, required=False)
 @cli.command()
-def domain(domain, config_file, delete, update, create, read, run, dry_run):  #, domains, read, create, update, delete):
+def domain(domain, config_file, delete, update, create, conftest, read, run, dry_run, log_level, port, production, watch, devel):
     """
     The "halfapi domain" command
 
@@ -147,11 +155,19 @@ def domain(domain, config_file, delete, update, create, read, run, dry_run):  #,
         raise Exception('Missing domain name')
 
     if config_file:
-        CONFIG = toml.load(config_file.name)
+        ARG_CONFIG = toml.load(config_file.name)
+            
+        if 'project' in ARG_CONFIG:
+            for key, value in ARG_CONFIG['project'].items():
+                if key in PROJECT_LEVEL_KEYS:
+                    CONFIG[key] = value
 
-        os.environ['HALFAPI_CONF_FILE'] = config_file.name
-    else:
-        from halfapi.conf import CONFIG
+        if 'domain' in ARG_CONFIG and domain in ARG_CONFIG['domain']:
+            for key, value in ARG_CONFIG['domain'][domain].items():
+                if key in PROJECT_LEVEL_KEYS:
+                    CONFIG[key] = value
+
+        CONFIG['domain'].update(ARG_CONFIG['domain'])
 
     if create:
         raise NotImplementedError
@@ -170,14 +186,57 @@ def domain(domain, config_file, delete, update, create, read, run, dry_run):  #,
         )
 
     else:
-        port = CONFIG.get('port',
-            CONFIG.get('domain', {}).get('port')
-        )
-        uvicorn.run(
-            'halfapi.app:application',
-            port=port,
-            factory=True
-        )
+        if dry_run:
+            CONFIG['dryrun'] = True
 
+        domains = CONFIG.get('domain')
+        for key in domains.keys():
+            if key != domain:
+                domains[key]['enabled'] = False
+            else:
+                domains[key]['enabled'] = True
+
+        if not log_level:
+            log_level = CONFIG.get('domain', {}).get('loglevel', CONFIG.get('loglevel', False))
+        else:
+            CONFIG['loglevel'] = log_level
+
+        if not port:
+            port = CONFIG.get('domain', {}).get('port', CONFIG.get('port', False))
+        else:
+            CONFIG['port'] = port
+
+        if devel is None and production is not None and (production is False or production is True):
+            CONFIG['production'] = production
+
+        if devel is not None:
+            CONFIG['production'] = False
+            CONFIG['loglevel'] = 'debug'
+
+
+        if conftest:
+            click.echo(
+                toml.dumps(CONFIG)
+            )
+
+        else:
+            # domain section port is preferred, if it doesn't exist we use the global one
+
+            uvicorn_kwargs = {}
+
+            if CONFIG.get('port'):
+                uvicorn_kwargs['port'] = CONFIG['port']
+
+            if CONFIG.get('loglevel'):
+                uvicorn_kwargs['log_level'] = CONFIG['loglevel'].lower()
+
+            if watch:
+                uvicorn_kwargs['reload'] = True
+
+            uvicorn.run(
+                'halfapi.app:application',
+                factory=True,
+                **uvicorn_kwargs
+            )
 
     sys.exit(0)

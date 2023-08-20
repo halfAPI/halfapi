@@ -11,6 +11,7 @@ from click.testing import CliRunner
 from ..cli.cli import cli
 from ..halfapi import HalfAPI
 from ..half_domain import HalfDomain
+from ..conf import DEFAULT_CONF
 from pprint import pprint
 import tempfile
 
@@ -62,6 +63,7 @@ class TestDomain(TestCase):
         self.runner = class_(mix_stderr=False)
 
         # HTTP
+        # Fake default values of default configuration
         self.halfapi_conf = {
             'secret': 'testsecret',
             'production': False,

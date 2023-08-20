@@ -48,13 +48,36 @@ it's use in the "tests/dummy_domain/__init__.py" file.
 The use of an "HEAD" request to check an ACL is now the norm. Please change all
 the occurrences of your calls on theses routes with the GET method.
 
-### Commits
 
-- [doc-schema] the "/" route on a domain now returns the OpenAPI-validated Schema (not a list of schemas), the "dummy_domain" test now validates OpenAPI specs
-- [doc-schema] In module-based routers, if there is a path parameter, you can specify an OpenAPI documentation for it, or a default will be used
-- [dev-deps] openapi-schema-validator, openapi-spec-validator
-- [doc] add docstrings for halfapi routes
-- [acl] The public acls check routes use the "HEAD" method, deprecated "GET"
+### CLI
+
+Domain command update :
+
+The `--conftest` flag is now allowed when running the `domain` command, it dumps the current configuration as a TOML string.
+
+`halfapi domain --conftest my_domain`
+
+
+The `--dry-run` flag was buggy and is now fixed when using the `domai ` command with the `--run` flag.
+
+
+### Configuration
+
+The `port` option in a `domain.my_domain` section in the TOML config file is now prefered to the one in the `project` section.
+
+The `project` section is used as a default section for the whole configuration file. - Tests still have to be written -
+
+The standard configuration precedence is fixed, in this order from the hight to the lower :
+
+- Argument value (i.e. : --log-level)
+- Environment value (i.e. : HALFAPI_LOGLEVEL)
+- Configuration value under "domain" key
+- Configuration value under "project" key
+- Default configuration value given in the "DEFAULT_CONF" dictionary of halfapi/conf.py
+
+### Logs
+
+Small cleanup of the logs levels. If you don't want the config to be dumped, just set the HALFAPI_LOGLEVEL to something different than "DEBUG".
 
 ## 0.6.27
 

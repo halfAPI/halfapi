@@ -45,15 +45,24 @@ from .half_domain import HalfDomain
 from halfapi import __version__
 
 class HalfAPI(Starlette):
-    def __init__(self, config,
+    def __init__(self,
+        config,
         d_routes=None):
-        config_logging(logging.DEBUG)
+        # Set log level (defaults to debug)
+        config_logging(
+            getattr(logging, config.get('loglevel', 'DEBUG').upper(), 'DEBUG')
+        )
         self.config = config
-        logger.debug('HalfAPI.config: %s', self.config)
-
         SECRET = self.config.get('secret')
         PRODUCTION = self.config.get('production', True)
         DRYRUN = self.config.get('dryrun', False)
+        TIMINGMIDDLEWARE = self.config.get('timingmiddleware', False)
+
+        if DRYRUN:
+            logger.info('HalfAPI starting in dry-run mode')
+        else:
+            logger.info('HalfAPI starting')
+
 
         self.PRODUCTION = PRODUCTION
         self.SECRET = SECRET
@@ -67,7 +76,7 @@ class HalfAPI(Starlette):
             Mount('/halfapi', routes=list(self.halfapi_routes()))
         )
 
-        logger.info('Config: %s', self.config)
+        logger.debug('Config: %s', self.config)
 
         domains = {
             key: elt
@@ -75,7 +84,7 @@ class HalfAPI(Starlette):
             if elt.get('enabled', False)
         }
 
-        logger.info('Active domains: %s', domains)
+        logger.debug('Active domains: %s', domains)
 
         if d_routes:
             # Mount the routes from the d_routes argument - domain-less mode
@@ -147,7 +156,7 @@ class HalfAPI(Starlette):
                 on_error=on_auth_error
             )
 
-        if not PRODUCTION:
+        if not PRODUCTION and TIMINGMIDDLEWARE:
             self.add_middleware(
                 TimingMiddleware,
                 client=HTimingClient(),
@@ -297,3 +306,12 @@ class HalfAPI(Starlette):
         self.mount(kwargs.get('path', name), self.__domains[name])
 
         return self.__domains[name]
+
+
+def __main__():
+    return HalfAPI(CONFIG).application
+
+if __name__ == '__main__':
+    __main__()
+
+
