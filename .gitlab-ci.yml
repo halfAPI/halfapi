@@ -36,7 +36,7 @@ stages:
     - apk update && apk add py3-virtualenv py3-pip
     - python3 -V  # Print out python version for debugging
     - pip3 install pipenv
-    - pipenv install  --dev --skip-lock
+    - pipenv install  --dev
 
 test:
   image: python:${PYVERSION}-bullseye
@@ -63,7 +63,7 @@ build_pypi:
     - apk update && apk add py3-virtualenv py3-pip
     - python3 -V  # Print out python version for debugging
     - pip3 install pipenv
-    - pipenv install  --dev --skip-lock
+    - pipenv install  --dev
     - pipenv run python -m build --sdist
     - pipenv run python -m build --wheel
   artifacts:
