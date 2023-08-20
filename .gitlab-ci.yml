@@ -39,7 +39,7 @@ stages:
     - pipenv install  --dev
 
 test:
-  image: python:${PYVERSION}-bullseye
+  image: python:${PYVERSION}-alpine3.18
   stage: test
   <<: *test
   parallel:
