@@ -200,6 +200,6 @@ CONFIG.setdefault('loglevel', DEFAULT_CONF['LOGLEVEL'])
 CONFIG.setdefault('dryrun', DEFAULT_CONF['DRYRUN'])
 
 # !!!TO REMOVE!!!
-SECRET = CONFIG.get('SECRET')
+SECRET = CONFIG.get('secret')
 PRODUCTION = CONFIG.get('production')
 # !!!
