@@ -79,6 +79,10 @@ The standard configuration precedence is fixed, in this order from the hight to 
 
 Small cleanup of the logs levels. If you don't want the config to be dumped, just set the HALFAPI_LOGLEVEL to something different than "DEBUG".
 
+### Fixes
+
+- Check an ACL based on a decorator on "/halfapi/acls/MY_ACL"
+
 ## 0.6.27
 
 ### Breaking changes
