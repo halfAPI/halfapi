@@ -189,6 +189,20 @@ class HalfDomain(Starlette):
             }
 
             if elt.public:
+                try:
+                    if inspect.iscoroutinefunction(fct):
+                        logger.warning('async decorator are not yet supported')
+                    else:
+                        inner = fct()
+
+                        if inspect.iscoroutinefunction(fct) or callable(inner):
+                            fct = inner
+
+                except TypeError:
+                    # Fct is not a decorator or is not well called (has no default arguments)
+                    # We can ignore this
+                    pass
+
                 routes.append(
                     AclRoute(f'/{elt.name}', fct, elt)
                 )
