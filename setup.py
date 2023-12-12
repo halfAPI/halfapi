@@ -44,7 +44,7 @@ setup(
     python_requires=">=3.8",
     install_requires=[
         "PyJWT>=2.6.0,<2.7.0",
-        "starlette>=0.31,<0.32",
+        "starlette>=0.33,<0.34",
         "click>=8,<9",
         "uvicorn>=0.13,<1",
         "orjson>=3.8.5,<4",

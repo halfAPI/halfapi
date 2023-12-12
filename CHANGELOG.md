@@ -1,5 +1,11 @@
 # HalfAPI
 
+## 0.6.29
+
+### Dependencies
+
+Starlette version bumped to 0.33.
+
 ## 0.6.28
 
 ### Dependencies
