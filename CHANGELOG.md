@@ -1,5 +1,14 @@
 # HalfAPI
 
+## 0.6.30
+
+Dependencies updates 
+
+- pyYAML v6.0.1
+- starlette v0.37.2
+
+Warning : the on_startup halfAPI argument is now removed, use the lifeSpan
+
 ## 0.6.29
 
 ### Dependencies

@@ -11,6 +11,7 @@ from types import ModuleType, FunctionType
 from schema import SchemaError
 
 from starlette.applications import Starlette
+from starlette.middleware import Middleware
 from starlette.routing import Router, Route
 from starlette.schemas import SchemaGenerator
 from .lib.responses import ORJSONResponse
