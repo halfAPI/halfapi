@@ -110,8 +110,7 @@ class HalfAPI(Starlette):
                 500: gen_exception_route(HalfAPI.exception),
                 501: gen_exception_route(NotImplementedResponse),
                 503: gen_exception_route(ServiceUnavailableResponse)
-            },
-            on_startup=startup_fcts
+            }
         )
 
         schemas = []
