@@ -14,7 +14,6 @@ from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.routing import Router, Route
 from starlette.schemas import SchemaGenerator
-from .lib.responses import ORJSONResponse
 
 from .lib.acl import AclRoute
 
@@ -84,15 +83,16 @@ class HalfDomain(Starlette):
         super().__init__(
             routes=self.gen_domain_routes(),
             middleware=[
-                (DomainMiddleware, {
-                    'domain': {
+                Middleware(
+                    DomainMiddleware,
+                    domain={
                         'name': self.name,
                         'id': self.id,
                         'version': self.version,
                         'halfapi_version': self.halfapi_version,
                         'config': self.config.get('domain', {}).get(self.name, {}).get('config', {})
                     }
-                })
+                )
             ]
         )
 

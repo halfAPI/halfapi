@@ -17,7 +17,7 @@ class DomainMiddleware(BaseHTTPMiddleware):
         - acl
     """
 
-    def __init__(self, app, domain):
+    def __init__(self, app, domain=None):
         """ app: HalfAPI instance
         """
         logger.info('DomainMiddleware app:%s domain:%s', app, domain)
