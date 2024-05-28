@@ -16,6 +16,7 @@ from starlette.routing import Router, Route
 from starlette.schemas import SchemaGenerator
 
 from .lib.acl import AclRoute
+from .lib.responses import ORJSONResponse
 
 import yaml
 
