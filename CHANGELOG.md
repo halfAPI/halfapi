@@ -104,6 +104,9 @@ Small cleanup of the logs levels. If you don't want the config to be dumped, jus
 
 - ACLs definition can now include a "public" parameter that defines if there should be an automatic creation of a route to check this acls
 - /halfapi/acls does not return the "result", it just returns if there is a public route to check the ACL on /halfapi/acls/acl_name
+=======
+argument of starlette instead.
+>>>>>>> a8c59c6 ([release] halfapi 0.6.27)
 
 ## 0.6.26
 
