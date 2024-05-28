@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "7c77d6605bf4f6fd8a072ae8d375e6cdfbc467190f309108c20c231c0c94a976"
+            "sha256": "2a9276fbdc5560c58c1285104e2e88f6f3edd8524e2dc780435dcdb074e90773"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -212,12 +212,12 @@
         },
         "starlette": {
             "hashes": [
-                "sha256:6d492f0f7dfb2dd646ac7d80444af4989cd5c5c78f622fac99e39a66c3e01f06",
-                "sha256:8c21f9592451b2016300c5bbc54b181063367b62720a4048656c070319238897"
+                "sha256:3e2639dac3520e4f58734ed22553f950d3f3cb1001cd2eaac4d57e8cdc5f66bc",
+                "sha256:50bbbda9baa098e361f398fda0928062abbaf1f54f4fadcbe17c092a01eb9a25"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==0.33.0"
+            "version": "==0.35.1"
         },
         "timing-asgi": {
             "hashes": [
