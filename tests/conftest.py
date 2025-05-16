@@ -76,7 +76,7 @@ def token_debug_true_builder():
 
 @pytest.fixture
 def runner():
-    return CliRunner(mix_stderr=False)
+    return CliRunner()
 
 
 @pytest.fixture
@@ -104,7 +104,7 @@ def cli_runner():
         return wrapper
 
     class_.invoke = invoke_wrapper(class_.invoke)
-    cli_runner_ = class_(mix_stderr=False)
+    cli_runner_ = class_()
 
     yield cli_runner_
 

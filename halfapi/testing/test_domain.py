@@ -60,7 +60,7 @@ class TestDomain(TestCase):
             return wrapper
 
         class_.invoke = invoke_wrapper(class_.invoke)
-        self.runner = class_(mix_stderr=False)
+        self.runner = class_()
 
         # HTTP
         # Fake default values of default configuration
