@@ -1,5 +1,17 @@
 # HalfAPI
 
+## 0.6.31
+
+Dependencies updates 
+
+- orjson v3.10
+- starlette v0.46.2
+- schema v0.7.7
+- pyjwt v2.10.0
+
+Warning : the on_startup halfAPI argument is now removed, use the lifeSpan
+
+
 ## 0.6.30
 
 Dependencies updates 
