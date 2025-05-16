@@ -20,7 +20,7 @@ coverage = "*"
 
 [packages]
 click = ">=8,<9"
-starlette = ">=0.37,<0.38"
+starlette = ">=0.46,<0.47"
 uvicorn = ">=0.13,<1"
 orjson = ">=3.10,<4"
 pyjwt = ">=2.6.0,<2.7.0"
